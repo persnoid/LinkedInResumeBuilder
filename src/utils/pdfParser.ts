@@ -1,9 +1,9 @@
 import * as pdfjsLib from 'pdfjs-dist';
+import PdfWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
 import { ResumeData } from '../types/resume';
 
-// Use local worker script from pdfjs-dist
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-pdfjsLib.GlobalWorkerOptions.workerSrc = require('pdfjs-dist/build/pdf.worker.min.js');
+// Use local worker script from pdfjs-dist with Vite URL import
+pdfjsLib.GlobalWorkerOptions.workerSrc = PdfWorker;
 
 export const parsePDFFile = async (file: File): Promise<ResumeData> => {
   const buffer = await file.arrayBuffer();
@@ -193,4 +193,3 @@ const extractCertifications = (lines: string[], resume: ResumeData) => {
     }
   });
 };
-

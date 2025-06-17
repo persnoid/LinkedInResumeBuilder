@@ -236,7 +236,7 @@ class LinkedInPDFParser:
             line = line.strip()
             
             # Name detection (first substantial line that looks like a name)
-            if not personal_info.name and re.match(r'^[A-Z][a-zA-Z\s.\''-]+$', line) and len(line.split()) <= 4:
+            if not personal_info.name and re.match(r'^[A-Z][a-zA-Z\s.\'-]+$', line) and len(line.split()) <= 4:
                 personal_info.name = line
                 continue
             

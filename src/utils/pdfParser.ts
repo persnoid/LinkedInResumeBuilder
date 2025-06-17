@@ -37,7 +37,7 @@ export const parsePDFFile = async (file: File): Promise<ResumeData> => {
   });
 
   const lines = groupTextIntoLines(textItems);
-  console.log('Extracted lines:', lines.slice(0, 30)); // Debug log
+  console.log('Extracted lines:', lines.slice(0, 50)); // Debug log
   
   return parseLinkedInContent(lines, fullText);
 };
@@ -70,6 +70,7 @@ const groupTextIntoLines = (textItems: Array<{ str: string; x: number; y: number
 };
 
 const parseLinkedInContent = (lines: string[], fullText: string): ResumeData => {
+  // Initialize the resume data structure
   const resume: ResumeData = {
     personalInfo: {
       name: '',
@@ -88,39 +89,45 @@ const parseLinkedInContent = (lines: string[], fullText: string): ResumeData => 
     languages: []
   };
 
-  // Extract personal information from header (first few lines)
-  extractPersonalInfo(lines, fullText, resume);
+  // Step 1: Extract Contact/Personal Information
+  extractContactInfo(lines, fullText, resume);
   
-  // Parse sections based on LinkedIn PDF structure
-  parseSections(lines, resume);
+  // Step 2: Identify and separate main sections
+  const sections = identifyMainSections(lines);
+  console.log('Identified sections:', Object.keys(sections));
+  
+  // Step 3: Extract data from each section
+  extractSectionData(sections, resume);
 
-  console.log('Parsed resume:', resume); // Debug log
+  console.log('Final parsed resume:', resume);
   return resume;
 };
 
-const extractPersonalInfo = (lines: string[], fullText: string, resume: ResumeData) => {
-  // Extract name - usually the first substantial line
-  for (let i = 0; i < Math.min(5, lines.length); i++) {
+const extractContactInfo = (lines: string[], fullText: string, resume: ResumeData) => {
+  // Extract name - usually the first substantial line (large font at top)
+  for (let i = 0; i < Math.min(10, lines.length); i++) {
     const line = lines[i].trim();
     
     // Skip LinkedIn URLs, emails, and other non-name content
     if (line.includes('linkedin.com') || 
         line.includes('@') || 
         line.includes('http') ||
+        line.toLowerCase().includes('resume') ||
+        line.toLowerCase().includes('cv') ||
         line.length < 3 ||
-        line.length > 50) {
+        line.length > 60) {
       continue;
     }
     
     // Name should contain only letters, spaces, and common name characters
-    if (/^[A-Za-zÀ-ÿ\s\-'\.]+$/.test(line)) {
+    if (/^[A-Za-zÀ-ÿ\s\-'\.]+$/.test(line) && !line.match(/\d/)) {
       resume.personalInfo.name = line;
       break;
     }
   }
 
-  // Extract title/headline - look for professional title after name
-  const nameIndex = lines.findIndex(line => line === resume.personalInfo.name);
+  // Extract headline/title - directly below name
+  const nameIndex = lines.findIndex(line => line.trim() === resume.personalInfo.name);
   if (nameIndex >= 0) {
     for (let i = nameIndex + 1; i < Math.min(nameIndex + 5, lines.length); i++) {
       const line = lines[i].trim();
@@ -130,101 +137,101 @@ const extractPersonalInfo = (lines: string[], fullText: string, resume: ResumeDa
         continue;
       }
       
-      // Clean up the title line
+      // Clean up the title line - remove LinkedIn URLs and follow text
       let title = line;
       title = title.replace(/www\.linkedin\.com\/in\/[^\s]+/gi, '');
       title = title.replace(/Follow for.*$/gi, '');
       title = title.replace(/\|.*$/g, '');
       title = title.trim();
       
-      if (title.length > 5 && title.length <= 150) {
+      if (title.length > 5 && title.length <= 200 && !title.match(/^\d{4}/)) {
         resume.personalInfo.title = title;
         break;
       }
     }
   }
 
-  // Extract contact information
+  // Extract email address
   const emailMatch = fullText.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
   if (emailMatch) {
     resume.personalInfo.email = emailMatch[1];
   }
 
+  // Extract LinkedIn URL
   const linkedinMatch = fullText.match(/((?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[^\s]+)/);
   if (linkedinMatch) {
-    resume.personalInfo.linkedin = linkedinMatch[1].startsWith('http') ? 
-      linkedinMatch[1] : 'https://www.' + linkedinMatch[1];
+    let linkedinUrl = linkedinMatch[1];
+    if (!linkedinUrl.startsWith('http')) {
+      linkedinUrl = 'https://' + linkedinUrl;
+    }
+    resume.personalInfo.linkedin = linkedinUrl;
   }
 
   // Extract location - look for patterns like "City, Country" or "City, State, Country"
   const locationPatterns = [
     /([A-Za-zÀ-ÿ\s]+,\s*[A-Za-zÀ-ÿ\s]+,\s*[A-Za-zÀ-ÿ\s]+)/,
-    /([A-Za-zÀ-ÿ\s]+,\s*[A-Za-zÀ-ÿ\s]+)/
+    /([A-Za-zÀ-ÿ\s]+,\s*[A-Za-zÀ-ÿ\s]+)/,
+    /\b([A-Za-zÀ-ÿ]+(?:\s+[A-Za-zÀ-ÿ]+)*)\s*,\s*([A-Za-zÀ-ÿ]+(?:\s+[A-Za-zÀ-ÿ]+)*)\b/
   ];
   
   for (const pattern of locationPatterns) {
     const locationMatch = fullText.match(pattern);
-    if (locationMatch && locationMatch[1].length < 100) {
+    if (locationMatch && locationMatch[1].length < 100 && 
+        !locationMatch[1].includes('@') && 
+        !locationMatch[1].includes('http')) {
       resume.personalInfo.location = locationMatch[1].trim();
       break;
     }
   }
-};
 
-const parseSections = (lines: string[], resume: ResumeData) => {
-  const sections = identifySections(lines);
+  // Extract phone number
+  const phonePatterns = [
+    /(\+?[\d\s\-\(\)\.]{10,})/g,
+    /(\(\d{3}\)\s*\d{3}-\d{4})/g,
+    /(\d{3}-\d{3}-\d{4})/g
+  ];
   
-  console.log('Identified sections:', Object.keys(sections)); // Debug log
-  
-  // Process each section
-  if (sections.summary?.length > 0) {
-    processSummary(sections.summary, resume);
-  }
-  
-  if (sections.experience?.length > 0) {
-    processExperience(sections.experience, resume);
-  }
-  
-  if (sections.education?.length > 0) {
-    processEducation(sections.education, resume);
-  }
-  
-  if (sections.skills?.length > 0) {
-    processSkills(sections.skills, resume);
-  }
-  
-  if (sections.languages?.length > 0) {
-    processLanguages(sections.languages, resume);
-  }
-  
-  if (sections.certifications?.length > 0) {
-    processCertifications(sections.certifications, resume);
+  for (const pattern of phonePatterns) {
+    const phoneMatch = fullText.match(pattern);
+    if (phoneMatch) {
+      const phone = phoneMatch[1].replace(/[^\d\+\(\)\-\s]/g, '');
+      const digitCount = phone.replace(/[^\d]/g, '').length;
+      if (digitCount >= 10 && digitCount <= 15) {
+        resume.personalInfo.phone = phone.trim();
+        break;
+      }
+    }
   }
 };
 
-const identifySections = (lines: string[]) => {
+const identifyMainSections = (lines: string[]) => {
   const sections: { [key: string]: string[] } = {};
   let currentSection = '';
   let sectionStart = -1;
 
-  // Section header patterns based on LinkedIn PDF structure
+  // Section header patterns based on actual LinkedIn PDF structure
   const sectionPatterns = {
-    summary: /^(summary|about|about me|profile|overview)$/i,
-    experience: /^(experience|employment|work history|career|berufserfahrung)$/i,
-    education: /^(education|academic|qualification|ausbildung|bildung)$/i,
-    skills: /^(skills|competencies|technical skills|top skills|fähigkeiten)$/i,
-    languages: /^(languages|sprachen)$/i,
-    certifications: /^(licenses & certifications|certifications|licenses|zertifizierungen)$/i,
-    projects: /^(projects|projekte)$/i,
-    volunteer: /^(volunteer experience|volunteering|ehrenamt)$/i,
-    honors: /^(honors & awards|awards|auszeichnungen)$/i
+    'skills': /^(top skills|skills|competencies|technical skills|fähigkeiten)$/i,
+    'languages': /^(languages|sprachen)$/i,
+    'summary': /^(summary|about|about me|profile|overview)$/i,
+    'experience': /^(experience|employment|work history|career|berufserfahrung)$/i,
+    'education': /^(education|academic|qualification|ausbildung|bildung)$/i,
+    'certifications': /^(licenses & certifications|certifications|licenses|zertifizierungen)$/i,
+    'projects': /^(projects|projekte)$/i,
+    'volunteer': /^(volunteer experience|volunteering|ehrenamt)$/i,
+    'honors': /^(honors & awards|awards|auszeichnungen)$/i,
+    'publications': /^(publications|publikationen)$/i,
+    'patents': /^(patents|patente)$/i,
+    'courses': /^(courses|kurse)$/i,
+    'organizations': /^(organizations|organisationen)$/i,
+    'interests': /^(interests|interessen)$/i
   };
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     let foundSection = '';
 
-    // Check if this line is a section header
+    // Check if this line is a section header (usually bold or standalone)
     for (const [sectionName, pattern] of Object.entries(sectionPatterns)) {
       if (pattern.test(line)) {
         foundSection = sectionName;
@@ -233,7 +240,7 @@ const identifySections = (lines: string[]) => {
     }
 
     if (foundSection) {
-      // Save previous section
+      // Save previous section content
       if (currentSection && sectionStart >= 0) {
         sections[currentSection] = lines.slice(sectionStart, i);
       }
@@ -252,15 +259,127 @@ const identifySections = (lines: string[]) => {
   return sections;
 };
 
-const processSummary = (lines: string[], resume: ResumeData) => {
+const extractSectionData = (sections: { [key: string]: string[] }, resume: ResumeData) => {
+  // Extract Top Skills
+  if (sections.skills) {
+    extractSkills(sections.skills, resume);
+  }
+
+  // Extract Languages
+  if (sections.languages) {
+    extractLanguages(sections.languages, resume);
+  }
+
+  // Extract Summary/About Me
+  if (sections.summary) {
+    extractSummary(sections.summary, resume);
+  }
+
+  // Extract Experience
+  if (sections.experience) {
+    extractExperience(sections.experience, resume);
+  }
+
+  // Extract Education
+  if (sections.education) {
+    extractEducation(sections.education, resume);
+  }
+
+  // Extract Certifications
+  if (sections.certifications) {
+    extractCertifications(sections.certifications, resume);
+  }
+};
+
+const extractSkills = (lines: string[], resume: ResumeData) => {
+  lines.forEach(line => {
+    const cleanLine = line.trim();
+    
+    // Skip lines that look like dates, emails, or other non-skill content
+    if (cleanLine.match(/\d{4}/) || 
+        cleanLine.includes('@') || 
+        cleanLine.includes('http') ||
+        cleanLine.length < 2 ||
+        cleanLine.length > 100) {
+      return;
+    }
+    
+    // Split by common separators and clean up
+    const skills = cleanLine.split(/[,•·\|\n\t]/)
+      .map(skill => skill.trim())
+      .filter(skill => skill.length > 1 && skill.length < 60);
+    
+    skills.forEach(skill => {
+      if (skill.length > 1 && !skill.match(/\d{4}/) && !skill.includes('@')) {
+        resume.skills.push({
+          id: Date.now().toString() + Math.random(),
+          name: skill,
+          level: 'Intermediate'
+        });
+      }
+    });
+  });
+};
+
+const extractLanguages = (lines: string[], resume: ResumeData) => {
+  lines.forEach(line => {
+    const cleanLine = line.trim();
+    
+    // Look for language patterns like "English (Full Professional)" or "Deutsch (Full Professional)"
+    const languageMatch = cleanLine.match(/^([A-Za-zÀ-ÿ\s]+)\s*\(([^)]+)\)$/);
+    
+    if (languageMatch) {
+      resume.languages!.push({
+        id: Date.now().toString() + Math.random(),
+        name: languageMatch[1].trim(),
+        level: languageMatch[2].trim()
+      });
+    }
+    // Handle simple format without parentheses
+    else if (cleanLine.length > 2 && cleanLine.length < 50 && 
+             !cleanLine.match(/\d{4}/) && 
+             !cleanLine.includes('@') &&
+             !cleanLine.includes('http')) {
+      
+      // Check if it contains proficiency keywords
+      const proficiencyKeywords = ['native', 'fluent', 'professional', 'intermediate', 'basic', 'beginner', 'advanced'];
+      const hasProficiency = proficiencyKeywords.some(keyword => 
+        cleanLine.toLowerCase().includes(keyword)
+      );
+      
+      if (hasProficiency) {
+        const parts = cleanLine.split(/[-–]/);
+        if (parts.length >= 2) {
+          resume.languages!.push({
+            id: Date.now().toString() + Math.random(),
+            name: parts[0].trim(),
+            level: parts[1].trim()
+          });
+        }
+      } else {
+        // Simple language name
+        resume.languages!.push({
+          id: Date.now().toString() + Math.random(),
+          name: cleanLine,
+          level: 'Unknown'
+        });
+      }
+    }
+  });
+};
+
+const extractSummary = (lines: string[], resume: ResumeData) => {
   // Join all lines and clean up
   const summaryText = lines
-    .filter(line => 
-      line.length > 10 && 
-      !line.includes('linkedin.com') &&
-      !line.includes('@') &&
-      !line.match(/^\d{4}\s*[-–]\s*/)
-    )
+    .filter(line => {
+      const cleanLine = line.trim();
+      return cleanLine.length > 10 && 
+             !cleanLine.includes('linkedin.com') &&
+             !cleanLine.includes('@') &&
+             !cleanLine.match(/^\d{4}\s*[-–]\s*/) &&
+             !cleanLine.toLowerCase().includes('summary') &&
+             !cleanLine.toLowerCase().includes('about me');
+    })
     .join(' ')
     .trim();
   
@@ -269,7 +388,7 @@ const processSummary = (lines: string[], resume: ResumeData) => {
   }
 };
 
-const processExperience = (lines: string[], resume: ResumeData) => {
+const extractExperience = (lines: string[], resume: ResumeData) => {
   let currentExp: any = null;
   let i = 0;
 
@@ -277,7 +396,17 @@ const processExperience = (lines: string[], resume: ResumeData) => {
     const line = lines[i].trim();
     
     // Look for date patterns that indicate a new job
-    const dateMatch = line.match(/^([A-Za-z]+\s+\d{4}|^\d{4})\s*[-–]\s*([A-Za-z]+\s+\d{4}|\d{4}|Present|Heute|Current)$/i);
+    const datePatterns = [
+      /^([A-Za-z]+\s+\d{4})\s*[-–]\s*([A-Za-z]+\s+\d{4}|Present|Heute|Current)$/i,
+      /^(\d{4})\s*[-–]\s*(\d{4}|Present|Heute|Current)$/i,
+      /^([A-Za-z]+\s+\d{4})\s*[-–]\s*(Present|Heute|Current)$/i
+    ];
+    
+    let dateMatch = null;
+    for (const pattern of datePatterns) {
+      dateMatch = line.match(pattern);
+      if (dateMatch) break;
+    }
     
     if (dateMatch) {
       // Save previous experience
@@ -297,11 +426,13 @@ const processExperience = (lines: string[], resume: ResumeData) => {
         description: []
       };
       
-      // Look backwards for position and company
-      for (let j = i - 1; j >= Math.max(0, i - 3); j--) {
+      // Look backwards for position and company (usually 1-3 lines before dates)
+      for (let j = i - 1; j >= Math.max(0, i - 4); j--) {
         const prevLine = lines[j].trim();
-        if (prevLine && prevLine.length > 2 && prevLine.length < 100 &&
-            !prevLine.match(/\d{4}/) && !prevLine.includes('@')) {
+        if (prevLine && prevLine.length > 2 && prevLine.length < 150 &&
+            !prevLine.match(/\d{4}/) && 
+            !prevLine.includes('@') &&
+            !prevLine.includes('http')) {
           
           if (!currentExp.position) {
             currentExp.position = prevLine;
@@ -312,12 +443,18 @@ const processExperience = (lines: string[], resume: ResumeData) => {
       }
       
       // Look forward for location and description
-      for (let j = i + 1; j < Math.min(lines.length, i + 10); j++) {
+      for (let j = i + 1; j < Math.min(lines.length, i + 15); j++) {
         const nextLine = lines[j].trim();
         
-        // Check for location pattern
+        // Stop if we hit another date pattern (next job)
+        if (nextLine.match(/^([A-Za-z]+\s+\d{4}|^\d{4})\s*[-–]/)) {
+          break;
+        }
+        
+        // Check for location pattern (contains comma, not too long)
         if (nextLine.includes(',') && nextLine.length < 100 && 
-            !nextLine.match(/\d{4}/) && !currentExp.location) {
+            !nextLine.match(/\d{4}/) && !currentExp.location &&
+            !nextLine.includes('@')) {
           currentExp.location = nextLine;
         }
         
@@ -325,13 +462,9 @@ const processExperience = (lines: string[], resume: ResumeData) => {
         else if (nextLine.length > 20 && 
                  !nextLine.match(/^[A-Za-z]+\s+\d{4}\s*[-–]/) &&
                  !nextLine.includes('linkedin.com') &&
-                 currentExp.description.length < 5) {
+                 !nextLine.includes('@') &&
+                 currentExp.description.length < 10) {
           currentExp.description.push(nextLine);
-        }
-        
-        // Stop if we hit another date pattern (next job)
-        if (nextLine.match(/^([A-Za-z]+\s+\d{4}|^\d{4})\s*[-–]/)) {
-          break;
         }
       }
     }
@@ -345,7 +478,7 @@ const processExperience = (lines: string[], resume: ResumeData) => {
   }
 };
 
-const processEducation = (lines: string[], resume: ResumeData) => {
+const extractEducation = (lines: string[], resume: ResumeData) => {
   let currentEdu: any = null;
   
   for (let i = 0; i < lines.length; i++) {
@@ -370,17 +503,37 @@ const processEducation = (lines: string[], resume: ResumeData) => {
         endDate: dateMatch[2]
       };
       
-      // Look backwards for school and degree
-      for (let j = i - 1; j >= Math.max(0, i - 3); j--) {
+      // Look backwards for school and degree (usually 1-3 lines before dates)
+      for (let j = i - 1; j >= Math.max(0, i - 4); j--) {
         const prevLine = lines[j].trim();
         if (prevLine && prevLine.length > 2 && 
-            !prevLine.match(/\d{4}/) && !prevLine.includes('@')) {
+            !prevLine.match(/\d{4}/) && 
+            !prevLine.includes('@') &&
+            !prevLine.includes('http')) {
           
+          // First line back is usually the school
           if (!currentEdu.school) {
             currentEdu.school = prevLine;
-          } else if (!currentEdu.degree && prevLine !== currentEdu.school) {
+          } 
+          // Second line back might be degree
+          else if (!currentEdu.degree && prevLine !== currentEdu.school) {
             currentEdu.degree = prevLine;
           }
+        }
+      }
+      
+      // Look forward for additional info
+      for (let j = i + 1; j < Math.min(lines.length, i + 5); j++) {
+        const nextLine = lines[j].trim();
+        
+        // Stop if we hit another date pattern
+        if (nextLine.match(/^\d{4}\s*[-–]/)) {
+          break;
+        }
+        
+        // Look for location or additional degree info
+        if (nextLine.includes(',') && nextLine.length < 100 && !currentEdu.location) {
+          currentEdu.location = nextLine;
         }
       }
     }
@@ -392,81 +545,28 @@ const processEducation = (lines: string[], resume: ResumeData) => {
   }
 };
 
-const processSkills = (lines: string[], resume: ResumeData) => {
-  // Process each line as potential skills
-  lines.forEach(line => {
-    const cleanLine = line.trim();
-    
-    // Skip lines that look like dates or other non-skill content
-    if (cleanLine.match(/\d{4}/) || 
-        cleanLine.includes('@') || 
-        cleanLine.includes('http') ||
-        cleanLine.length < 2 ||
-        cleanLine.length > 100) {
-      return;
-    }
-    
-    // Split by common separators
-    const skills = cleanLine.split(/[,•·\|\n]/)
-      .map(skill => skill.trim())
-      .filter(skill => skill.length > 1 && skill.length < 50);
-    
-    skills.forEach(skill => {
-      if (skill.length > 1) {
-        resume.skills.push({
-          id: Date.now().toString() + Math.random(),
-          name: skill,
-          level: 'Intermediate'
-        });
-      }
-    });
-  });
-};
-
-const processLanguages = (lines: string[], resume: ResumeData) => {
-  lines.forEach(line => {
-    const cleanLine = line.trim();
-    
-    // Look for language patterns like "English (Full Professional)" or "Deutsch (Full Professional)"
-    const languageMatch = cleanLine.match(/^([A-Za-zÀ-ÿ\s]+)\s*\(([^)]+)\)$/);
-    
-    if (languageMatch) {
-      resume.languages!.push({
-        id: Date.now().toString() + Math.random(),
-        name: languageMatch[1].trim(),
-        level: languageMatch[2].trim()
-      });
-    }
-    // Also handle simple format without parentheses
-    else if (cleanLine.length > 2 && cleanLine.length < 50 && 
-             !cleanLine.match(/\d{4}/) && 
-             !cleanLine.includes('@')) {
-      resume.languages!.push({
-        id: Date.now().toString() + Math.random(),
-        name: cleanLine,
-        level: 'Unknown'
-      });
-    }
-  });
-};
-
-const processCertifications = (lines: string[], resume: ResumeData) => {
+const extractCertifications = (lines: string[], resume: ResumeData) => {
   lines.forEach(line => {
     const cleanLine = line.trim();
     
     if (cleanLine.length > 5 && cleanLine.length < 200 && 
         !cleanLine.match(/^\d{4}\s*[-–]/) &&
-        !cleanLine.includes('@')) {
+        !cleanLine.includes('@') &&
+        !cleanLine.toLowerCase().includes('certification')) {
       
-      // Try to parse certification with issuer
+      // Try to parse certification with issuer and date
       const parts = cleanLine.split(/[-–|]/);
       
       if (parts.length >= 2) {
+        const name = parts[0].trim();
+        const issuer = parts[1].trim();
+        const date = parts[2]?.trim() || 'N/A';
+        
         resume.certifications.push({
           id: Date.now().toString() + Math.random(),
-          name: parts[0].trim(),
-          issuer: parts[1].trim(),
-          date: parts[2]?.trim() || 'N/A'
+          name: name,
+          issuer: issuer,
+          date: date
         });
       } else {
         // Single line certification

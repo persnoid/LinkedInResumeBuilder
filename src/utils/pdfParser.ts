@@ -67,7 +67,7 @@ const groupTextIntoLines = (textItems: Array<{ str: string; x: number; y: number
   return lines.filter(line => line.trim().length > 0);
 };
 
-const parseLinkedInContent = (lines: string[], fullText: string): ResumeData => {
+export const parseLinkedInContent = (lines: string[], fullText: string): ResumeData => {
   const resume: ResumeData = {
     personalInfo: {
       name: '',
@@ -233,7 +233,8 @@ const isHeaderLine = (line: string): boolean => {
     'experience', 'employment', 'work history', 'career',
     'education', 'academic', 'qualification',
     'skills', 'competencies', 'technical skills',
-    'certifications', 'licenses', 'credentials'
+    'certifications', 'licenses', 'credentials',
+    'languages'
   ];
   
   return headerKeywords.some(keyword => 
@@ -260,6 +261,9 @@ const detectSectionType = (lowerLine: string): string => {
   if (lowerLine.includes('certification') || lowerLine.includes('license')) {
     return 'certifications';
   }
+  if (lowerLine.includes('language')) {
+    return 'languages';
+  }
   return '';
 };
 
@@ -279,6 +283,9 @@ const processSection = (sectionType: string, content: string[], resume: ResumeDa
       break;
     case 'certifications':
       processCertificationsSection(content, resume);
+      break;
+    case 'languages':
+      processLanguagesSection(content, resume);
       break;
   }
 };
@@ -446,6 +453,21 @@ const processCertificationsSection = (content: string[], resume: ResumeData) => 
           date: parts[2]?.trim() || 'N/A'
         });
       }
+    }
+  });
+};
+
+const processLanguagesSection = (content: string[], resume: ResumeData) => {
+  resume.languages = resume.languages || [];
+
+  content.forEach(line => {
+    const match = line.match(/([^()]+)\(([^)]+)\)/);
+    if (match) {
+      resume.languages!.push({
+        id: Date.now().toString() + Math.random(),
+        name: match[1].trim(),
+        level: match[2].trim()
+      });
     }
   });
 };

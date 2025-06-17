@@ -45,6 +45,12 @@ export interface Certification {
   url?: string;
 }
 
+export interface Language {
+  id: string;
+  name: string;
+  level: string;
+}
+
 export interface ResumeData {
   personalInfo: PersonalInfo;
   summary: string;
@@ -52,6 +58,7 @@ export interface ResumeData {
   education: Education[];
   skills: Skill[];
   certifications: Certification[];
+  languages?: Language[];
 }
 
 export interface ResumeTemplate {

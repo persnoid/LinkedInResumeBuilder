@@ -61,6 +61,10 @@ export const sampleResumeData: ResumeData = {
     { id: '5', name: 'AWS', level: 'Intermediate' },
     { id: '6', name: 'Docker', level: 'Intermediate' }
   ],
+  languages: [
+    { id: '1', name: 'English', level: 'Fluent' },
+    { id: '2', name: 'German', level: 'Intermediate' }
+  ],
   certifications: [
     {
       id: '1',

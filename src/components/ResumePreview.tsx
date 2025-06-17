@@ -199,6 +199,30 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
     </div>
   );
 
+  const renderLanguages = () => (
+    resumeData.languages && resumeData.languages.length > 0 ? (
+      <div className="mb-6">
+        {renderSectionTitle('Languages')}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {resumeData.languages.map((language) => (
+            <div
+              key={language.id}
+              className="px-3 py-2 rounded-lg text-sm font-medium"
+              style={{ 
+                backgroundColor: customColors.secondary + '20',
+                color: customColors.text,
+                fontFamily 
+              }}
+            >
+              <div className="font-semibold">{language.name}</div>
+              <div className="text-xs opacity-80">{language.level}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : null
+  );
+
   const renderCertifications = () => (
     <div className="mb-6">
       {renderSectionTitle('Certifications')}
@@ -230,6 +254,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
     experience: renderExperience,
     education: renderEducation,
     skills: renderSkills,
+    languages: renderLanguages,
     certifications: renderCertifications
   };
 

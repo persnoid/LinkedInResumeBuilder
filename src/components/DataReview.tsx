@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Edit3, Plus, Trash2, Save, X } from 'lucide-react';
-import { ResumeData, Experience, Education, Skill, Certification } from '../types/resume';
+import { ResumeData, Experience, Education, Skill, Certification, Language } from '../types/resume';
 
 interface DataReviewProps {
   resumeData: ResumeData;
@@ -80,6 +80,25 @@ export const DataReview: React.FC<DataReviewProps> = ({
     });
   };
 
+  const addLanguage = () => {
+    const newLanguage: Language = {
+      id: Date.now().toString(),
+      name: '',
+      level: 'Intermediate'
+    };
+    setLocalData({
+      ...localData,
+      languages: [...(localData.languages || []), newLanguage]
+    });
+  };
+
+  const removeLanguage = (id: string) => {
+    setLocalData({
+      ...localData,
+      languages: (localData.languages || []).filter(lang => lang.id !== id)
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-6">
@@ -153,6 +172,30 @@ export const DataReview: React.FC<DataReviewProps> = ({
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                      <input
+                        type="text"
+                        value={localData.personalInfo.location}
+                        onChange={(e) => setLocalData({
+                          ...localData,
+                          personalInfo: { ...localData.personalInfo, location: e.target.value }
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
+                      <input
+                        type="url"
+                        value={localData.personalInfo.linkedin}
+                        onChange={(e) => setLocalData({
+                          ...localData,
+                          personalInfo: { ...localData.personalInfo, linkedin: e.target.value }
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
                   </div>
                   <div className="flex space-x-3">
                     <button
@@ -188,6 +231,14 @@ export const DataReview: React.FC<DataReviewProps> = ({
                   <div>
                     <span className="text-sm text-gray-500">Phone:</span>
                     <p className="font-medium">{localData.personalInfo.phone}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-500">Location:</span>
+                    <p className="font-medium">{localData.personalInfo.location}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-500">LinkedIn:</span>
+                    <p className="font-medium">{localData.personalInfo.linkedin}</p>
                   </div>
                 </div>
               )}
@@ -282,6 +333,29 @@ export const DataReview: React.FC<DataReviewProps> = ({
                               onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
                               className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
+                            <input
+                              type="text"
+                              placeholder="Location"
+                              value={exp.location}
+                              onChange={(e) => updateExperience(exp.id, 'location', e.target.value)}
+                              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                            <div className="flex space-x-2">
+                              <input
+                                type="text"
+                                placeholder="Start Date"
+                                value={exp.startDate}
+                                onChange={(e) => updateExperience(exp.id, 'startDate', e.target.value)}
+                                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              />
+                              <input
+                                type="text"
+                                placeholder="End Date"
+                                value={exp.endDate}
+                                onChange={(e) => updateExperience(exp.id, 'endDate', e.target.value)}
+                                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              />
+                            </div>
                           </div>
                           <button
                             onClick={() => removeExperience(exp.id)}
@@ -304,6 +378,7 @@ export const DataReview: React.FC<DataReviewProps> = ({
                           <div>
                             <h4 className="font-semibold text-gray-900">{exp.position}</h4>
                             <p className="text-blue-600 font-medium">{exp.company}</p>
+                            {exp.location && <p className="text-sm text-gray-500">{exp.location}</p>}
                           </div>
                           <span className="text-sm text-gray-500">
                             {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
@@ -435,6 +510,98 @@ export const DataReview: React.FC<DataReviewProps> = ({
               )}
             </div>
           </div>
+
+          {/* Languages */}
+          {localData.languages && localData.languages.length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Languages</h3>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={addLanguage}
+                    className="text-green-500 hover:text-green-600 flex items-center"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add
+                  </button>
+                  <button
+                    onClick={() => setEditingSection(editingSection === 'languages' ? null : 'languages')}
+                    className="text-blue-500 hover:text-blue-600 flex items-center"
+                  >
+                    <Edit3 className="w-4 h-4 mr-1" />
+                    Edit
+                  </button>
+                </div>
+              </div>
+              <div className="p-6">
+                {editingSection === 'languages' ? (
+                  <div className="space-y-3">
+                    {localData.languages.map((language) => (
+                      <div key={language.id} className="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg">
+                        <input
+                          type="text"
+                          placeholder="Language"
+                          value={language.name}
+                          onChange={(e) => setLocalData({
+                            ...localData,
+                            languages: localData.languages!.map(l =>
+                              l.id === language.id ? { ...l, name: e.target.value } : l
+                            )
+                          })}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Proficiency Level"
+                          value={language.level}
+                          onChange={(e) => setLocalData({
+                            ...localData,
+                            languages: localData.languages!.map(l =>
+                              l.id === language.id ? { ...l, level: e.target.value } : l
+                            )
+                          })}
+                          className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <button
+                          onClick={() => removeLanguage(language.id)}
+                          className="text-red-500 hover:text-red-600"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                    <div className="flex space-x-3 pt-4">
+                      <button
+                        onClick={handleSave}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center"
+                      >
+                        <Save className="w-4 h-4 mr-1" />
+                        Save
+                      </button>
+                      <button
+                        onClick={handleCancel}
+                        className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md flex items-center"
+                      >
+                        <X className="w-4 h-4 mr-1" />
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {localData.languages.map((language) => (
+                      <span
+                        key={language.id}
+                        className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium"
+                      >
+                        {language.name} ({language.level})
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex justify-between mt-8">

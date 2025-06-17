@@ -13,19 +13,24 @@ export const parsePDFFile = async (file: File): Promise<ResumeData> => {
     });
 
     if (!response.ok) {
+      // If it's a connection error, fall back to client-side parsing
+      if (response.status === 0 || response.status >= 500) {
+        console.warn('Python backend unavailable, falling back to client-side parsing');
+        return await fallbackClientSideParsing(file);
+      }
       throw new Error(`PDF parsing failed: ${response.statusText}`);
     }
 
     const result = await response.json();
     
-    if (result.error) {
-      throw new Error(result.error);
+    if (!result.success || result.error) {
+      throw new Error(result.error || 'PDF parsing failed');
     }
 
     return transformPythonResponse(result.data);
   } catch (error) {
-    console.error('PDF parsing error:', error);
-    // Fallback to client-side parsing if Python service fails
+    console.warn('PDF parsing error, falling back to client-side parsing:', error);
+    // Always fallback to client-side parsing if Python service fails
     return await fallbackClientSideParsing(file);
   }
 };
@@ -84,7 +89,29 @@ const transformPythonResponse = (data: any): ResumeData => {
 
 // Fallback to original client-side parsing if Python service is unavailable
 const fallbackClientSideParsing = async (file: File): Promise<ResumeData> => {
-  // Import the original PDF.js parsing logic as fallback
-  const { parsePDFWithPDFJS } = await import('./fallbackParser');
-  return parsePDFWithPDFJS(file);
+  try {
+    // Import the original PDF.js parsing logic as fallback
+    const { parsePDFWithPDFJS } = await import('./fallbackParser');
+    return parsePDFWithPDFJS(file);
+  } catch (error) {
+    console.error('Fallback parsing also failed:', error);
+    // Return a basic structure with extracted text if all else fails
+    return {
+      personalInfo: {
+        name: '',
+        title: '',
+        email: '',
+        phone: '',
+        location: '',
+        linkedin: '',
+        website: ''
+      },
+      summary: 'PDF parsing failed. Please manually enter your information or try uploading a different PDF file.',
+      experience: [],
+      education: [],
+      skills: [],
+      certifications: [],
+      languages: []
+    };
+  }
 };

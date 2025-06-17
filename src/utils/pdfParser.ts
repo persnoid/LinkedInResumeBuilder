@@ -39,7 +39,7 @@ export const parsePDFFile = async (file: File): Promise<ResumeData> => {
   const lines = groupTextIntoLines(textItems);
   console.log('Extracted lines:', lines.slice(0, 50)); // Debug log
   
-  return parseLinkedInContent(lines);
+  return parseBlockBasedResume(lines);
 };
 
 const groupTextIntoLines = (textItems: Array<{ str: string; x: number; y: number; height: number }>) => {
@@ -69,8 +69,8 @@ const groupTextIntoLines = (textItems: Array<{ str: string; x: number; y: number
   return lines.filter(line => line.trim().length > 0);
 };
 
-const parseLinkedInContent = (lines: string[]): ResumeData => {
-  // Initialize the resume data structure
+// Your exact implementation integrated
+function parseBlockBasedResume(lines: string[]): ResumeData {
   const resume: ResumeData = {
     personalInfo: {
       name: '',
@@ -83,179 +83,205 @@ const parseLinkedInContent = (lines: string[]): ResumeData => {
     },
     summary: '',
     experience: [],
-    education: [],
     skills: [],
+    education: [],
     certifications: [],
     languages: []
   };
 
-  // Step 1: Identify sections
-  const sections = identifySections(lines);
-  console.log('Identified sections:', Object.keys(sections));
+  console.log('Processing lines:', lines.slice(0, 20));
 
-  // Step 2: Extract data from each section
-  extractSectionData(sections, resume);
+  // Step 1: Find section headers and ranges
+  const sectionOrder = [
+    "Personal Information",
+    "Professional Summary", 
+    "Work Experience",
+    "Skills",
+    "Education",
+    "Certifications",
+    "Languages"
+  ];
 
-  console.log('Final parsed resume:', resume);
-  return resume;
-};
+  // Map section to lines
+  const sectionIndices: { [key: string]: number } = {};
+  lines.forEach((line, i) => {
+    sectionOrder.forEach(section => {
+      if (line.trim().toLowerCase() === section.toLowerCase()) {
+        sectionIndices[section] = i;
+        console.log(`Found section "${section}" at line ${i}: "${line}"`);
+      }
+    });
+  });
 
-const identifySections = (lines: string[]) => {
-  const sections: { [key: string]: string[] } = {};
-  let currentSection = '';
-  let sectionStart = -1;
+  console.log('Section indices:', sectionIndices);
 
-  // Section header patterns (case-insensitive)
-  const sectionPatterns = {
-    'personalInfo': /^(personal information|contact|contact information)$/i,
-    'summary': /^(professional summary|summary|about|about me|profile|overview)$/i,
-    'experience': /^(work experience|experience|employment|work history|career)$/i,
-    'skills': /^(skills|top skills|competencies|technical skills)$/i,
-    'education': /^(education|academic|qualification)$/i,
-    'certifications': /^(certifications|licenses & certifications|licenses)$/i,
-    'languages': /^(languages)$/i
-  };
+  // Helper: get lines for a section
+  function getSectionLines(section: string): string[] {
+    const start = sectionIndices[section];
+    if (start === undefined) return [];
+    // Find the next section's start, or end of document
+    const sectionList = sectionOrder.filter(s => s !== section);
+    let end = lines.length;
+    for (let s of sectionList) {
+      if (sectionIndices[s] !== undefined && sectionIndices[s] > start) {
+        end = Math.min(end, sectionIndices[s]);
+      }
+    }
+    const sectionLines = lines.slice(start + 1, end);
+    console.log(`Section "${section}" lines:`, sectionLines);
+    return sectionLines;
+  }
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    let foundSection = '';
+  // Step 2: Parse "Personal Information"
+  getSectionLines("Personal Information").forEach(line => {
+    // Looks for lines like "Name: John Doe"
+    const match = line.match(/^([A-Za-z\s]+):\s*(.*)$/);
+    if (match) {
+      const label = match[1].trim().toLowerCase();
+      const value = match[2].trim();
+      console.log(`Found label "${label}" with value "${value}"`);
+      
+      if (label === "name") resume.personalInfo.name = value;
+      if (label === "title") resume.personalInfo.title = value;
+      if (label === "email") resume.personalInfo.email = value;
+      if (label === "phone") resume.personalInfo.phone = value;
+      if (label === "location") resume.personalInfo.location = value;
+      if (label === "linkedin") resume.personalInfo.linkedin = value;
+    }
+  });
 
-    // Check if this line is a section header
-    for (const [sectionName, pattern] of Object.entries(sectionPatterns)) {
-      if (pattern.test(line)) {
-        foundSection = sectionName;
+  // If no explicit Personal Information section found, extract from header
+  if (!sectionIndices["Personal Information"]) {
+    console.log('No Personal Information section found, extracting from header');
+    extractPersonalInfoFromHeader(lines, resume);
+  }
+
+  // Step 3: Parse "Professional Summary"
+  const summaryLines = getSectionLines("Professional Summary");
+  if (summaryLines.length > 0) {
+    resume.summary = summaryLines.join(' ').trim();
+  } else {
+    // Try alternative section names
+    const alternativeSummaryNames = ["Summary", "About", "About Me", "Profile", "Overview"];
+    for (const altName of alternativeSummaryNames) {
+      const altIndex = lines.findIndex(line => line.trim().toLowerCase() === altName.toLowerCase());
+      if (altIndex !== -1) {
+        const nextSectionIndex = lines.findIndex((line, i) => 
+          i > altIndex && sectionOrder.some(section => 
+            line.trim().toLowerCase() === section.toLowerCase()
+          )
+        );
+        const endIndex = nextSectionIndex !== -1 ? nextSectionIndex : lines.length;
+        resume.summary = lines.slice(altIndex + 1, endIndex).join(' ').trim();
         break;
       }
     }
-
-    if (foundSection) {
-      // Save previous section content
-      if (currentSection && sectionStart >= 0) {
-        sections[currentSection] = lines.slice(sectionStart, i);
-      }
-      
-      // Start new section
-      currentSection = foundSection;
-      sectionStart = i + 1;
-    }
   }
 
-  // Add the last section
-  if (currentSection && sectionStart >= 0) {
-    sections[currentSection] = lines.slice(sectionStart);
-  }
-
-  return sections;
-};
-
-const extractSectionData = (sections: { [key: string]: string[] }, resume: ResumeData) => {
-  // Extract Personal Information using label-based parsing
-  if (sections.personalInfo) {
-    extractPersonalInfo(sections.personalInfo, resume);
-  }
-
-  // Extract Professional Summary
-  if (sections.summary) {
-    extractSummary(sections.summary, resume);
-  }
-
-  // Extract Work Experience
-  if (sections.experience) {
-    extractExperience(sections.experience, resume);
-  }
-
-  // Extract Skills
-  if (sections.skills) {
-    extractSkills(sections.skills, resume);
-  }
-
-  // Extract Education
-  if (sections.education) {
-    extractEducation(sections.education, resume);
-  }
-
-  // Extract Certifications
-  if (sections.certifications) {
-    extractCertifications(sections.certifications, resume);
-  }
-
-  // Extract Languages
-  if (sections.languages) {
-    extractLanguages(sections.languages, resume);
-  }
-
-  // If no explicit Personal Information section, extract from beginning
-  if (!sections.personalInfo) {
-    extractPersonalInfoFromHeader(sections, resume);
-  }
-};
-
-const extractPersonalInfo = (lines: string[], resume: ResumeData) => {
-  // Label-based extraction for Personal Information section
-  const labelPatterns = {
-    name: /^(name|full name):\s*(.+)$/i,
-    title: /^(title|position|job title|headline):\s*(.+)$/i,
-    email: /^(email|email address|e-mail):\s*(.+)$/i,
-    phone: /^(phone|phone number|telephone|mobile):\s*(.+)$/i,
-    location: /^(location|address|city|residence):\s*(.+)$/i,
-    linkedin: /^(linkedin|linkedin profile|linkedin url):\s*(.+)$/i
-  };
-
-  lines.forEach(line => {
-    const cleanLine = line.trim();
-    
-    // Check for label:value patterns
-    for (const [field, pattern] of Object.entries(labelPatterns)) {
-      const match = cleanLine.match(pattern);
-      if (match && match[2]) {
-        const value = match[2].trim();
+  // Step 4: Parse "Skills"
+  const skillsLines = getSectionLines("Skills");
+  if (skillsLines.length > 0) {
+    skillsLines.forEach(line => {
+      const cleanLine = line.trim();
+      if (cleanLine.length > 0 && !cleanLine.match(/^\d{4}/)) {
+        // Split by common separators and add each skill
+        const skills = cleanLine.split(/[,•·\|\n\t]/)
+          .map(skill => skill.trim())
+          .filter(skill => skill.length > 1 && skill.length < 60);
         
-        switch (field) {
-          case 'name':
-            resume.personalInfo.name = value;
-            break;
-          case 'title':
-            resume.personalInfo.title = value;
-            break;
-          case 'email':
-            resume.personalInfo.email = value;
-            break;
-          case 'phone':
-            resume.personalInfo.phone = value;
-            break;
-          case 'location':
-            resume.personalInfo.location = value;
-            break;
-          case 'linkedin':
-            resume.personalInfo.linkedin = value;
-            break;
-        }
-        return; // Found a match, move to next line
+        skills.forEach(skill => {
+          resume.skills.push({
+            id: Date.now().toString() + Math.random(),
+            name: skill,
+            level: 'Intermediate'
+          });
+        });
+      }
+    });
+  } else {
+    // Try alternative section names
+    const alternativeSkillNames = ["Top Skills", "Technical Skills", "Competencies"];
+    for (const altName of alternativeSkillNames) {
+      const altIndex = lines.findIndex(line => line.trim().toLowerCase() === altName.toLowerCase());
+      if (altIndex !== -1) {
+        const nextSectionIndex = lines.findIndex((line, i) => 
+          i > altIndex && sectionOrder.some(section => 
+            line.trim().toLowerCase() === section.toLowerCase()
+          )
+        );
+        const endIndex = nextSectionIndex !== -1 ? nextSectionIndex : lines.length;
+        const altSkillsLines = lines.slice(altIndex + 1, endIndex);
+        
+        altSkillsLines.forEach(line => {
+          const cleanLine = line.trim();
+          if (cleanLine.length > 0 && !cleanLine.match(/^\d{4}/)) {
+            const skills = cleanLine.split(/[,•·\|\n\t]/)
+              .map(skill => skill.trim())
+              .filter(skill => skill.length > 1 && skill.length < 60);
+            
+            skills.forEach(skill => {
+              resume.skills.push({
+                id: Date.now().toString() + Math.random(),
+                name: skill,
+                level: 'Intermediate'
+              });
+            });
+          }
+        });
+        break;
       }
     }
+  }
 
-    // If no label found, check for standalone values
-    if (cleanLine.includes('@') && !resume.personalInfo.email) {
-      const emailMatch = cleanLine.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
-      if (emailMatch) {
-        resume.personalInfo.email = emailMatch[1];
+  // Step 5: Parse "Work Experience"
+  const experienceLines = getSectionLines("Work Experience");
+  if (experienceLines.length > 0) {
+    parseExperienceSection(experienceLines, resume);
+  } else {
+    // Try alternative section names
+    const alternativeExpNames = ["Experience", "Employment", "Work History", "Career"];
+    for (const altName of alternativeExpNames) {
+      const altIndex = lines.findIndex(line => line.trim().toLowerCase() === altName.toLowerCase());
+      if (altIndex !== -1) {
+        const nextSectionIndex = lines.findIndex((line, i) => 
+          i > altIndex && sectionOrder.some(section => 
+            line.trim().toLowerCase() === section.toLowerCase()
+          )
+        );
+        const endIndex = nextSectionIndex !== -1 ? nextSectionIndex : lines.length;
+        const altExpLines = lines.slice(altIndex + 1, endIndex);
+        parseExperienceSection(altExpLines, resume);
+        break;
       }
     }
-    
-    if (cleanLine.includes('linkedin.com') && !resume.personalInfo.linkedin) {
-      const linkedinMatch = cleanLine.match(/((?:https?:\/\/)?(?:www\.)?linkedin\.com\/[^\s]+)/);
-      if (linkedinMatch) {
-        resume.personalInfo.linkedin = linkedinMatch[1];
-      }
-    }
-  });
-};
+  }
 
-const extractPersonalInfoFromHeader = (sections: { [key: string]: string[] }, resume: ResumeData) => {
-  // Extract from the beginning of the document if no explicit Personal Info section
-  const allLines = Object.values(sections).flat();
-  const headerLines = allLines.slice(0, 20); // First 20 lines
+  // Step 6: Parse "Education"
+  const educationLines = getSectionLines("Education");
+  if (educationLines.length > 0) {
+    parseEducationSection(educationLines, resume);
+  }
 
+  // Step 7: Parse "Languages"
+  const languageLines = getSectionLines("Languages");
+  if (languageLines.length > 0) {
+    parseLanguagesSection(languageLines, resume);
+  }
+
+  // Step 8: Parse "Certifications"
+  const certificationLines = getSectionLines("Certifications");
+  if (certificationLines.length > 0) {
+    parseCertificationsSection(certificationLines, resume);
+  }
+
+  console.log('Final parsed resume:', resume);
+  return resume;
+}
+
+// Helper function to extract personal info from header when no explicit section exists
+function extractPersonalInfoFromHeader(lines: string[], resume: ResumeData) {
+  const headerLines = lines.slice(0, 20); // First 20 lines
+  
   // Extract name (usually first substantial line)
   for (const line of headerLines) {
     const cleanLine = line.trim();
@@ -303,28 +329,10 @@ const extractPersonalInfoFromHeader = (sections: { [key: string]: string[] }, re
       resume.personalInfo.location = locationMatch[1].trim();
     }
   }
-};
+}
 
-const extractSummary = (lines: string[], resume: ResumeData) => {
-  // Join all lines and clean up
-  const summaryText = lines
-    .filter(line => {
-      const cleanLine = line.trim();
-      return cleanLine.length > 10 && 
-             !cleanLine.toLowerCase().includes('summary') &&
-             !cleanLine.toLowerCase().includes('about me') &&
-             !cleanLine.includes('linkedin.com') &&
-             !cleanLine.includes('@');
-    })
-    .join(' ')
-    .trim();
-  
-  if (summaryText.length > 20) {
-    resume.summary = summaryText;
-  }
-};
-
-const extractExperience = (lines: string[], resume: ResumeData) => {
+// Helper function to parse experience section
+function parseExperienceSection(lines: string[], resume: ResumeData) {
   let currentExp: any = null;
   let i = 0;
 
@@ -400,36 +408,10 @@ const extractExperience = (lines: string[], resume: ResumeData) => {
   if (currentExp && (currentExp.position || currentExp.company)) {
     resume.experience.push(currentExp);
   }
-};
+}
 
-const extractSkills = (lines: string[], resume: ResumeData) => {
-  lines.forEach(line => {
-    const cleanLine = line.trim();
-    
-    // Skip lines that look like dates, emails, or other non-skill content
-    if (cleanLine.match(/\d{4}/) || cleanLine.includes('@') || 
-        cleanLine.length < 2 || cleanLine.length > 100) {
-      return;
-    }
-    
-    // Split by common separators
-    const skills = cleanLine.split(/[,•·\|\n\t]/)
-      .map(skill => skill.trim())
-      .filter(skill => skill.length > 1 && skill.length < 60);
-    
-    skills.forEach(skill => {
-      if (skill.length > 1 && !skill.match(/\d{4}/) && !skill.includes('@')) {
-        resume.skills.push({
-          id: Date.now().toString() + Math.random(),
-          name: skill,
-          level: 'Intermediate'
-        });
-      }
-    });
-  });
-};
-
-const extractEducation = (lines: string[], resume: ResumeData) => {
+// Helper function to parse education section
+function parseEducationSection(lines: string[], resume: ResumeData) {
   let currentEdu: any = null;
   
   for (let i = 0; i < lines.length; i++) {
@@ -472,38 +454,10 @@ const extractEducation = (lines: string[], resume: ResumeData) => {
   if (currentEdu && (currentEdu.degree || currentEdu.school)) {
     resume.education.push(currentEdu);
   }
-};
+}
 
-const extractCertifications = (lines: string[], resume: ResumeData) => {
-  lines.forEach(line => {
-    const cleanLine = line.trim();
-    
-    if (cleanLine.length > 5 && cleanLine.length < 200 && 
-        !cleanLine.match(/^\d{4}\s*[-–]/) && !cleanLine.includes('@')) {
-      
-      // Try to parse certification with issuer and date
-      const parts = cleanLine.split(/[-–|]/);
-      
-      if (parts.length >= 2) {
-        resume.certifications.push({
-          id: Date.now().toString() + Math.random(),
-          name: parts[0].trim(),
-          issuer: parts[1].trim(),
-          date: parts[2]?.trim() || 'N/A'
-        });
-      } else {
-        resume.certifications.push({
-          id: Date.now().toString() + Math.random(),
-          name: cleanLine,
-          issuer: 'N/A',
-          date: 'N/A'
-        });
-      }
-    }
-  });
-};
-
-const extractLanguages = (lines: string[], resume: ResumeData) => {
+// Helper function to parse languages section
+function parseLanguagesSection(lines: string[], resume: ResumeData) {
   lines.forEach(line => {
     const cleanLine = line.trim();
     
@@ -546,4 +500,34 @@ const extractLanguages = (lines: string[], resume: ResumeData) => {
       }
     }
   });
-};
+}
+
+// Helper function to parse certifications section
+function parseCertificationsSection(lines: string[], resume: ResumeData) {
+  lines.forEach(line => {
+    const cleanLine = line.trim();
+    
+    if (cleanLine.length > 5 && cleanLine.length < 200 && 
+        !cleanLine.match(/^\d{4}\s*[-–]/) && !cleanLine.includes('@')) {
+      
+      // Try to parse certification with issuer and date
+      const parts = cleanLine.split(/[-–|]/);
+      
+      if (parts.length >= 2) {
+        resume.certifications.push({
+          id: Date.now().toString() + Math.random(),
+          name: parts[0].trim(),
+          issuer: parts[1].trim(),
+          date: parts[2]?.trim() || 'N/A'
+        });
+      } else {
+        resume.certifications.push({
+          id: Date.now().toString() + Math.random(),
+          name: cleanLine,
+          issuer: 'N/A',
+          date: 'N/A'
+        });
+      }
+    }
+  });
+}

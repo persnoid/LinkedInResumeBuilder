@@ -21,9 +21,9 @@ CORS(app)
 try:
     ai_parser = AILinkedInPDFParser()
     AI_AVAILABLE = True
-    print("✅ AI-powered parsing initialized successfully")
+    print("[SUCCESS] AI-powered parsing initialized successfully")
 except ValueError as e:
-    print(f"❌ AI parsing not available - {e}")
+    print(f"[ERROR] AI parsing not available - {e}")
     AI_AVAILABLE = False
     ai_parser = None
 
@@ -98,14 +98,14 @@ def get_config():
     })
 
 if __name__ == '__main__':
-    print(f"🚀 Starting AI-Powered PDF Parser API...")
-    print(f"🤖 AI Parsing Available: {AI_AVAILABLE}")
-    print(f"🔑 OpenAI API Key Configured: {bool(os.getenv('OPENAI_API_KEY'))}")
+    print(f"[STARTUP] Starting AI-Powered PDF Parser API...")
+    print(f"[CONFIG] AI Parsing Available: {AI_AVAILABLE}")
+    print(f"[CONFIG] OpenAI API Key Configured: {bool(os.getenv('OPENAI_API_KEY'))}")
     
     if not AI_AVAILABLE:
-        print("⚠️  AI parsing is disabled. Set OPENAI_API_KEY environment variable to enable.")
-        print("📝 Create a .env file with: OPENAI_API_KEY=your_api_key_here")
+        print("[WARNING] AI parsing is disabled. Set OPENAI_API_KEY environment variable to enable.")
+        print("[SETUP] Create a .env file with: OPENAI_API_KEY=your_api_key_here")
     else:
-        print("✨ AI-powered parsing ready! Upload LinkedIn PDFs for intelligent extraction.")
+        print("[READY] AI-powered parsing ready! Upload LinkedIn PDFs for intelligent extraction.")
     
     app.run(host='0.0.0.0', port=5000, debug=True)

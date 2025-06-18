@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-LinkedIn PDF Parser using PyMuPDF (fitz)
-Extracts structured data from LinkedIn profile PDFs
+Enhanced LinkedIn PDF Parser using PyMuPDF (fitz)
+Extracts structured data from LinkedIn profile PDFs with improved parsing logic
 """
 
 import fitz  # PyMuPDF
@@ -92,89 +92,480 @@ class ResumeData:
 
 class LinkedInPDFParser:
     def __init__(self):
+        # Enhanced section headers for better LinkedIn PDF recognition
         self.section_headers = {
-            'personal': ['personal information', 'contact', 'contact information'],
-            'summary': ['summary', 'about', 'about me', 'professional summary'],
-            'experience': ['experience', 'work experience', 'professional experience', 'employment'],
-            'education': ['education', 'academic background'],
-            'skills': ['skills', 'top skills', 'core competencies', 'technical skills'],
-            'certifications': ['certifications', 'licenses & certifications', 'certificates'],
-            'languages': ['languages', 'language skills']
+            'personal': [
+                'contact', 'contact information', 'personal information',
+                'kontakt', 'kontaktinformationen', 'persönliche informationen'
+            ],
+            'summary': [
+                'summary', 'about', 'about me', 'professional summary', 'profile',
+                'zusammenfassung', 'über mich', 'profil', 'berufliches profil'
+            ],
+            'experience': [
+                'experience', 'work experience', 'professional experience', 'employment',
+                'career', 'work history', 'berufserfahrung', 'arbeitserfahrung',
+                'karriere', 'beruflicher werdegang'
+            ],
+            'education': [
+                'education', 'academic background', 'studies', 'university',
+                'bildung', 'ausbildung', 'studium', 'akademischer hintergrund'
+            ],
+            'skills': [
+                'skills', 'top skills', 'core competencies', 'technical skills',
+                'competencies', 'abilities', 'fähigkeiten', 'kompetenzen',
+                'fertigkeiten', 'kenntnisse'
+            ],
+            'certifications': [
+                'certifications', 'licenses & certifications', 'certificates',
+                'licenses', 'zertifikate', 'zertifizierungen', 'lizenzen'
+            ],
+            'languages': [
+                'languages', 'language skills', 'sprachen', 'sprachkenntnisse'
+            ]
+        }
+        
+        # Common LinkedIn PDF patterns
+        self.linkedin_patterns = {
+            'email': r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}',
+            'phone': r'[\+]?[\d\s\-\(\)]{10,}',
+            'linkedin_url': r'linkedin\.com/in/[^\s]+',
+            'website': r'(?:https?://)?(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:/[^\s]*)?',
+            'date_range': r'(\w+\s+\d{4}|\d{4})\s*[-–]\s*(\w+\s+\d{4}|\d{4}|Present|Current|Heute|Aktuell)',
+            'location': r'[A-Za-zÀ-ÿ\s,\-]+(?:,\s*[A-Za-zÀ-ÿ\s]+)*'
         }
         
     def parse_pdf(self, pdf_path: str) -> ResumeData:
-        """Parse LinkedIn PDF and extract structured data"""
+        """Enhanced PDF parsing with better text extraction and positioning"""
         try:
             doc = fitz.open(pdf_path)
             
-            # Extract text with positioning
-            text_blocks = []
-            for page_num in range(len(doc)):
-                page = doc[page_num]
-                blocks = page.get_text("dict")
-                
-                for block in blocks["blocks"]:
-                    if "lines" in block:
-                        for line in block["lines"]:
-                            line_text = ""
-                            for span in line["spans"]:
-                                line_text += span["text"]
-                            if line_text.strip():
-                                text_blocks.append({
-                                    'text': line_text.strip(),
-                                    'bbox': line["bbox"],
-                                    'page': page_num
-                                })
-            
+            # Extract text with enhanced positioning and formatting
+            structured_content = self._extract_structured_content(doc)
             doc.close()
             
-            # Sort blocks by position (top to bottom, left to right)
-            text_blocks.sort(key=lambda x: (x['page'], -x['bbox'][1], x['bbox'][0]))
-            
-            # Extract lines of text
-            lines = [block['text'] for block in text_blocks]
-            
-            return self._parse_structured_data(lines)
+            # Parse the structured content
+            return self._parse_structured_data(structured_content)
             
         except Exception as e:
             raise Exception(f"Error parsing PDF: {str(e)}")
     
-    def _parse_structured_data(self, lines: List[str]) -> ResumeData:
-        """Parse lines into structured resume data"""
+    def _extract_structured_content(self, doc) -> Dict[str, Any]:
+        """Extract text with positioning, font size, and formatting information"""
+        content = {
+            'text_blocks': [],
+            'lines': [],
+            'fonts': {},
+            'page_count': len(doc)
+        }
+        
+        for page_num in range(len(doc)):
+            page = doc[page_num]
+            
+            # Get text with detailed formatting
+            text_dict = page.get_text("dict")
+            
+            for block in text_dict["blocks"]:
+                if "lines" in block:
+                    for line in block["lines"]:
+                        line_text = ""
+                        line_fonts = []
+                        
+                        for span in line["spans"]:
+                            text = span["text"].strip()
+                            if text:
+                                line_text += text + " "
+                                font_info = {
+                                    'font': span.get('font', ''),
+                                    'size': span.get('size', 12),
+                                    'flags': span.get('flags', 0),
+                                    'color': span.get('color', 0)
+                                }
+                                line_fonts.append(font_info)
+                        
+                        if line_text.strip():
+                            content['text_blocks'].append({
+                                'text': line_text.strip(),
+                                'bbox': line["bbox"],
+                                'page': page_num,
+                                'fonts': line_fonts,
+                                'is_bold': any(f.get('flags', 0) & 2**4 for f in line_fonts),
+                                'font_size': max([f.get('size', 12) for f in line_fonts]) if line_fonts else 12
+                            })
+        
+        # Sort by position (top to bottom, left to right)
+        content['text_blocks'].sort(key=lambda x: (x['page'], -x['bbox'][1], x['bbox'][0]))
+        content['lines'] = [block['text'] for block in content['text_blocks']]
+        
+        return content
+    
+    def _parse_structured_data(self, content: Dict[str, Any]) -> ResumeData:
+        """Enhanced parsing with better section detection and data extraction"""
         resume = ResumeData(personal_info=PersonalInfo())
         
-        # Find section boundaries
-        sections = self._identify_sections(lines)
+        lines = content['lines']
+        text_blocks = content['text_blocks']
         
-        # Parse each section
-        resume.personal_info = self._parse_personal_info(lines, sections)
-        resume.summary = self._parse_summary(lines, sections)
-        resume.experience = self._parse_experience(lines, sections)
-        resume.education = self._parse_education(lines, sections)
-        resume.skills = self._parse_skills(lines, sections)
-        resume.certifications = self._parse_certifications(lines, sections)
-        resume.languages = self._parse_languages(lines, sections)
+        # Identify sections using enhanced detection
+        sections = self._identify_sections_enhanced(lines, text_blocks)
+        
+        # Parse each section with improved logic
+        resume.personal_info = self._parse_personal_info_enhanced(lines, text_blocks, sections)
+        resume.summary = self._parse_summary_enhanced(lines, sections)
+        resume.experience = self._parse_experience_enhanced(lines, text_blocks, sections)
+        resume.education = self._parse_education_enhanced(lines, sections)
+        resume.skills = self._parse_skills_enhanced(lines, sections)
+        resume.certifications = self._parse_certifications_enhanced(lines, sections)
+        resume.languages = self._parse_languages_enhanced(lines, sections)
         
         return resume
     
-    def _identify_sections(self, lines: List[str]) -> Dict[str, List[int]]:
-        """Identify section headers and their line ranges"""
+    def _identify_sections_enhanced(self, lines: List[str], text_blocks: List[Dict]) -> Dict[str, List[int]]:
+        """Enhanced section detection using font size, formatting, and content analysis"""
         sections = {}
         
-        for i, line in enumerate(lines):
+        for i, (line, block) in enumerate(zip(lines, text_blocks)):
             line_lower = line.lower().strip()
             
-            for section_type, headers in self.section_headers.items():
-                for header in headers:
-                    if line_lower == header or line_lower == header + ':':
-                        if section_type not in sections:
-                            sections[section_type] = []
-                        sections[section_type].append(i)
+            # Check if this looks like a section header
+            is_potential_header = (
+                block['is_bold'] or 
+                block['font_size'] > 12 or
+                line.isupper() or
+                line.endswith(':')
+            )
+            
+            if is_potential_header:
+                for section_type, headers in self.section_headers.items():
+                    for header in headers:
+                        # More flexible matching
+                        if (header in line_lower or 
+                            line_lower.startswith(header) or
+                            line_lower == header.replace(' ', '') or
+                            line_lower == header + ':'):
+                            
+                            if section_type not in sections:
+                                sections[section_type] = []
+                            sections[section_type].append(i)
+                            break
         
         return sections
     
-    def _get_section_lines(self, lines: List[str], sections: Dict[str, List[int]], 
-                          section_type: str) -> List[str]:
+    def _parse_personal_info_enhanced(self, lines: List[str], text_blocks: List[Dict], sections: Dict[str, List[int]]) -> PersonalInfo:
+        """Enhanced personal information extraction"""
+        personal_info = PersonalInfo()
+        
+        # Look in the first 15 lines for personal info (LinkedIn PDFs typically have this at the top)
+        header_lines = lines[:15]
+        
+        for i, line in enumerate(header_lines):
+            # Name detection (usually the largest text at the top)
+            if not personal_info.name and i < len(text_blocks):
+                block = text_blocks[i]
+                if (block['font_size'] >= 16 and 
+                    re.match(r'^[A-Za-zÀ-ÿ\s.\'-]+$', line) and 
+                    len(line.split()) <= 4 and
+                    not any(pattern in line.lower() for pattern in ['email', 'phone', 'linkedin', '@'])):
+                    personal_info.name = line.strip()
+                    continue
+            
+            # Title/headline (usually after name, medium font size)
+            if (personal_info.name and not personal_info.title and 
+                i > 0 and i < len(text_blocks)):
+                block = text_blocks[i]
+                if (block['font_size'] >= 12 and 
+                    not re.search(self.linkedin_patterns['email'], line) and
+                    not re.search(self.linkedin_patterns['phone'], line) and
+                    'linkedin.com' not in line.lower() and
+                    len(line) > 5):
+                    personal_info.title = line.strip()
+                    continue
+            
+            # Extract contact information using patterns
+            email_match = re.search(self.linkedin_patterns['email'], line)
+            if email_match and not personal_info.email:
+                personal_info.email = email_match.group()
+            
+            phone_match = re.search(self.linkedin_patterns['phone'], line)
+            if phone_match and not personal_info.phone and '@' not in line:
+                personal_info.phone = phone_match.group().strip()
+            
+            linkedin_match = re.search(self.linkedin_patterns['linkedin_url'], line, re.IGNORECASE)
+            if linkedin_match and not personal_info.linkedin:
+                personal_info.linkedin = linkedin_match.group()
+            
+            # Website detection (excluding email and LinkedIn)
+            if not personal_info.website and not personal_info.email in line and 'linkedin.com' not in line.lower():
+                website_match = re.search(self.linkedin_patterns['website'], line)
+                if website_match:
+                    personal_info.website = website_match.group()
+        
+        # Location detection (often appears with other contact info)
+        for line in header_lines:
+            if not personal_info.location:
+                # Look for location patterns
+                if (not re.search(self.linkedin_patterns['email'], line) and
+                    not re.search(self.linkedin_patterns['phone'], line) and
+                    'linkedin.com' not in line.lower() and
+                    (',' in line or any(loc in line.lower() for loc in 
+                     ['germany', 'deutschland', 'berlin', 'munich', 'münchen', 'hamburg', 
+                      'usa', 'united states', 'uk', 'london', 'paris', 'france']))):
+                    
+                    # Clean and validate location
+                    potential_location = re.sub(r'[^\w\s,\-À-ÿ]', '', line).strip()
+                    if (len(potential_location) < 50 and 
+                        len(potential_location.split()) <= 6 and
+                        not any(word in potential_location.lower() for word in 
+                               ['engineer', 'developer', 'manager', 'director', 'analyst'])):
+                        personal_info.location = potential_location
+        
+        return personal_info
+    
+    def _parse_summary_enhanced(self, lines: List[str], sections: Dict[str, List[int]]) -> str:
+        """Enhanced summary parsing"""
+        summary_lines = self._get_section_lines(lines, sections, 'summary')
+        
+        if summary_lines:
+            # Clean and join summary lines
+            summary = ' '.join(summary_lines)
+            # Remove common LinkedIn PDF artifacts
+            summary = re.sub(r'\s+', ' ', summary)
+            summary = summary.strip()
+            return summary
+        
+        return ""
+    
+    def _parse_experience_enhanced(self, lines: List[str], text_blocks: List[Dict], sections: Dict[str, List[int]]) -> List[Experience]:
+        """Enhanced experience parsing with better date and company detection"""
+        exp_lines = self._get_section_lines(lines, sections, 'experience')
+        experiences = []
+        
+        current_exp = None
+        i = 0
+        
+        while i < len(exp_lines):
+            line = exp_lines[i].strip()
+            
+            # Look for date patterns to identify new experience entries
+            date_match = re.search(self.linkedin_patterns['date_range'], line, re.IGNORECASE)
+            
+            if date_match:
+                # Save previous experience
+                if current_exp:
+                    experiences.append(current_exp)
+                
+                # Create new experience
+                current_exp = Experience(
+                    id=str(len(experiences) + 1),
+                    start_date=date_match.group(1),
+                    end_date=date_match.group(2),
+                    current='present' in date_match.group(2).lower() or 'current' in date_match.group(2).lower()
+                )
+                
+                # Look for position and company in surrounding lines
+                self._extract_job_details(exp_lines, i, current_exp)
+                
+            elif current_exp and line and not re.match(r'^\d{4}', line):
+                # Add to description if it's not a date and we have a current experience
+                if (len(line) > 10 and 
+                    not any(keyword in line.lower() for keyword in ['page', 'linkedin', 'generated'])):
+                    current_exp.description.append(line)
+            
+            i += 1
+        
+        # Add last experience
+        if current_exp:
+            experiences.append(current_exp)
+        
+        return experiences
+    
+    def _extract_job_details(self, lines: List[str], date_line_idx: int, experience: Experience):
+        """Extract job position, company, and location from surrounding lines"""
+        # Look in lines before and after the date line
+        search_range = range(max(0, date_line_idx - 3), min(len(lines), date_line_idx + 3))
+        
+        for i in search_range:
+            if i == date_line_idx:
+                continue
+                
+            line = lines[i].strip()
+            if not line:
+                continue
+            
+            # Position detection (often contains job titles)
+            if not experience.position and any(title in line.lower() for title in 
+                ['engineer', 'developer', 'manager', 'director', 'analyst', 'consultant', 
+                 'specialist', 'lead', 'senior', 'junior', 'intern', 'cto', 'ceo', 'founder']):
+                experience.position = line
+            
+            # Company detection (usually a proper noun, not too long)
+            elif (not experience.company and 
+                  len(line) < 80 and 
+                  not any(word in line.lower() for word in ['at', 'in', 'from', 'to', 'since']) and
+                  not re.search(self.linkedin_patterns['date_range'], line)):
+                experience.company = line
+            
+            # Location detection
+            elif (not experience.location and 
+                  (',' in line or any(loc in line.lower() for loc in 
+                   ['germany', 'usa', 'uk', 'berlin', 'munich', 'london', 'paris']))):
+                experience.location = line
+    
+    def _parse_education_enhanced(self, lines: List[str], sections: Dict[str, List[int]]) -> List[Education]:
+        """Enhanced education parsing"""
+        edu_lines = self._get_section_lines(lines, sections, 'education')
+        education = []
+        
+        current_edu = None
+        
+        for line in edu_lines:
+            line = line.strip()
+            if not line:
+                continue
+            
+            # Date pattern for education
+            date_match = re.search(r'(\d{4})\s*[-–]\s*(\d{4})', line)
+            
+            if date_match:
+                if current_edu:
+                    education.append(current_edu)
+                
+                current_edu = Education(
+                    id=str(len(education) + 1),
+                    start_date=date_match.group(1),
+                    end_date=date_match.group(2)
+                )
+            
+            elif current_edu and line:
+                # Degree detection
+                if any(degree in line.lower() for degree in 
+                      ['bachelor', 'master', 'phd', 'diploma', 'certificate', 'degree']):
+                    current_edu.degree = line
+                # School detection
+                elif not current_edu.school:
+                    current_edu.school = line
+                # Additional info
+                else:
+                    if not current_edu.description:
+                        current_edu.description = line
+        
+        if current_edu:
+            education.append(current_edu)
+        
+        return education
+    
+    def _parse_skills_enhanced(self, lines: List[str], sections: Dict[str, List[int]]) -> List[Skill]:
+        """Enhanced skills parsing with better separation and categorization"""
+        skill_lines = self._get_section_lines(lines, sections, 'skills')
+        skills = []
+        
+        for line in skill_lines:
+            line = line.strip()
+            if not line or len(line) < 2:
+                continue
+            
+            # Split skills by various separators
+            skill_items = re.split(r'[,•·\|\n\t]|(?:\s{2,})', line)
+            
+            for skill_item in skill_items:
+                skill_name = skill_item.strip()
+                
+                # Filter out non-skill items
+                if (skill_name and 
+                    len(skill_name) > 1 and 
+                    len(skill_name) < 50 and
+                    not skill_name.isdigit() and
+                    not any(word in skill_name.lower() for word in 
+                           ['page', 'linkedin', 'generated', 'years', 'experience'])):
+                    
+                    skills.append(Skill(
+                        id=str(len(skills) + 1),
+                        name=skill_name,
+                        level="Intermediate"
+                    ))
+        
+        return skills
+    
+    def _parse_certifications_enhanced(self, lines: List[str], sections: Dict[str, List[int]]) -> List[Certification]:
+        """Enhanced certifications parsing"""
+        cert_lines = self._get_section_lines(lines, sections, 'certifications')
+        certifications = []
+        
+        for line in cert_lines:
+            line = line.strip()
+            if not line:
+                continue
+            
+            # Try to parse certification with issuer and date
+            parts = re.split(r'[-–|]', line)
+            if len(parts) >= 2:
+                cert_name = parts[0].strip()
+                issuer = parts[1].strip()
+                date = parts[2].strip() if len(parts) > 2 else ""
+                
+                # Extract date from issuer if it contains a date
+                date_match = re.search(r'\b\d{4}\b', issuer)
+                if date_match and not date:
+                    date = date_match.group()
+                    issuer = re.sub(r'\b\d{4}\b', '', issuer).strip()
+                
+                certifications.append(Certification(
+                    id=str(len(certifications) + 1),
+                    name=cert_name,
+                    issuer=issuer,
+                    date=date
+                ))
+            else:
+                # Simple certification without clear structure
+                certifications.append(Certification(
+                    id=str(len(certifications) + 1),
+                    name=line,
+                    issuer="",
+                    date=""
+                ))
+        
+        return certifications
+    
+    def _parse_languages_enhanced(self, lines: List[str], sections: Dict[str, List[int]]) -> List[Language]:
+        """Enhanced languages parsing"""
+        lang_lines = self._get_section_lines(lines, sections, 'languages')
+        languages = []
+        
+        for line in lang_lines:
+            line = line.strip()
+            if not line:
+                continue
+            
+            # Pattern: Language (Proficiency) or Language - Proficiency
+            patterns = [
+                r'^(.+?)\s*\((.+?)\)$',
+                r'^(.+?)\s*[-–]\s*(.+?)$',
+                r'^(.+?)\s*:\s*(.+?)$'
+            ]
+            
+            matched = False
+            for pattern in patterns:
+                lang_match = re.match(pattern, line)
+                if lang_match:
+                    languages.append(Language(
+                        id=str(len(languages) + 1),
+                        name=lang_match.group(1).strip(),
+                        level=lang_match.group(2).strip()
+                    ))
+                    matched = True
+                    break
+            
+            if not matched:
+                # Simple language without proficiency level
+                languages.append(Language(
+                    id=str(len(languages) + 1),
+                    name=line,
+                    level=""
+                ))
+        
+        return languages
+    
+    def _get_section_lines(self, lines: List[str], sections: Dict[str, List[int]], section_type: str) -> List[str]:
         """Get lines belonging to a specific section"""
         if section_type not in sections:
             return []
@@ -194,229 +585,9 @@ class LinkedInPDFParser:
             section_lines.extend([line.strip() for line in section_content if line.strip()])
         
         return section_lines
-    
-    def _parse_personal_info(self, lines: List[str], sections: Dict[str, List[int]]) -> PersonalInfo:
-        """Parse personal information"""
-        personal_info = PersonalInfo()
-        
-        # Get explicit personal info section
-        personal_lines = self._get_section_lines(lines, sections, 'personal')
-        
-        # Parse label-value pairs
-        for line in personal_lines:
-            if ':' in line:
-                label, value = line.split(':', 1)
-                label = label.strip().lower()
-                value = value.strip()
-                
-                if label in ['name', 'full name']:
-                    personal_info.name = value
-                elif label in ['title', 'headline', 'position']:
-                    personal_info.title = value
-                elif label == 'email':
-                    personal_info.email = value
-                elif label in ['phone', 'telephone', 'mobile']:
-                    personal_info.phone = value
-                elif label == 'location':
-                    personal_info.location = value
-                elif label == 'linkedin':
-                    personal_info.linkedin = value
-                elif label in ['website', 'url']:
-                    personal_info.website = value
-        
-        # Fallback: extract from header if no explicit section
-        if not personal_info.name:
-            personal_info = self._extract_header_info(lines, personal_info)
-        
-        return personal_info
-    
-    def _extract_header_info(self, lines: List[str], personal_info: PersonalInfo) -> PersonalInfo:
-        """Extract personal info from document header"""
-        for i, line in enumerate(lines[:10]):  # Check first 10 lines
-            line = line.strip()
-            
-            # Name detection (first substantial line that looks like a name)
-            if not personal_info.name and re.match(r'^[A-Z][a-zA-Z\s.\'-]+$', line) and len(line.split()) <= 4:
-                personal_info.name = line
-                continue
-            
-            # Email detection
-            email_match = re.search(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', line)
-            if email_match and not personal_info.email:
-                personal_info.email = email_match.group()
-            
-            # LinkedIn URL detection
-            linkedin_match = re.search(r'linkedin\.com/in/[^\s]+', line, re.IGNORECASE)
-            if linkedin_match and not personal_info.linkedin:
-                personal_info.linkedin = linkedin_match.group()
-            
-            # Phone detection
-            phone_match = re.search(r'[\+]?[\d\s\-\(\)]{10,}', line)
-            if phone_match and not personal_info.phone and not '@' in line:
-                personal_info.phone = phone_match.group().strip()
-            
-            # Title/headline (line after name, if it's not contact info)
-            if personal_info.name and not personal_info.title and i > 0:
-                if not any(x in line.lower() for x in ['@', 'linkedin', 'www', '+']) and len(line) > 5:
-                    personal_info.title = line
-        
-        return personal_info
-    
-    def _parse_summary(self, lines: List[str], sections: Dict[str, List[int]]) -> str:
-        """Parse professional summary"""
-        summary_lines = self._get_section_lines(lines, sections, 'summary')
-        return ' '.join(summary_lines)
-    
-    def _parse_experience(self, lines: List[str], sections: Dict[str, List[int]]) -> List[Experience]:
-        """Parse work experience"""
-        exp_lines = self._get_section_lines(lines, sections, 'experience')
-        experiences = []
-        
-        current_exp = None
-        
-        for line in exp_lines:
-            # Date pattern detection
-            date_patterns = [
-                r'(\w+\s+\d{4})\s*[-–]\s*(\w+\s+\d{4}|Present|Current)',
-                r'(\d{4})\s*[-–]\s*(\d{4}|Present|Current)',
-                r'(\w+\s+\d{4})\s*[-–]\s*(Present|Current)'
-            ]
-            
-            date_match = None
-            for pattern in date_patterns:
-                date_match = re.search(pattern, line, re.IGNORECASE)
-                if date_match:
-                    break
-            
-            if date_match:
-                # Save previous experience
-                if current_exp:
-                    experiences.append(current_exp)
-                
-                # Start new experience
-                current_exp = Experience(
-                    id=str(len(experiences) + 1),
-                    start_date=date_match.group(1),
-                    end_date=date_match.group(2),
-                    current='present' in date_match.group(2).lower() or 'current' in date_match.group(2).lower()
-                )
-                
-            elif current_exp and line and not re.match(r'^\d{4}', line):
-                # Determine if this is position, company, location, or description
-                if not current_exp.position and any(title in line.lower() for title in 
-                    ['engineer', 'manager', 'director', 'analyst', 'developer', 'consultant', 'specialist', 'lead', 'cto', 'ceo', 'founder']):
-                    current_exp.position = line
-                elif not current_exp.company and len(line) < 100:
-                    current_exp.company = line
-                elif not current_exp.location and (',' in line or any(loc in line.lower() for loc in 
-                    ['germany', 'usa', 'uk', 'france', 'berlin', 'munich', 'london', 'paris', 'new york'])):
-                    current_exp.location = line
-                else:
-                    current_exp.description.append(line)
-        
-        # Add last experience
-        if current_exp:
-            experiences.append(current_exp)
-        
-        return experiences
-    
-    def _parse_education(self, lines: List[str], sections: Dict[str, List[int]]) -> List[Education]:
-        """Parse education"""
-        edu_lines = self._get_section_lines(lines, sections, 'education')
-        education = []
-        
-        current_edu = None
-        
-        for line in edu_lines:
-            # Date pattern for education
-            date_match = re.search(r'(\d{4})\s*[-–]\s*(\d{4})', line)
-            
-            if date_match:
-                if current_edu:
-                    education.append(current_edu)
-                
-                current_edu = Education(
-                    id=str(len(education) + 1),
-                    start_date=date_match.group(1),
-                    end_date=date_match.group(2)
-                )
-                
-            elif current_edu and line:
-                # Determine if this is degree, school, or description
-                if any(degree in line.lower() for degree in ['bachelor', 'master', 'phd', 'diploma', 'certificate']):
-                    current_edu.degree = line
-                elif not current_edu.school:
-                    current_edu.school = line
-                else:
-                    current_edu.description = line
-        
-        if current_edu:
-            education.append(current_edu)
-        
-        return education
-    
-    def _parse_skills(self, lines: List[str], sections: Dict[str, List[int]]) -> List[Skill]:
-        """Parse skills"""
-        skill_lines = self._get_section_lines(lines, sections, 'skills')
-        skills = []
-        
-        for line in skill_lines:
-            # Split skills by common separators
-            skill_items = re.split(r'[,•·|]', line)
-            for skill_item in skill_items:
-                skill_name = skill_item.strip()
-                if skill_name and len(skill_name) > 1:
-                    skills.append(Skill(
-                        id=str(len(skills) + 1),
-                        name=skill_name,
-                        level="Intermediate"
-                    ))
-        
-        return skills
-    
-    def _parse_certifications(self, lines: List[str], sections: Dict[str, List[int]]) -> List[Certification]:
-        """Parse certifications"""
-        cert_lines = self._get_section_lines(lines, sections, 'certifications')
-        certifications = []
-        
-        for line in cert_lines:
-            # Basic certification parsing
-            parts = re.split(r'[-–|]', line)
-            if len(parts) >= 2:
-                certifications.append(Certification(
-                    id=str(len(certifications) + 1),
-                    name=parts[0].strip(),
-                    issuer=parts[1].strip(),
-                    date=parts[2].strip() if len(parts) > 2 else ""
-                ))
-        
-        return certifications
-    
-    def _parse_languages(self, lines: List[str], sections: Dict[str, List[int]]) -> List[Language]:
-        """Parse languages"""
-        lang_lines = self._get_section_lines(lines, sections, 'languages')
-        languages = []
-        
-        for line in lang_lines:
-            # Pattern: Language (Proficiency)
-            lang_match = re.match(r'^(.+?)\s*\((.+?)\)$', line)
-            if lang_match:
-                languages.append(Language(
-                    id=str(len(languages) + 1),
-                    name=lang_match.group(1).strip(),
-                    level=lang_match.group(2).strip()
-                ))
-            else:
-                languages.append(Language(
-                    id=str(len(languages) + 1),
-                    name=line.strip(),
-                    level=""
-                ))
-        
-        return languages
 
 def main():
-    parser = argparse.ArgumentParser(description='Parse LinkedIn PDF')
+    parser = argparse.ArgumentParser(description='Enhanced LinkedIn PDF Parser')
     parser.add_argument('pdf_path', help='Path to PDF file')
     parser.add_argument('--output', '-o', help='Output JSON file path')
     

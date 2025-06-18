@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit3, Plus, Trash2, Save, X } from 'lucide-react';
+import { Edit3, Plus, Trash2, Save, X, Camera, Upload } from 'lucide-react';
 import { ResumeData, Experience, Education, Skill, Certification, Language } from '../types/resume';
 
 interface DataReviewProps {
@@ -26,6 +26,24 @@ export const DataReview: React.FC<DataReviewProps> = ({
   const handleCancel = () => {
     setLocalData(resumeData);
     setEditingSection(null);
+  };
+
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const photoUrl = e.target?.result as string;
+        setLocalData({
+          ...localData,
+          personalInfo: {
+            ...localData.personalInfo,
+            photo: photoUrl
+          }
+        });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const addExperience = () => {
@@ -123,6 +141,32 @@ export const DataReview: React.FC<DataReviewProps> = ({
             <div className="p-6">
               {editingSection === 'personal' ? (
                 <div className="space-y-4">
+                  {/* Photo Upload */}
+                  <div className="flex items-center space-x-4 mb-6">
+                    <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                      {localData.personalInfo.photo ? (
+                        <img 
+                          src={localData.personalInfo.photo} 
+                          alt="Profile" 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Camera className="w-8 h-8 text-gray-400" />
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Profile Photo
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      />
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
@@ -215,30 +259,46 @@ export const DataReview: React.FC<DataReviewProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-sm text-gray-500">Name:</span>
-                    <p className="font-medium">{localData.personalInfo.name}</p>
+                <div className="flex items-start space-x-6">
+                  {/* Photo Display */}
+                  <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {localData.personalInfo.photo ? (
+                      <img 
+                        src={localData.personalInfo.photo} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Camera className="w-8 h-8 text-gray-400" />
+                    )}
                   </div>
-                  <div>
-                    <span className="text-sm text-gray-500">Title:</span>
-                    <p className="font-medium">{localData.personalInfo.title}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-500">Email:</span>
-                    <p className="font-medium">{localData.personalInfo.email}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-500">Phone:</span>
-                    <p className="font-medium">{localData.personalInfo.phone}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-500">Location:</span>
-                    <p className="font-medium">{localData.personalInfo.location}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-500">LinkedIn:</span>
-                    <p className="font-medium">{localData.personalInfo.linkedin}</p>
+                  
+                  {/* Personal Info Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                    <div>
+                      <span className="text-sm text-gray-500">Name:</span>
+                      <p className="font-medium">{localData.personalInfo.name}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Title:</span>
+                      <p className="font-medium">{localData.personalInfo.title}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Email:</span>
+                      <p className="font-medium">{localData.personalInfo.email}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Phone:</span>
+                      <p className="font-medium">{localData.personalInfo.phone}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Location:</span>
+                      <p className="font-medium">{localData.personalInfo.location}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">LinkedIn:</span>
+                      <p className="font-medium">{localData.personalInfo.linkedin}</p>
+                    </div>
                   </div>
                 </div>
               )}

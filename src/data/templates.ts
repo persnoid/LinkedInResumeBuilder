@@ -2,6 +2,54 @@ import { ResumeTemplate } from '../types/resume';
 
 export const resumeTemplates: ResumeTemplate[] = [
   {
+    id: 'skill-focus',
+    name: 'Skill Focus',
+    description: 'A dedicated format emphasizing your strengths, with a clear section for your personal story',
+    category: 'modern',
+    layout: 'skill-focus',
+    colors: {
+      primary: '#F59E0B',
+      secondary: '#D97706',
+      accent: '#F59E0B',
+      text: '#1F2937',
+      background: '#FEF3C7',
+      sidebar: '#FEF3C7'
+    },
+    preview: '/templates/skill-focus.jpg'
+  },
+  {
+    id: 'profile-plus',
+    name: 'Profile Plus',
+    description: 'A comprehensive resume featuring your photo, skills, and experiences',
+    category: 'modern',
+    layout: 'profile-plus',
+    colors: {
+      primary: '#1E293B',
+      secondary: '#0EA5E9',
+      accent: '#0EA5E9',
+      text: '#0F172A',
+      background: '#FFFFFF',
+      photoFrame: '#E2E8F0'
+    },
+    preview: '/templates/profile-plus.jpg'
+  },
+  {
+    id: 'compact-connection',
+    name: 'Compact Connection',
+    description: 'A streamlined design that connects your credentials and certifications in a modern format',
+    category: 'modern',
+    layout: 'compact-connection',
+    colors: {
+      primary: '#F59E0B',
+      secondary: '#0EA5E9',
+      accent: '#0EA5E9',
+      text: '#1F2937',
+      background: '#FFFFFF',
+      highlight: '#E0F2FE'
+    },
+    preview: '/templates/compact-connection.jpg'
+  },
+  {
     id: 'modern',
     name: 'Modern Professional',
     description: 'Clean lines with bold accents and modern typography',
@@ -47,102 +95,6 @@ export const resumeTemplates: ResumeTemplate[] = [
       highlight: '#FEF3C7'
     },
     preview: '/templates/creative.jpg'
-  },
-  {
-    id: 'skill-focus',
-    name: 'Skill Focus',
-    description: 'A dedicated format emphasizing your strengths, with a clear section for your personal story',
-    category: 'modern',
-    layout: 'skill-focus',
-    colors: {
-      primary: '#F59E0B',
-      secondary: '#D97706',
-      accent: '#10B981',
-      text: '#1F2937',
-      background: '#FEF3C7',
-      sidebar: '#FEF3C7'
-    },
-    preview: '/templates/skill-focus.jpg'
-  },
-  {
-    id: 'profile-plus',
-    name: 'Profile Plus',
-    description: 'A comprehensive resume featuring your photo, skills, and experiences',
-    category: 'modern',
-    layout: 'profile-plus',
-    colors: {
-      primary: '#1E293B',
-      secondary: '#475569',
-      accent: '#0EA5E9',
-      text: '#0F172A',
-      background: '#FFFFFF',
-      photoFrame: '#E2E8F0'
-    },
-    preview: '/templates/profile-plus.jpg'
-  },
-  {
-    id: 'compact-connection',
-    name: 'Compact Connection',
-    description: 'A streamlined design that connects your credentials and certifications in a modern format',
-    category: 'modern',
-    layout: 'compact-connection',
-    colors: {
-      primary: '#0EA5E9',
-      secondary: '#0284C7',
-      accent: '#F59E0B',
-      text: '#1F2937',
-      background: '#FFFFFF',
-      highlight: '#E0F2FE'
-    },
-    preview: '/templates/compact-connection.jpg'
-  },
-  {
-    id: 'pathfinder',
-    name: 'Pathfinder',
-    description: 'A unique roadmap design that illustrates your educational and career journey effectively',
-    category: 'creative',
-    layout: 'pathfinder',
-    colors: {
-      primary: '#0EA5E9',
-      secondary: '#0284C7',
-      accent: '#10B981',
-      text: '#1F2937',
-      background: '#FFFFFF',
-      timeline: '#E0F2FE'
-    },
-    preview: '/templates/pathfinder.jpg'
-  },
-  {
-    id: 'essence-of-you',
-    name: 'Essence of You',
-    description: 'A minimalist layout that highlights your qualifications, keeping it clean and impactful',
-    category: 'minimal',
-    layout: 'essence-of-you',
-    colors: {
-      primary: '#6B7280',
-      secondary: '#4B5563',
-      accent: '#0EA5E9',
-      text: '#1F2937',
-      background: '#FFFFFF',
-      subtle: '#F9FAFB'
-    },
-    preview: '/templates/essence-of-you.jpg'
-  },
-  {
-    id: 'vibrant-view',
-    name: 'Vibrant View',
-    description: 'An engaging resume that brings your achievements to life with an energetic layout',
-    category: 'creative',
-    layout: 'vibrant-view',
-    colors: {
-      primary: '#F59E0B',
-      secondary: '#D97706',
-      accent: '#10B981',
-      text: '#1F2937',
-      background: '#FFFFFF',
-      vibrant: '#FEF3C7'
-    },
-    preview: '/templates/vibrant-view.jpg'
   },
   {
     id: 'minimal',

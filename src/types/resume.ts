@@ -66,12 +66,18 @@ export interface ResumeTemplate {
   name: string;
   description: string;
   category: 'modern' | 'classic' | 'creative' | 'minimal';
+  layout: 'single-column' | 'two-column-sidebar' | 'creative-blocks' | 'minimal-spaced' | 'tech-grid' | 'timeline' | 'academic' | 'infographic' | 'compact' | 'elegant-serif';
   colors: {
     primary: string;
     secondary: string;
     accent: string;
     text: string;
     background: string;
+    sidebar?: string;
+    highlight?: string;
+    code?: string;
+    timeline?: string;
+    chart?: string;
   };
   preview: string;
 }

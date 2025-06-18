@@ -13,12 +13,8 @@ export const parsePDFFile = async (file: File): Promise<ResumeData> => {
     });
 
     if (!response.ok) {
-      // If it's a connection error, fall back to client-side parsing
-      if (response.status === 0 || response.status >= 500) {
-        console.warn('AI backend unavailable, falling back to client-side parsing');
-        return await fallbackClientSideParsing(file);
-      }
-      throw new Error(`PDF parsing failed: ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `PDF parsing failed: ${response.statusText}`);
     }
 
     const result = await response.json();
@@ -28,13 +24,16 @@ export const parsePDFFile = async (file: File): Promise<ResumeData> => {
     }
 
     // Log which parsing method was used
-    console.log(`PDF parsed using: ${result.parsing_method || 'Unknown method'}`);
+    console.log(`PDF parsed using: ${result.parsing_method || 'AI-powered parsing'}`);
 
     return transformAIResponse(result.data);
   } catch (error) {
-    console.warn('AI PDF parsing error, falling back to client-side parsing:', error);
-    // Always fallback to client-side parsing if AI service fails
-    return await fallbackClientSideParsing(file);
+    console.error('AI PDF parsing error:', error);
+    throw new Error(
+      error instanceof Error 
+        ? error.message 
+        : 'Failed to parse PDF. Please ensure the AI service is running and your OpenAI API key is configured.'
+    );
   }
 };
 
@@ -91,35 +90,6 @@ const transformAIResponse = (data: any): ResumeData => {
   };
 };
 
-// Enhanced fallback to original client-side parsing if AI service is unavailable
-const fallbackClientSideParsing = async (file: File): Promise<ResumeData> => {
-  try {
-    // Import the original PDF.js parsing logic as fallback
-    const { parsePDFWithPDFJS } = await import('./fallbackParser');
-    return parsePDFWithPDFJS(file);
-  } catch (error) {
-    console.error('Fallback parsing also failed:', error);
-    // Return a basic structure with helpful message if all else fails
-    return {
-      personalInfo: {
-        name: '',
-        title: '',
-        email: '',
-        phone: '',
-        location: '',
-        linkedin: '',
-        website: ''
-      },
-      summary: 'AI-powered PDF parsing is currently unavailable, and fallback parsing failed. Please manually enter your information or try uploading a different PDF file. For best results, ensure your LinkedIn PDF export is recent and properly formatted.',
-      experience: [],
-      education: [],
-      skills: [],
-      certifications: [],
-      languages: []
-    };
-  }
-};
-
 // Check if AI parsing is available
 export const checkAIAvailability = async (): Promise<{
   aiAvailable: boolean;
@@ -134,8 +104,10 @@ export const checkAIAvailability = async (): Promise<{
         aiAvailable: config.ai_parsing_available,
         openaiConfigured: config.openai_api_key_configured,
         message: config.ai_parsing_available 
-          ? 'AI-powered parsing is available for enhanced accuracy'
-          : 'Using fallback parsing method'
+          ? 'AI-powered parsing is ready for enhanced accuracy'
+          : config.openai_api_key_configured 
+            ? 'AI service is starting up...'
+            : 'OpenAI API key required for AI-powered parsing'
       };
     }
   } catch (error) {
@@ -145,6 +117,6 @@ export const checkAIAvailability = async (): Promise<{
   return {
     aiAvailable: false,
     openaiConfigured: false,
-    message: 'AI service unavailable, using fallback parsing'
+    message: 'AI service unavailable - please check your configuration'
   };
 };

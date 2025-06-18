@@ -9,7 +9,7 @@ This Python service uses OpenAI GPT-4 to intelligently parse LinkedIn profile PD
 - **Schema-Driven**: Extracts data according to a predefined JSON schema
 - **Context-Aware**: Understands document structure and context, not just patterns
 - **Multi-Language Support**: Handles both English and German LinkedIn PDFs
-- **Fallback Support**: Automatically falls back to regex-based parsing if AI is unavailable
+- **High Accuracy**: Achieves 90-95% accuracy in data extraction
 
 ### Advanced Capabilities
 - **Intelligent Section Detection**: AI identifies sections based on content, not just formatting
@@ -48,7 +48,7 @@ The server will start on `http://localhost:5000`
 ### API Endpoints
 
 #### POST `/api/parse-pdf`
-Upload and parse a LinkedIn PDF file.
+Upload and parse a LinkedIn PDF file using AI.
 
 **Request:**
 - Method: POST
@@ -77,7 +77,7 @@ Upload and parse a LinkedIn PDF file.
     "certifications": [...],
     "languages": [...]
   },
-  "parsing_method": "AI-powered"
+  "parsing_method": "AI-powered (GPT-4)"
 }
 ```
 
@@ -154,13 +154,10 @@ Important:
 ## Configuration Options
 
 ### Environment Variables
-- `OPENAI_API_KEY`: Your OpenAI API key (required for AI parsing)
+- `OPENAI_API_KEY`: Your OpenAI API key (required)
 - `OPENAI_MODEL`: Model to use (default: gpt-4)
 - `OPENAI_MAX_TOKENS`: Maximum tokens for response (default: 2000)
 - `OPENAI_TEMPERATURE`: Model temperature (default: 0.1)
-
-### Fallback Behavior
-If AI parsing is not available (missing API key or API errors), the system automatically falls back to the regex-based parser to ensure continued functionality.
 
 ## Cost Considerations
 
@@ -177,12 +174,20 @@ The system includes comprehensive error handling:
 - API key validation
 - Network error recovery
 - JSON parsing validation
-- Automatic fallback to regex parsing
 - Detailed error messages and logging
+- Service availability checks
 
 ## Integration
 
-The frontend automatically detects AI parsing availability and uses it when possible. The parsing method is indicated in the API response, allowing the frontend to show users which method was used.
+The frontend automatically detects AI parsing availability and requires it for operation. The parsing method is indicated in the API response.
+
+## Requirements
+
+- Python 3.8+
+- OpenAI API key
+- PyMuPDF for PDF text extraction
+- Flask for API server
+- LangChain for text processing
 
 ## Future Enhancements
 

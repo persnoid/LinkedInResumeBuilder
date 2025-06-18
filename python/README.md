@@ -1,34 +1,42 @@
-# Enhanced LinkedIn PDF Parser with PyMuPDF
+# AI-Powered LinkedIn PDF Parser
 
-This Python service uses PyMuPDF (fitz) to parse LinkedIn profile PDFs with enhanced extraction capabilities based on OpenAI recommendations.
+This Python service uses OpenAI GPT-4 to intelligently parse LinkedIn profile PDFs and extract structured data with high accuracy.
 
-## Key Improvements
+## Features
 
-### Enhanced PDF Parsing
-- **Better Text Extraction**: Uses PyMuPDF's detailed text positioning and formatting information
-- **Font Analysis**: Leverages font size, bold formatting, and positioning to identify section headers
-- **Multi-language Support**: Supports both English and German LinkedIn PDFs
-- **Improved Pattern Recognition**: Enhanced regex patterns for better data extraction
+### AI-Powered Extraction
+- **GPT-4 Intelligence**: Uses OpenAI's GPT-4 model for intelligent content understanding
+- **Schema-Driven**: Extracts data according to a predefined JSON schema
+- **Context-Aware**: Understands document structure and context, not just patterns
+- **Multi-Language Support**: Handles both English and German LinkedIn PDFs
+- **Fallback Support**: Automatically falls back to regex-based parsing if AI is unavailable
 
-### Smart Section Detection
-- **Formatting-based Detection**: Uses font size and bold text to identify section headers
-- **Flexible Matching**: Handles variations in section naming and formatting
-- **Position-aware Parsing**: Considers text positioning for better structure recognition
-
-### Advanced Data Extraction
-- **Personal Information**: Enhanced name, title, and contact extraction from PDF header
-- **Experience Parsing**: Better job title, company, and date range detection
-- **Skills Processing**: Improved skill separation and filtering
-- **Education & Certifications**: More robust parsing of academic and professional credentials
+### Advanced Capabilities
+- **Intelligent Section Detection**: AI identifies sections based on content, not just formatting
+- **Smart Data Extraction**: Understands relationships between data points
+- **Date Normalization**: Consistently formats dates across different input formats
+- **Duplicate Removal**: Automatically deduplicates extracted information
+- **Chunk Processing**: Handles large PDFs by processing them in intelligent chunks
 
 ## Setup
 
-1. Install Python dependencies:
+### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Run the API server:
+### 2. Configure OpenAI API
+Create a `.env` file in the python directory:
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and add your OpenAI API key:
+```
+OPENAI_API_KEY=your_actual_api_key_here
+```
+
+### 3. Run the API Server
 ```bash
 python api_server.py
 ```
@@ -37,113 +45,149 @@ The server will start on `http://localhost:5000`
 
 ## Usage
 
-### API Endpoint
+### API Endpoints
 
-**POST** `/api/parse-pdf`
-- Upload a PDF file using multipart/form-data
+#### POST `/api/parse-pdf`
+Upload and parse a LinkedIn PDF file.
+
+**Request:**
+- Method: POST
+- Content-Type: multipart/form-data
 - Field name: `pdf`
-- Returns structured JSON data with enhanced extraction
+- File: LinkedIn PDF export
 
-### Command Line
-
-```bash
-python pdf_parser.py path/to/linkedin.pdf --output result.json
-```
-
-## Features
-
-### Core Capabilities
-- **Advanced Text Extraction**: Uses PyMuPDF's precise text positioning and font information
-- **Intelligent Section Detection**: Automatically identifies LinkedIn profile sections using formatting cues
-- **Multi-format Support**: Handles various LinkedIn PDF export formats and layouts
-- **Robust Data Parsing**: Enhanced parsing logic for experience, education, skills, and certifications
-- **Fallback Support**: Frontend gracefully falls back to client-side parsing if service unavailable
-
-### Supported Sections
-- **Personal Information**: Name, title, email, phone, location, LinkedIn URL, website
-- **Professional Summary**: Complete summary/about section
-- **Work Experience**: Position, company, location, dates, job descriptions
-- **Education**: Degrees, schools, dates, GPA, additional details
-- **Skills**: Technical and soft skills with proficiency levels
-- **Certifications**: Professional certifications with issuers and dates
-- **Languages**: Language skills with proficiency levels
-
-### Enhanced Pattern Recognition
-- **Date Parsing**: Flexible date range detection (various formats)
-- **Contact Information**: Improved email, phone, and URL extraction
-- **Location Detection**: Smart location identification and validation
-- **Job Title Recognition**: Better job position and company name extraction
-
-## Technical Implementation
-
-### PyMuPDF Integration
-```python
-# Enhanced text extraction with formatting
-text_dict = page.get_text("dict")
-for block in text_dict["blocks"]:
-    # Extract text with font size, bold formatting, and positioning
-    font_info = {
-        'font': span.get('font', ''),
-        'size': span.get('size', 12),
-        'flags': span.get('flags', 0),  # Bold, italic flags
-        'color': span.get('color', 0)
-    }
-```
-
-### Smart Section Detection
-```python
-# Use formatting cues to identify headers
-is_potential_header = (
-    block['is_bold'] or 
-    block['font_size'] > 12 or
-    line.isupper() or
-    line.endswith(':')
-)
-```
-
-### Pattern-based Extraction
-```python
-# Enhanced regex patterns for better data extraction
-linkedin_patterns = {
-    'email': r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}',
-    'phone': r'[\+]?[\d\s\-\(\)]{10,}',
-    'date_range': r'(\w+\s+\d{4}|\d{4})\s*[-–]\s*(\w+\s+\d{4}|\d{4}|Present|Current)',
-    'linkedin_url': r'linkedin\.com/in/[^\s]+',
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "personal_info": {
+      "name": "John Doe",
+      "title": "Senior Software Engineer",
+      "email": "john@example.com",
+      "phone": "+1-555-123-4567",
+      "location": "San Francisco, CA",
+      "linkedin": "linkedin.com/in/johndoe",
+      "website": "johndoe.dev"
+    },
+    "summary": "Experienced software engineer...",
+    "experience": [...],
+    "education": [...],
+    "skills": [...],
+    "certifications": [...],
+    "languages": [...]
+  },
+  "parsing_method": "AI-powered"
 }
 ```
 
-## Future Enhancements
+#### GET `/api/health`
+Check service health and configuration status.
 
-### AI-Powered Extraction (Planned)
-Based on OpenAI recommendations, future versions could integrate:
+#### GET `/api/config`
+Get current configuration and feature availability.
+
+### Command Line Usage
+
+```bash
+# Basic usage
+python ai_pdf_parser.py path/to/linkedin.pdf
+
+# Save to file
+python ai_pdf_parser.py path/to/linkedin.pdf --output result.json
+
+# Specify API key directly
+python ai_pdf_parser.py path/to/linkedin.pdf --api-key your_key_here
+```
+
+## How It Works
+
+### 1. Text Extraction
+Uses PyMuPDF to extract raw text from the PDF while preserving structure.
+
+### 2. AI Processing
+Sends the extracted text to OpenAI GPT-4 with a detailed prompt that:
+- Defines the expected JSON schema
+- Provides context about LinkedIn PDF structure
+- Includes extraction guidelines and best practices
+- Handles both English and German content
+
+### 3. Intelligent Parsing
+The AI model:
+- Identifies different sections (experience, education, skills, etc.)
+- Extracts relevant information with proper context understanding
+- Formats dates consistently
+- Infers missing information where appropriate
+- Handles variations in LinkedIn PDF formats
+
+### 4. Data Validation
+- Validates extracted data against the schema
+- Removes duplicates and inconsistencies
+- Merges information from multiple chunks if needed
+
+## AI Prompt Engineering
+
+The system uses carefully crafted prompts that:
 
 ```python
-# Potential LangChain integration for AI-powered parsing
-from langchain.document_loaders import PyMuPDFLoader
-from langchain.llms import OpenAI
-from langchain.chains import create_extraction_chain
+system_prompt = """You are an expert at extracting structured information from LinkedIn profile PDFs. 
+Your task is to analyze the provided text and extract relevant information into a structured JSON format.
 
-# AI-enhanced extraction for complex layouts
-llm = OpenAI(api_key="your_api_key")
-chain = create_extraction_chain(schema, llm)
-enhanced_data = chain.run(pdf_content)
+Guidelines:
+1. Extract personal information (name, title, contact details) from the header/top section
+2. Identify and extract work experience with dates, positions, companies, and descriptions
+3. Find education information including degrees, schools, and dates
+4. Extract skills mentioned in the document
+5. Identify certifications and their issuers
+6. Find language skills if mentioned
+7. Extract the professional summary/about section
+
+Important:
+- Be accurate with dates and format them consistently
+- For current positions, mark current=true and use "Present" as end_date
+- Extract job descriptions as bullet points/list items
+- Infer skill levels as "Intermediate" if not explicitly stated
+- Handle both English and German content
+- If information is not available, use empty strings or empty arrays"""
 ```
 
-## Docker Support
+## Configuration Options
 
-```dockerfile
-FROM python:3.11-slim
+### Environment Variables
+- `OPENAI_API_KEY`: Your OpenAI API key (required for AI parsing)
+- `OPENAI_MODEL`: Model to use (default: gpt-4)
+- `OPENAI_MAX_TOKENS`: Maximum tokens for response (default: 2000)
+- `OPENAI_TEMPERATURE`: Model temperature (default: 0.1)
 
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+### Fallback Behavior
+If AI parsing is not available (missing API key or API errors), the system automatically falls back to the regex-based parser to ensure continued functionality.
 
-COPY . .
-EXPOSE 5000
+## Cost Considerations
 
-CMD ["python", "api_server.py"]
-```
+- GPT-4 API calls cost approximately $0.03-0.06 per PDF depending on size
+- The system optimizes token usage by:
+  - Using efficient prompts
+  - Processing large PDFs in chunks
+  - Setting appropriate token limits
+  - Using low temperature for consistent results
+
+## Error Handling
+
+The system includes comprehensive error handling:
+- API key validation
+- Network error recovery
+- JSON parsing validation
+- Automatic fallback to regex parsing
+- Detailed error messages and logging
 
 ## Integration
 
-The frontend automatically sends PDF files to this enhanced service and falls back to client-side parsing if the service is unavailable. The improved parsing logic provides significantly better extraction accuracy for LinkedIn-exported PDFs.
+The frontend automatically detects AI parsing availability and uses it when possible. The parsing method is indicated in the API response, allowing the frontend to show users which method was used.
+
+## Future Enhancements
+
+- Support for additional AI models (Claude, Gemini)
+- Custom extraction schemas for different document types
+- Batch processing capabilities
+- Enhanced multilingual support
+- Integration with vector databases for semantic search

@@ -28,6 +28,18 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
   // Template-specific layouts
   const renderTemplate = () => {
     switch (template) {
+      case 'skill-focus':
+        return renderSkillFocusLayout();
+      case 'profile-plus':
+        return renderProfilePlusLayout();
+      case 'compact-connection':
+        return renderCompactConnectionLayout();
+      case 'pathfinder':
+        return renderPathfinderLayout();
+      case 'essence-of-you':
+        return renderEssenceOfYouLayout();
+      case 'vibrant-view':
+        return renderVibrantViewLayout();
       case 'executive':
         return renderExecutiveLayout();
       case 'creative':
@@ -51,15 +63,698 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
     }
   };
 
-  // Modern Single Column Layout
-  const renderModernLayout = () => (
+  // Skill Focus Layout - Orange/Yellow theme with skills emphasis
+  const renderSkillFocusLayout = () => (
+    <div className="bg-white min-h-[11in] w-full flex" style={{ fontFamily, color: customColors.text }}>
+      {/* Left sidebar with warm background */}
+      <div className="w-1/3 p-6" style={{ backgroundColor: customColors.background || '#FEF3C7' }}>
+        {/* Profile photo placeholder */}
+        <div className="w-20 h-20 rounded-full bg-gray-300 mb-4 mx-auto"></div>
+        
+        <div className="text-center mb-6">
+          <h1 className="text-xl font-bold mb-1" style={{ color: customColors.primary }}>
+            {resumeData.personalInfo.name}
+          </h1>
+          <p className="text-sm mb-3" style={{ color: customColors.secondary }}>
+            {resumeData.personalInfo.title}
+          </p>
+          <div className="text-xs space-y-1">
+            <div>{resumeData.personalInfo.email}</div>
+            <div>{resumeData.personalInfo.phone}</div>
+            <div>{resumeData.personalInfo.location}</div>
+          </div>
+        </div>
+
+        {/* About Me Section */}
+        <div className="mb-6">
+          <h3 className="font-bold text-sm mb-3 uppercase" style={{ color: customColors.primary }}>
+            About Me
+          </h3>
+          <p className="text-xs leading-relaxed">{resumeData.summary}</p>
+        </div>
+
+        {/* Skills with emphasis */}
+        <div className="mb-6">
+          <h3 className="font-bold text-sm mb-3 uppercase" style={{ color: customColors.primary }}>
+            Skills
+          </h3>
+          <div className="space-y-2">
+            {resumeData.skills.slice(0, 8).map((skill) => (
+              <div key={skill.id} className="text-xs">
+                <div className="flex justify-between mb-1">
+                  <span className="font-medium">{skill.name}</span>
+                </div>
+                <div className="w-full bg-white rounded-full h-1.5">
+                  <div
+                    className="h-1.5 rounded-full"
+                    style={{
+                      backgroundColor: customColors.accent,
+                      width: skill.level === 'Expert' ? '100%' : skill.level === 'Advanced' ? '80%' : skill.level === 'Intermediate' ? '60%' : '40%'
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Languages */}
+        {resumeData.languages && resumeData.languages.length > 0 && (
+          <div>
+            <h3 className="font-bold text-sm mb-3 uppercase" style={{ color: customColors.primary }}>
+              Languages
+            </h3>
+            <div className="space-y-1 text-xs">
+              {resumeData.languages.map((language) => (
+                <div key={language.id}>
+                  <span className="font-medium">{language.name}</span>
+                  {language.level && <span className="text-gray-600 ml-2">({language.level})</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 p-6">
+        {/* Work Experience */}
+        <div className="mb-6">
+          <h3 className="text-lg font-bold mb-4 uppercase" style={{ color: customColors.primary }}>
+            Work Experience
+          </h3>
+          <div className="space-y-4">
+            {resumeData.experience.map((exp) => (
+              <div key={exp.id}>
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h4 className="font-bold text-sm">{exp.position}</h4>
+                    <p className="text-sm" style={{ color: customColors.secondary }}>{exp.company}</p>
+                    {exp.location && <p className="text-xs text-gray-500">{exp.location}</p>}
+                  </div>
+                  <span className="text-xs text-gray-500">
+                    {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+                  </span>
+                </div>
+                <ul className="text-xs space-y-1">
+                  {exp.description.map((desc, i) => (
+                    <li key={i} className="flex items-start">
+                      <span className="mr-2 mt-1 w-1 h-1 rounded-full flex-shrink-0" style={{ backgroundColor: customColors.accent }} />
+                      {desc}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Education */}
+        {resumeData.education.length > 0 && (
+          <div>
+            <h3 className="text-lg font-bold mb-4 uppercase" style={{ color: customColors.primary }}>
+              Education
+            </h3>
+            <div className="space-y-3">
+              {resumeData.education.map((edu) => (
+                <div key={edu.id}>
+                  <h4 className="font-bold text-sm">{edu.degree}</h4>
+                  <p className="text-sm" style={{ color: customColors.secondary }}>{edu.school}</p>
+                  <p className="text-xs text-gray-500">{edu.startDate} - {edu.endDate}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // Profile Plus Layout - Clean with photo emphasis
+  const renderProfilePlusLayout = () => (
     <div className="bg-white p-8 min-h-[11in] w-full" style={{ fontFamily, color: customColors.text }}>
-      {renderModernHeader()}
-      {renderModernSummary()}
-      {renderModernExperience()}
-      {renderModernEducation()}
-      {renderModernSkills()}
-      {renderModernCertifications()}
+      {/* Header with photo */}
+      <div className="flex items-start mb-8">
+        <div className="w-24 h-24 rounded-lg bg-gray-300 mr-6 flex-shrink-0" style={{ backgroundColor: customColors.photoFrame || '#E2E8F0' }}></div>
+        <div className="flex-1">
+          <h1 className="text-2xl font-bold mb-2" style={{ color: customColors.primary }}>
+            {resumeData.personalInfo.name}
+          </h1>
+          <h2 className="text-lg mb-4" style={{ color: customColors.secondary }}>
+            {resumeData.personalInfo.title}
+          </h2>
+          
+          {/* Contact Information */}
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <div className="font-medium text-gray-600">Contact Information</div>
+              <div>{resumeData.personalInfo.email}</div>
+              <div>{resumeData.personalInfo.phone}</div>
+            </div>
+            <div>
+              <div className="font-medium text-gray-600">Location</div>
+              <div>{resumeData.personalInfo.location}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* About Me */}
+      <div className="mb-8">
+        <h3 className="text-lg font-bold mb-3 border-b pb-1" style={{ color: customColors.primary, borderColor: customColors.accent }}>
+          About Me
+        </h3>
+        <p className="leading-relaxed">{resumeData.summary}</p>
+      </div>
+
+      {/* Two column layout for content */}
+      <div className="grid grid-cols-2 gap-8">
+        {/* Left column - Experience */}
+        <div>
+          <h3 className="text-lg font-bold mb-4" style={{ color: customColors.primary }}>
+            Work Experience
+          </h3>
+          <div className="space-y-4">
+            {resumeData.experience.map((exp) => (
+              <div key={exp.id}>
+                <h4 className="font-bold">{exp.position}</h4>
+                <p className="font-medium" style={{ color: customColors.secondary }}>{exp.company}</p>
+                <p className="text-sm text-gray-500 mb-2">{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</p>
+                <ul className="text-sm space-y-1">
+                  {exp.description.slice(0, 2).map((desc, i) => (
+                    <li key={i}>• {desc}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right column - Skills & Education */}
+        <div>
+          <div className="mb-6">
+            <h3 className="text-lg font-bold mb-4" style={{ color: customColors.primary }}>
+              Skills
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {resumeData.skills.map((skill) => (
+                <div key={skill.id} className="text-sm p-2 rounded" style={{ backgroundColor: customColors.accent + '20' }}>
+                  {skill.name}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {resumeData.education.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold mb-4" style={{ color: customColors.primary }}>
+                Education
+              </h3>
+              {resumeData.education.map((edu) => (
+                <div key={edu.id} className="mb-3">
+                  <h4 className="font-bold">{edu.degree}</h4>
+                  <p style={{ color: customColors.secondary }}>{edu.school}</p>
+                  <p className="text-sm text-gray-500">{edu.startDate} - {edu.endDate}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Compact Connection Layout - Blue theme with modern design
+  const renderCompactConnectionLayout = () => (
+    <div className="bg-white min-h-[11in] w-full flex" style={{ fontFamily, color: customColors.text }}>
+      {/* Right sidebar */}
+      <div className="flex-1 p-6">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold mb-2" style={{ color: customColors.primary }}>
+            {resumeData.personalInfo.name}
+          </h1>
+          <h2 className="text-lg mb-4" style={{ color: customColors.secondary }}>
+            {resumeData.personalInfo.title}
+          </h2>
+          <div className="text-sm text-gray-600">
+            <div>{resumeData.personalInfo.email}</div>
+            <div>{resumeData.personalInfo.phone}</div>
+            <div>{resumeData.personalInfo.location}</div>
+          </div>
+        </div>
+
+        {/* Education */}
+        <div className="mb-6">
+          <h3 className="text-lg font-bold mb-3" style={{ color: customColors.primary }}>
+            Education
+          </h3>
+          {resumeData.education.map((edu) => (
+            <div key={edu.id} className="mb-3">
+              <h4 className="font-bold">{edu.degree}</h4>
+              <p style={{ color: customColors.secondary }}>{edu.school}</p>
+              <p className="text-sm text-gray-500">{edu.startDate} - {edu.endDate}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Work Experience */}
+        <div>
+          <h3 className="text-lg font-bold mb-3" style={{ color: customColors.primary }}>
+            Work Experience
+          </h3>
+          <div className="space-y-4">
+            {resumeData.experience.map((exp) => (
+              <div key={exp.id}>
+                <h4 className="font-bold">{exp.position}</h4>
+                <p style={{ color: customColors.secondary }}>{exp.company}</p>
+                <p className="text-sm text-gray-500 mb-2">{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</p>
+                <ul className="text-sm space-y-1">
+                  {exp.description.slice(0, 2).map((desc, i) => (
+                    <li key={i}>• {desc}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Right sidebar */}
+      <div className="w-1/3 p-6" style={{ backgroundColor: customColors.highlight || '#E0F2FE' }}>
+        {/* Photo placeholder */}
+        <div className="w-20 h-20 rounded-lg bg-gray-300 mb-6 ml-auto"></div>
+        
+        {/* Details about me */}
+        <div className="mb-6">
+          <h3 className="font-bold text-sm mb-3 uppercase" style={{ color: customColors.primary }}>
+            Details about me
+          </h3>
+          <div className="text-xs space-y-2">
+            <div>
+              <span className="font-medium">Contact Number</span>
+              <div>{resumeData.personalInfo.phone}</div>
+            </div>
+            <div>
+              <span className="font-medium">Email</span>
+              <div>{resumeData.personalInfo.email}</div>
+            </div>
+            <div>
+              <span className="font-medium">Residential Location</span>
+              <div>{resumeData.personalInfo.location}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Languages */}
+        {resumeData.languages && resumeData.languages.length > 0 && (
+          <div className="mb-6">
+            <h3 className="font-bold text-sm mb-3 uppercase" style={{ color: customColors.primary }}>
+              Languages
+            </h3>
+            <div className="space-y-1 text-xs">
+              {resumeData.languages.map((language) => (
+                <div key={language.id}>
+                  <span className="font-medium">{language.name}</span>
+                  {language.level && <span className="text-gray-600 ml-2">({language.level})</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Skills */}
+        <div className="mb-6">
+          <h3 className="font-bold text-sm mb-3 uppercase" style={{ color: customColors.primary }}>
+            Skills
+          </h3>
+          <div className="space-y-1 text-xs">
+            {resumeData.skills.map((skill) => (
+              <div key={skill.id} className="font-medium">{skill.name}</div>
+            ))}
+          </div>
+        </div>
+
+        {/* Certifications */}
+        {resumeData.certifications.length > 0 && (
+          <div>
+            <h3 className="font-bold text-sm mb-3 uppercase" style={{ color: customColors.primary }}>
+              Pharmaceutical Certifications
+            </h3>
+            <div className="space-y-2 text-xs">
+              {resumeData.certifications.map((cert) => (
+                <div key={cert.id}>
+                  <div className="font-medium">{cert.name}</div>
+                  <div className="text-gray-600">{cert.issuer}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // Pathfinder Layout - Timeline with blue accents
+  const renderPathfinderLayout = () => (
+    <div className="bg-white min-h-[11in] w-full flex" style={{ fontFamily, color: customColors.text }}>
+      {/* Left sidebar */}
+      <div className="w-1/3 p-6" style={{ backgroundColor: customColors.timeline || '#E0F2FE' }}>
+        {/* Profile */}
+        <div className="text-center mb-6">
+          <div className="w-20 h-20 rounded-full bg-gray-300 mx-auto mb-4"></div>
+          <h1 className="text-lg font-bold mb-1" style={{ color: customColors.primary }}>
+            {resumeData.personalInfo.name}
+          </h1>
+          <p className="text-sm" style={{ color: customColors.secondary }}>
+            {resumeData.personalInfo.title}
+          </p>
+        </div>
+
+        {/* Contact */}
+        <div className="mb-6">
+          <div className="flex items-center mb-2">
+            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: customColors.accent }}></div>
+            <span className="font-bold text-sm">Contact Information</span>
+          </div>
+          <div className="text-xs space-y-1 ml-5">
+            <div>{resumeData.personalInfo.email}</div>
+            <div>{resumeData.personalInfo.phone}</div>
+            <div>{resumeData.personalInfo.location}</div>
+          </div>
+        </div>
+
+        {/* Education */}
+        <div className="mb-6">
+          <div className="flex items-center mb-2">
+            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: customColors.accent }}></div>
+            <span className="font-bold text-sm">Education</span>
+          </div>
+          <div className="ml-5 space-y-2">
+            {resumeData.education.map((edu) => (
+              <div key={edu.id} className="text-xs">
+                <div className="font-medium">{edu.degree}</div>
+                <div style={{ color: customColors.secondary }}>{edu.school}</div>
+                <div className="text-gray-500">{edu.startDate} - {edu.endDate}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Skills */}
+        <div>
+          <div className="flex items-center mb-2">
+            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: customColors.accent }}></div>
+            <span className="font-bold text-sm">Skills</span>
+          </div>
+          <div className="ml-5 space-y-1">
+            {resumeData.skills.slice(0, 6).map((skill) => (
+              <div key={skill.id} className="text-xs">
+                <div className="flex justify-between mb-1">
+                  <span>{skill.name}</span>
+                </div>
+                <div className="w-full bg-white rounded-full h-1">
+                  <div
+                    className="h-1 rounded-full"
+                    style={{
+                      backgroundColor: customColors.accent,
+                      width: skill.level === 'Expert' ? '100%' : skill.level === 'Advanced' ? '80%' : skill.level === 'Intermediate' ? '60%' : '40%'
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 p-6">
+        {/* Work Experience with timeline */}
+        <div>
+          <h3 className="text-lg font-bold mb-6" style={{ color: customColors.primary }}>
+            Work Experience
+          </h3>
+          <div className="relative">
+            {/* Timeline line */}
+            <div className="absolute left-4 top-0 bottom-0 w-0.5" style={{ backgroundColor: customColors.accent }}></div>
+            
+            <div className="space-y-6">
+              {resumeData.experience.map((exp, index) => (
+                <div key={exp.id} className="relative pl-10">
+                  {/* Timeline dot */}
+                  <div className="absolute left-2.5 w-3 h-3 rounded-full border-2 border-white" style={{ backgroundColor: customColors.accent }}></div>
+                  
+                  <div className="bg-white p-4 rounded-lg shadow-sm border">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h4 className="font-bold">{exp.position}</h4>
+                        <p style={{ color: customColors.secondary }}>{exp.company}</p>
+                        {exp.location && <p className="text-sm text-gray-500">{exp.location}</p>}
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+                      </span>
+                    </div>
+                    <ul className="text-sm space-y-1">
+                      {exp.description.slice(0, 3).map((desc, i) => (
+                        <li key={i}>• {desc}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Essence of You Layout - Clean minimal design
+  const renderEssenceOfYouLayout = () => (
+    <div className="bg-white p-8 min-h-[11in] w-full" style={{ fontFamily, color: customColors.text }}>
+      {/* Header */}
+      <div className="text-center mb-8 border-b pb-6">
+        <h1 className="text-3xl font-bold mb-2" style={{ color: customColors.primary }}>
+          {resumeData.personalInfo.name}
+        </h1>
+        <div className="w-16 h-0.5 mx-auto mb-3" style={{ backgroundColor: customColors.accent }}></div>
+        <h2 className="text-lg mb-4" style={{ color: customColors.secondary }}>
+          {resumeData.personalInfo.title}
+        </h2>
+        
+        {/* Contact Information */}
+        <div className="text-sm space-y-1">
+          <div>{resumeData.personalInfo.email}</div>
+          <div>{resumeData.personalInfo.phone}</div>
+          <div>{resumeData.personalInfo.location}</div>
+        </div>
+      </div>
+
+      {/* About Me */}
+      <div className="mb-8">
+        <h3 className="text-lg font-bold mb-4 text-center uppercase tracking-wide" style={{ color: customColors.primary }}>
+          About Me
+        </h3>
+        <p className="text-center leading-relaxed max-w-4xl mx-auto">{resumeData.summary}</p>
+      </div>
+
+      {/* Two column layout */}
+      <div className="grid grid-cols-2 gap-12">
+        {/* Left column */}
+        <div>
+          <h3 className="text-lg font-bold mb-4 text-center uppercase tracking-wide" style={{ color: customColors.primary }}>
+            Work Experience
+          </h3>
+          <div className="space-y-6">
+            {resumeData.experience.map((exp) => (
+              <div key={exp.id} className="text-center">
+                <h4 className="font-bold">{exp.position}</h4>
+                <p style={{ color: customColors.secondary }}>{exp.company}</p>
+                <p className="text-sm text-gray-500 mb-2">{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</p>
+                <div className="text-sm">
+                  {exp.description.slice(0, 2).map((desc, i) => (
+                    <p key={i} className="mb-1">• {desc}</p>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right column */}
+        <div>
+          {/* Education */}
+          <div className="mb-8">
+            <h3 className="text-lg font-bold mb-4 text-center uppercase tracking-wide" style={{ color: customColors.primary }}>
+              Education
+            </h3>
+            <div className="space-y-4">
+              {resumeData.education.map((edu) => (
+                <div key={edu.id} className="text-center">
+                  <h4 className="font-bold">{edu.degree}</h4>
+                  <p style={{ color: customColors.secondary }}>{edu.school}</p>
+                  <p className="text-sm text-gray-500">{edu.startDate} - {edu.endDate}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Skills */}
+          <div>
+            <h3 className="text-lg font-bold mb-4 text-center uppercase tracking-wide" style={{ color: customColors.primary }}>
+              Skills
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {resumeData.skills.map((skill) => (
+                <div key={skill.id} className="text-center text-sm p-2 rounded" style={{ backgroundColor: customColors.subtle || '#F9FAFB' }}>
+                  {skill.name}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Vibrant View Layout - Energetic orange/yellow design
+  const renderVibrantViewLayout = () => (
+    <div className="bg-white min-h-[11in] w-full flex" style={{ fontFamily, color: customColors.text }}>
+      {/* Left content */}
+      <div className="flex-1 p-6">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-gray-300 mr-4"></div>
+            <div>
+              <h1 className="text-2xl font-bold" style={{ color: customColors.primary }}>
+                {resumeData.personalInfo.name}
+              </h1>
+              <h2 className="text-lg" style={{ color: customColors.secondary }}>
+                {resumeData.personalInfo.title}
+              </h2>
+            </div>
+          </div>
+        </div>
+
+        {/* About Me */}
+        <div className="mb-6">
+          <h3 className="text-lg font-bold mb-3" style={{ color: customColors.primary }}>
+            About Me
+          </h3>
+          <p className="leading-relaxed">{resumeData.summary}</p>
+        </div>
+
+        {/* Work Experience */}
+        <div className="mb-6">
+          <h3 className="text-lg font-bold mb-3" style={{ color: customColors.primary }}>
+            Work Experience
+          </h3>
+          <div className="space-y-4">
+            {resumeData.experience.map((exp) => (
+              <div key={exp.id} className="border-l-4 pl-4" style={{ borderColor: customColors.accent }}>
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h4 className="font-bold">{exp.position}</h4>
+                    <p style={{ color: customColors.secondary }}>{exp.company}</p>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+                  </span>
+                </div>
+                <ul className="text-sm space-y-1">
+                  {exp.description.slice(0, 2).map((desc, i) => (
+                    <li key={i}>• {desc}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Education */}
+        <div>
+          <h3 className="text-lg font-bold mb-3" style={{ color: customColors.primary }}>
+            Education
+          </h3>
+          {resumeData.education.map((edu) => (
+            <div key={edu.id} className="mb-3">
+              <h4 className="font-bold">{edu.degree}</h4>
+              <p style={{ color: customColors.secondary }}>{edu.school}</p>
+              <p className="text-sm text-gray-500">{edu.startDate} - {edu.endDate}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Right sidebar */}
+      <div className="w-1/3 p-6" style={{ backgroundColor: customColors.vibrant || '#FEF3C7' }}>
+        {/* Contact Details */}
+        <div className="mb-6">
+          <h3 className="font-bold text-sm mb-3 uppercase" style={{ color: customColors.primary }}>
+            Contact Details
+          </h3>
+          <div className="text-xs space-y-2">
+            <div>
+              <span className="font-medium">Email</span>
+              <div>{resumeData.personalInfo.email}</div>
+            </div>
+            <div>
+              <span className="font-medium">Phone</span>
+              <div>{resumeData.personalInfo.phone}</div>
+            </div>
+            <div>
+              <span className="font-medium">Location</span>
+              <div>{resumeData.personalInfo.location}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Skills */}
+        <div className="mb-6">
+          <h3 className="font-bold text-sm mb-3 uppercase" style={{ color: customColors.primary }}>
+            Skills
+          </h3>
+          <div className="space-y-2">
+            {resumeData.skills.map((skill) => (
+              <div key={skill.id} className="text-xs">
+                <div className="flex justify-between mb-1">
+                  <span className="font-medium">{skill.name}</span>
+                </div>
+                <div className="w-full bg-white rounded-full h-1.5">
+                  <div
+                    className="h-1.5 rounded-full"
+                    style={{
+                      backgroundColor: customColors.accent,
+                      width: skill.level === 'Expert' ? '100%' : skill.level === 'Advanced' ? '80%' : skill.level === 'Intermediate' ? '60%' : '40%'
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Certifications */}
+        {resumeData.certifications.length > 0 && (
+          <div>
+            <h3 className="font-bold text-sm mb-3 uppercase" style={{ color: customColors.primary }}>
+              Certifications
+            </h3>
+            <div className="space-y-2 text-xs">
+              {resumeData.certifications.map((cert) => (
+                <div key={cert.id}>
+                  <div className="font-medium">{cert.name}</div>
+                  <div className="text-gray-600">{cert.issuer}</div>
+                  <div className="text-gray-500">{cert.date}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 
@@ -166,7 +861,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 <ul className="space-y-1 text-sm">
                   {exp.description.map((desc, i) => (
                     <li key={i} className="flex items-start">
-                      <span className="mr-2 mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: customColors.accent }} />
+                      <span className="text-gray-400 mr-2">•</span>
                       {desc}
                     </li>
                   ))}
@@ -885,6 +1580,18 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       <div className="mt-10 pt-6 border-t text-center" style={{ borderColor: customColors.primary }}>
         <div className="w-24 h-0.5 mx-auto" style={{ backgroundColor: customColors.accent }} />
       </div>
+    </div>
+  );
+
+  // Modern Single Column Layout
+  const renderModernLayout = () => (
+    <div className="bg-white p-8 min-h-[11in] w-full" style={{ fontFamily, color: customColors.text }}>
+      {renderModernHeader()}
+      {renderModernSummary()}
+      {renderModernExperience()}
+      {renderModernEducation()}
+      {renderModernSkills()}
+      {renderModernCertifications()}
     </div>
   );
 

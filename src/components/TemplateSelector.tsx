@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle, Eye, Layout, Palette, Grid, Clock, BookOpen, BarChart3, Minimize2, Type } from 'lucide-react';
+import { CheckCircle, Eye, Layout, Palette, Grid, Clock, BookOpen, BarChart3, Minimize2, Type, User, FileText, Zap, Target, Heart, Sparkles } from 'lucide-react';
 import { resumeTemplates } from '../data/templates';
 import { ResumeTemplate } from '../types/resume';
 
@@ -36,6 +36,12 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
       case 'infographic': return BarChart3;
       case 'compact': return Layout;
       case 'elegant-serif': return Type;
+      case 'skill-focus': return Target;
+      case 'profile-plus': return User;
+      case 'compact-connection': return FileText;
+      case 'pathfinder': return Zap;
+      case 'essence-of-you': return Heart;
+      case 'vibrant-view': return Sparkles;
       default: return Layout;
     }
   };
@@ -54,6 +60,182 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         </div>
 
         {/* Template preview based on layout */}
+        {template.layout === 'skill-focus' && (
+          <div className="h-full flex">
+            <div className="w-1/3 p-3" style={{ backgroundColor: template.colors.background || '#FEF3C7' }}>
+              <div className="w-8 h-8 rounded-full bg-gray-300 mx-auto mb-2"></div>
+              <div className="text-center text-xs space-y-1">
+                <div className="font-bold" style={{ color: template.colors.primary }}>John Doe</div>
+                <div style={{ color: template.colors.secondary }}>Developer</div>
+                <div className="space-y-1 mt-2">
+                  <div className="text-xs font-bold">Skills</div>
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="space-y-0.5">
+                      <div className="text-xs">Skill {i}</div>
+                      <div className="w-full bg-white rounded-full h-1">
+                        <div className="h-1 rounded-full" style={{ backgroundColor: template.colors.accent, width: `${i * 30}%` }}></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 p-3">
+              <div className="space-y-2">
+                <div className="h-2 rounded" style={{ backgroundColor: template.colors.primary, width: '70%' }}></div>
+                <div className="space-y-1">
+                  <div className="h-1 bg-gray-200 rounded"></div>
+                  <div className="h-1 bg-gray-200 rounded w-4/5"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {template.layout === 'profile-plus' && (
+          <div className="h-full p-3">
+            <div className="flex items-start space-x-3 mb-3">
+              <div className="w-12 h-12 rounded bg-gray-300 flex-shrink-0" style={{ backgroundColor: template.colors.photoFrame || '#E2E8F0' }}></div>
+              <div className="flex-1">
+                <div className="text-sm font-bold" style={{ color: template.colors.primary }}>John Doe</div>
+                <div className="text-xs" style={{ color: template.colors.secondary }}>Professional Title</div>
+                <div className="text-xs text-gray-500 mt-1">Contact Information</div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="h-1 rounded" style={{ backgroundColor: template.colors.primary, width: '60%' }}></div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <div className="h-1 bg-gray-200 rounded"></div>
+                  <div className="h-1 bg-gray-200 rounded w-3/4"></div>
+                </div>
+                <div className="space-y-1">
+                  <div className="h-1 bg-gray-200 rounded"></div>
+                  <div className="h-1 bg-gray-200 rounded w-2/3"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {template.layout === 'compact-connection' && (
+          <div className="h-full flex">
+            <div className="flex-1 p-3">
+              <div className="text-sm font-bold" style={{ color: template.colors.primary }}>John Doe</div>
+              <div className="text-xs" style={{ color: template.colors.secondary }}>Professional</div>
+              <div className="space-y-2 mt-2">
+                <div className="h-1 rounded" style={{ backgroundColor: template.colors.primary, width: '50%' }}></div>
+                <div className="space-y-1">
+                  <div className="h-1 bg-gray-200 rounded"></div>
+                  <div className="h-1 bg-gray-200 rounded w-4/5"></div>
+                </div>
+              </div>
+            </div>
+            <div className="w-1/3 p-3" style={{ backgroundColor: template.colors.highlight || '#E0F2FE' }}>
+              <div className="w-8 h-8 rounded bg-gray-300 ml-auto mb-2"></div>
+              <div className="text-xs space-y-1">
+                <div className="font-bold">Details</div>
+                <div className="h-1 bg-gray-300 rounded w-full"></div>
+                <div className="h-1 bg-gray-300 rounded w-3/4"></div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {template.layout === 'pathfinder' && (
+          <div className="h-full flex">
+            <div className="w-1/3 p-3" style={{ backgroundColor: template.colors.timeline || '#E0F2FE' }}>
+              <div className="text-center mb-2">
+                <div className="w-8 h-8 rounded-full bg-gray-300 mx-auto mb-1"></div>
+                <div className="text-xs font-bold" style={{ color: template.colors.primary }}>John Doe</div>
+              </div>
+              <div className="space-y-2">
+                {[1, 2].map(i => (
+                  <div key={i} className="flex items-center text-xs">
+                    <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: template.colors.accent }}></div>
+                    <div>Section {i}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 p-3">
+              <div className="relative">
+                <div className="absolute left-2 top-0 bottom-0 w-0.5" style={{ backgroundColor: template.colors.accent }}></div>
+                <div className="space-y-3">
+                  {[1, 2].map(i => (
+                    <div key={i} className="relative pl-6">
+                      <div className="absolute left-1 w-2 h-2 rounded-full" style={{ backgroundColor: template.colors.accent }}></div>
+                      <div className="bg-white p-2 rounded border text-xs">
+                        <div className="font-bold">Position {i}</div>
+                        <div style={{ color: template.colors.secondary }}>Company</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {template.layout === 'essence-of-you' && (
+          <div className="h-full p-4 text-center">
+            <div className="border-t border-b py-3 mb-3" style={{ borderColor: template.colors.primary }}>
+              <div className="text-lg font-bold" style={{ color: template.colors.primary }}>John Doe</div>
+              <div className="w-8 h-0.5 mx-auto my-1" style={{ backgroundColor: template.colors.accent }}></div>
+              <div className="text-sm" style={{ color: template.colors.secondary }}>Professional</div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <div className="font-bold mb-1">Experience</div>
+                <div className="space-y-1">
+                  <div className="h-1 bg-gray-200 rounded"></div>
+                  <div className="h-1 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              </div>
+              <div>
+                <div className="font-bold mb-1">Skills</div>
+                <div className="space-y-1">
+                  <div className="h-1 bg-gray-200 rounded"></div>
+                  <div className="h-1 bg-gray-200 rounded w-2/3"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {template.layout === 'vibrant-view' && (
+          <div className="h-full flex">
+            <div className="flex-1 p-3">
+              <div className="flex items-center mb-2">
+                <div className="w-8 h-8 rounded-full bg-gray-300 mr-2"></div>
+                <div>
+                  <div className="text-sm font-bold" style={{ color: template.colors.primary }}>John Doe</div>
+                  <div className="text-xs" style={{ color: template.colors.secondary }}>Professional</div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="border-l-2 pl-2" style={{ borderColor: template.colors.accent }}>
+                  <div className="text-xs font-bold">Position</div>
+                  <div className="text-xs" style={{ color: template.colors.secondary }}>Company</div>
+                </div>
+              </div>
+            </div>
+            <div className="w-1/3 p-3" style={{ backgroundColor: template.colors.vibrant || '#FEF3C7' }}>
+              <div className="text-xs space-y-2">
+                <div className="font-bold">Skills</div>
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="space-y-0.5">
+                    <div className="text-xs">Skill {i}</div>
+                    <div className="w-full bg-white rounded-full h-1">
+                      <div className="h-1 rounded-full" style={{ backgroundColor: template.colors.accent, width: `${i * 25}%` }}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {template.layout === 'two-column-sidebar' && (
           <div className="h-full flex">
             <div className="w-1/3 p-3" style={{ backgroundColor: template.colors.sidebar || '#F9FAFB' }}>
@@ -249,7 +431,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         )}
 
         {/* Default single column layout */}
-        {!['two-column-sidebar', 'creative-blocks', 'timeline', 'tech-grid', 'minimal-spaced', 'infographic', 'compact', 'academic', 'elegant-serif'].includes(template.layout) && (
+        {!['skill-focus', 'profile-plus', 'compact-connection', 'pathfinder', 'essence-of-you', 'vibrant-view', 'two-column-sidebar', 'creative-blocks', 'timeline', 'tech-grid', 'minimal-spaced', 'infographic', 'compact', 'academic', 'elegant-serif'].includes(template.layout) && (
           <div className="h-full p-4 text-xs" style={{ color: template.colors.text }}>
             <div className="mb-3">
               <div className="font-bold text-lg mb-1" style={{ color: template.colors.primary }}>

@@ -66,7 +66,7 @@ export interface ResumeTemplate {
   name: string;
   description: string;
   category: 'modern' | 'classic' | 'creative' | 'minimal';
-  layout: 'single-column' | 'two-column-sidebar' | 'creative-blocks' | 'minimal-spaced' | 'tech-grid' | 'timeline' | 'academic' | 'infographic' | 'compact' | 'elegant-serif';
+  layout: 'single-column' | 'two-column-sidebar' | 'creative-blocks' | 'minimal-spaced' | 'tech-grid' | 'timeline' | 'academic' | 'infographic' | 'compact' | 'elegant-serif' | 'skill-focus' | 'profile-plus' | 'compact-connection' | 'pathfinder' | 'essence-of-you' | 'vibrant-view';
   colors: {
     primary: string;
     secondary: string;
@@ -78,6 +78,9 @@ export interface ResumeTemplate {
     code?: string;
     timeline?: string;
     chart?: string;
+    photoFrame?: string;
+    subtle?: string;
+    vibrant?: string;
   };
   preview: string;
 }

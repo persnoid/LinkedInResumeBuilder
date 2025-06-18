@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Linkedin, Upload, AlertCircle, CheckCircle, FileText, ExternalLink } from 'lucide-react';
-import { parsePDFFile } from '../utils/pdfParser';
+import React, { useState, useEffect } from 'react';
+import { Linkedin, Upload, AlertCircle, CheckCircle, FileText, ExternalLink, Zap, Brain } from 'lucide-react';
+import { parsePDFFile, checkAIAvailability } from '../utils/pdfParser';
 import { ResumeData } from '../types/resume';
 
 interface LinkedInInputProps {
@@ -18,6 +18,24 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
   const [success, setSuccess] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [extractionMethod, setExtractionMethod] = useState<'url' | 'pdf' | null>(null);
+  const [aiStatus, setAiStatus] = useState<{
+    aiAvailable: boolean;
+    openaiConfigured: boolean;
+    message: string;
+  }>({
+    aiAvailable: false,
+    openaiConfigured: false,
+    message: 'Checking AI availability...'
+  });
+
+  // Check AI availability on component mount
+  useEffect(() => {
+    const checkAI = async () => {
+      const status = await checkAIAvailability();
+      setAiStatus(status);
+    };
+    checkAI();
+  }, []);
 
   const handleExtractData = async () => {
     if (!linkedinUrl.includes('linkedin.com')) {
@@ -70,7 +88,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
         });
       }, 200);
 
-      // Parse the PDF file
+      // Parse the PDF file using AI-powered backend
       const extractedData = await parsePDFFile(file);
       
       clearInterval(progressInterval);
@@ -174,6 +192,25 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
           <p className="text-gray-600 text-lg">
             Transform your LinkedIn profile into a professional resume in minutes
           </p>
+          
+          {/* AI Status Indicator */}
+          <div className={`mt-4 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+            aiStatus.aiAvailable 
+              ? 'bg-green-100 text-green-800' 
+              : 'bg-yellow-100 text-yellow-800'
+          }`}>
+            {aiStatus.aiAvailable ? (
+              <>
+                <Brain className="w-4 h-4 mr-1" />
+                AI-Powered Parsing Available
+              </>
+            ) : (
+              <>
+                <Zap className="w-4 h-4 mr-1" />
+                Standard Parsing Mode
+              </>
+            )}
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8">
@@ -225,7 +262,9 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Recommended Method</span>
+                <span className="px-2 bg-white text-gray-500">
+                  {aiStatus.aiAvailable ? 'AI-Powered Method (Recommended)' : 'Recommended Method'}
+                </span>
               </div>
             </div>
 
@@ -233,6 +272,12 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Upload LinkedIn PDF Export
+                {aiStatus.aiAvailable && (
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                    <Brain className="w-3 h-3 mr-1" />
+                    AI Enhanced
+                  </span>
+                )}
               </label>
               <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400 transition-colors">
                 <div className="space-y-1 text-center">
@@ -251,6 +296,11 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                     <p className="pl-1">or drag and drop</p>
                   </div>
                   <p className="text-xs text-gray-500">PDF up to 10MB</p>
+                  {aiStatus.aiAvailable && (
+                    <p className="text-xs text-blue-600 font-medium">
+                      ✨ AI will intelligently extract your information
+                    </p>
+                  )}
                 </div>
               </div>
               
@@ -258,12 +308,16 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
               {isLoading && extractionMethod === 'pdf' && uploadProgress > 0 && (
                 <div className="mt-4">
                   <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
-                    <span>Processing PDF...</span>
+                    <span>
+                      {aiStatus.aiAvailable ? 'AI Processing PDF...' : 'Processing PDF...'}
+                    </span>
                     <span>{uploadProgress}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
-                      className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        aiStatus.aiAvailable ? 'bg-blue-500' : 'bg-gray-500'
+                      }`}
                       style={{ width: `${uploadProgress}%` }}
                     ></div>
                   </div>
@@ -329,10 +383,32 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                     <li>Go to your LinkedIn profile</li>
                     <li>Click "More" → "Save to PDF"</li>
                     <li>Upload the downloaded PDF here for best results</li>
+                    {aiStatus.aiAvailable && (
+                      <li className="font-medium">✨ Our AI will intelligently extract all your information!</li>
+                    )}
                   </ol>
                 </div>
               </div>
             </div>
+
+            {/* AI Status Message */}
+            {!aiStatus.aiAvailable && aiStatus.message && (
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <Zap className="h-5 w-5 text-yellow-400" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-700">
+                      <strong>Note:</strong> {aiStatus.message}
+                    </p>
+                    <p className="text-xs text-yellow-600 mt-1">
+                      Standard parsing will still extract your information, but AI parsing provides enhanced accuracy.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

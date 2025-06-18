@@ -50,6 +50,53 @@ export const resumeTemplates: ResumeTemplate[] = [
     preview: '/templates/compact-connection.jpg'
   },
   {
+    id: 'pathfinder',
+    name: 'Pathfinder',
+    description: 'A unique roadmap design that illustrates your educational and career journey effectively',
+    category: 'creative',
+    layout: 'pathfinder',
+    colors: {
+      primary: '#0EA5E9',
+      secondary: '#0284C7',
+      accent: '#0EA5E9',
+      text: '#1F2937',
+      background: '#FFFFFF',
+      timeline: '#E0F2FE'
+    },
+    preview: '/templates/pathfinder.jpg'
+  },
+  {
+    id: 'essence-of-you',
+    name: 'Essence of You',
+    description: 'A minimalist layout that highlights your qualifications, keeping it clean and impactful',
+    category: 'minimal',
+    layout: 'essence-of-you',
+    colors: {
+      primary: '#1E293B',
+      secondary: '#475569',
+      accent: '#0EA5E9',
+      text: '#0F172A',
+      background: '#FFFFFF'
+    },
+    preview: '/templates/essence-of-you.jpg'
+  },
+  {
+    id: 'vibrant-view',
+    name: 'Vibrant View',
+    description: 'An engaging resume that brings your achievements to life with an energetic layout',
+    category: 'creative',
+    layout: 'vibrant-view',
+    colors: {
+      primary: '#F59E0B',
+      secondary: '#D97706',
+      accent: '#F59E0B',
+      text: '#1F2937',
+      background: '#FFFFFF',
+      vibrant: '#FEF3C7'
+    },
+    preview: '/templates/vibrant-view.jpg'
+  },
+  {
     id: 'modern',
     name: 'Modern Professional',
     description: 'Clean lines with bold accents and modern typography',

@@ -73,10 +73,17 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               <div key={index} className="mb-4 last:mb-0">
                 <div className="flex justify-between items-start mb-1">
                   <h4 className="font-medium">{exp.position}</h4>
-                  <span className="text-sm text-gray-600">{exp.startDate} - {exp.endDate}</span>
+                  <span className="text-sm text-gray-600">{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</span>
                 </div>
                 <p className="text-sm font-medium text-gray-700 mb-1">{exp.company}</p>
-                <p className="text-sm text-gray-600">{exp.description}</p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  {exp.description.map((desc, i) => (
+                    <li key={i} className="flex items-start">
+                      <span className="mr-2 mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: customColors.accent }} />
+                      {desc}
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
@@ -92,9 +99,9 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               <div key={index} className="mb-3 last:mb-0">
                 <div className="flex justify-between items-start mb-1">
                   <h4 className="font-medium">{edu.degree}</h4>
-                  <span className="text-sm text-gray-600">{edu.graduationDate}</span>
+                  <span className="text-sm text-gray-600">{edu.startDate} - {edu.endDate}</span>
                 </div>
-                <p className="text-sm text-gray-700">{edu.institution}</p>
+                <p className="text-sm text-gray-700">{edu.school}</p>
                 {edu.gpa && <p className="text-sm text-gray-600">GPA: {edu.gpa}</p>}
               </div>
             ))}
@@ -112,40 +119,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 <span
                   key={index}
                   className="px-3 py-1 text-sm rounded-full"
-                  style={{ backgroundColor: customColors.secondary, color: customColors.primary }}
+                  style={{ backgroundColor: customColors.accent + '20', color: customColors.text }}
                 >
-                  {skill}
+                  {skill.name} {skill.level && `(${skill.level})`}
                 </span>
               ))}
             </div>
-          </div>
-        );
-      case 'projects':
-        return resumeData.projects.length > 0 && (
-          <div key="projects" className="mb-6">
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: customColors.primary }}>
-              <Star size={18} />
-              Projects
-            </h3>
-            {resumeData.projects.map((project, index) => (
-              <div key={index} className="mb-4 last:mb-0">
-                <h4 className="font-medium mb-1">{project.name}</h4>
-                <p className="text-sm text-gray-600 mb-2">{project.description}</p>
-                {project.technologies && (
-                  <div className="flex flex-wrap gap-1">
-                    {project.technologies.map((tech, techIndex) => (
-                      <span
-                        key={techIndex}
-                        className="px-2 py-1 text-xs rounded"
-                        style={{ backgroundColor: customColors.secondary }}
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
           </div>
         );
       case 'certifications':
@@ -166,6 +145,26 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             ))}
           </div>
         );
+      case 'languages':
+        return resumeData.languages && resumeData.languages.length > 0 && (
+          <div key="languages" className="mb-6">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: customColors.primary }}>
+              <Globe size={18} />
+              Languages
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {resumeData.languages.map((language, index) => (
+                <span
+                  key={index}
+                  className="px-3 py-1 text-sm rounded-full"
+                  style={{ backgroundColor: customColors.secondary + '20', color: customColors.text }}
+                >
+                  {language.name} {language.level && `(${language.level})`}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
       default:
         return null;
     }
@@ -177,19 +176,19 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       <div className="p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2" style={{ color: customColors.primary }}>
-            {resumeData.personalInfo.fullName}
+            {resumeData.personalInfo.name}
           </h1>
           <p className="text-lg text-gray-600 mb-4">{resumeData.personalInfo.title}</p>
           {renderContactInfo()}
         </div>
         
-        {resumeData.personalInfo.summary && (
+        {resumeData.summary && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: customColors.primary }}>
               <User size={18} />
               Professional Summary
             </h3>
-            <p className="text-gray-700 leading-relaxed">{resumeData.personalInfo.summary}</p>
+            <p className="text-gray-700 leading-relaxed">{resumeData.summary}</p>
           </div>
         )}
 
@@ -201,58 +200,105 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
   const renderSkillFocusLayout = () => (
     <div className="max-w-4xl mx-auto bg-white shadow-lg" style={{ fontFamily }}>
       <div className="grid grid-cols-3 gap-0">
-        <div className="col-span-1 p-6" style={{ backgroundColor: customColors.primary }}>
-          <div className="text-white">
-            <h1 className="text-2xl font-bold mb-2">{resumeData.personalInfo.fullName}</h1>
-            <p className="text-lg mb-6 opacity-90">{resumeData.personalInfo.title}</p>
-            
-            <div className="space-y-3 text-sm mb-6">
-              {resumeData.personalInfo.email && (
-                <div className="flex items-center gap-2">
-                  <Mail size={14} />
-                  <span>{resumeData.personalInfo.email}</span>
-                </div>
-              )}
-              {resumeData.personalInfo.phone && (
-                <div className="flex items-center gap-2">
-                  <Phone size={14} />
-                  <span>{resumeData.personalInfo.phone}</span>
-                </div>
-              )}
-              {resumeData.personalInfo.location && (
-                <div className="flex items-center gap-2">
-                  <MapPin size={14} />
-                  <span>{resumeData.personalInfo.location}</span>
-                </div>
+        <div className="col-span-1 p-6" style={{ backgroundColor: customColors.background || '#FEF3C7' }}>
+          <div className="text-center mb-6">
+            <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-4 overflow-hidden">
+              {resumeData.personalInfo.photo ? (
+                <img 
+                  src={resumeData.personalInfo.photo} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Camera className="w-8 h-8 text-gray-400" />
               )}
             </div>
-
-            {resumeData.skills.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3">Skills</h3>
-                <div className="space-y-2">
-                  {resumeData.skills.map((skill, index) => (
-                    <div key={index} className="bg-white bg-opacity-20 px-3 py-1 rounded text-sm">
-                      {skill}
-                    </div>
-                  ))}
-                </div>
+            <h1 className="text-xl font-bold mb-2" style={{ color: customColors.primary }}>
+              {resumeData.personalInfo.name}
+            </h1>
+            <p className="text-sm mb-4" style={{ color: customColors.secondary }}>
+              {resumeData.personalInfo.title}
+            </p>
+          </div>
+          
+          <div className="space-y-3 text-sm mb-6">
+            {resumeData.personalInfo.email && (
+              <div className="flex items-center gap-2">
+                <Mail size={14} />
+                <span>{resumeData.personalInfo.email}</span>
+              </div>
+            )}
+            {resumeData.personalInfo.phone && (
+              <div className="flex items-center gap-2">
+                <Phone size={14} />
+                <span>{resumeData.personalInfo.phone}</span>
+              </div>
+            )}
+            {resumeData.personalInfo.location && (
+              <div className="flex items-center gap-2">
+                <MapPin size={14} />
+                <span>{resumeData.personalInfo.location}</span>
               </div>
             )}
           </div>
-        </div>
-        
-        <div className="col-span-2 p-6">
-          {resumeData.personalInfo.summary && (
+
+          {resumeData.skills.length > 0 && (
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
-                Professional Summary
+                Skills
               </h3>
-              <p className="text-gray-700 leading-relaxed">{resumeData.personalInfo.summary}</p>
+              <div className="space-y-3">
+                {resumeData.skills.map((skill, index) => (
+                  <div key={index}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>{skill.name}</span>
+                      <span className="text-xs">{skill.level}</span>
+                    </div>
+                    <div className="w-full bg-white bg-opacity-50 rounded-full h-2">
+                      <div 
+                        className="h-2 rounded-full" 
+                        style={{ 
+                          backgroundColor: customColors.accent,
+                          width: skill.level === 'Expert' ? '100%' : 
+                                 skill.level === 'Advanced' ? '80%' : 
+                                 skill.level === 'Intermediate' ? '60%' : '40%'
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
-          {sectionOrder.filter(s => s !== 'skills').map(section => renderSection(section))}
+          {resumeData.languages && resumeData.languages.length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
+                Languages
+              </h3>
+              <div className="space-y-2">
+                {resumeData.languages.map((language, index) => (
+                  <div key={index} className="text-sm">
+                    <span className="font-medium">{language.name}</span>
+                    {language.level && <span className="text-xs ml-2">({language.level})</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <div className="col-span-2 p-6">
+          {resumeData.summary && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
+                About Me
+              </h3>
+              <p className="text-gray-700 leading-relaxed">{resumeData.summary}</p>
+            </div>
+          )}
+
+          {sectionOrder.filter(s => s !== 'skills' && s !== 'languages').map(section => renderSection(section))}
         </div>
       </div>
     </div>
@@ -260,30 +306,34 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
   const renderProfilePlusLayout = () => (
     <div className="max-w-4xl mx-auto bg-white shadow-lg" style={{ fontFamily }}>
-      <div className="relative">
-        <div className="h-32" style={{ backgroundColor: customColors.primary }}></div>
-        <div className="absolute top-16 left-8">
-          <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg">
-            <User size={40} style={{ color: customColors.primary }} />
+      <div className="p-8">
+        <div className="flex items-start gap-6 mb-8">
+          <div className="w-24 h-24 rounded-lg bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0" style={{ backgroundColor: customColors.photoFrame || '#E2E8F0' }}>
+            {resumeData.personalInfo.photo ? (
+              <img 
+                src={resumeData.personalInfo.photo} 
+                alt="Profile" 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <User size={32} style={{ color: customColors.primary }} />
+            )}
+          </div>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold mb-2" style={{ color: customColors.primary }}>
+              {resumeData.personalInfo.name}
+            </h1>
+            <p className="text-lg text-gray-600 mb-4">{resumeData.personalInfo.title}</p>
+            {renderContactInfo()}
           </div>
         </div>
-      </div>
-      
-      <div className="pt-16 p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: customColors.primary }}>
-            {resumeData.personalInfo.fullName}
-          </h1>
-          <p className="text-lg text-gray-600 mb-4">{resumeData.personalInfo.title}</p>
-          {renderContactInfo()}
-        </div>
 
-        {resumeData.personalInfo.summary && (
+        {resumeData.summary && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
               About Me
             </h3>
-            <p className="text-gray-700 leading-relaxed">{resumeData.personalInfo.summary}</p>
+            <p className="text-gray-700 leading-relaxed">{resumeData.summary}</p>
           </div>
         )}
 
@@ -294,27 +344,199 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
   const renderCompactConnectionLayout = () => (
     <div className="max-w-4xl mx-auto bg-white shadow-lg" style={{ fontFamily }}>
-      <div className="p-6">
-        <div className="flex items-start gap-6 mb-6">
-          <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
-            <User size={32} style={{ color: customColors.primary }} />
+      <div className="flex">
+        <div className="flex-1 p-6">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-16 h-16 rounded-lg bg-gray-200 flex items-center justify-center overflow-hidden">
+              {resumeData.personalInfo.photo ? (
+                <img 
+                  src={resumeData.personalInfo.photo} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User size={24} style={{ color: customColors.primary }} />
+              )}
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold mb-1" style={{ color: customColors.primary }}>
+                {resumeData.personalInfo.name}
+              </h1>
+              <p className="text-lg text-gray-600 mb-2">{resumeData.personalInfo.title}</p>
+              <div className="text-sm text-gray-600">
+                {resumeData.personalInfo.email} | {resumeData.personalInfo.phone}
+              </div>
+            </div>
           </div>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold mb-1" style={{ color: customColors.primary }}>
-              {resumeData.personalInfo.fullName}
+
+          {resumeData.summary && (
+            <div className="mb-6">
+              <p className="text-gray-700 leading-relaxed">{resumeData.summary}</p>
+            </div>
+          )}
+
+          {sectionOrder.slice(0, Math.ceil(sectionOrder.length / 2)).map(section => renderSection(section))}
+        </div>
+
+        <div className="w-80 p-6" style={{ backgroundColor: customColors.highlight || '#E0F2FE' }}>
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
+              Details about me
+            </h3>
+            <div className="space-y-2 text-sm">
+              <div>
+                <span className="font-medium">Contact Number:</span>
+                <div>{resumeData.personalInfo.phone}</div>
+              </div>
+              <div>
+                <span className="font-medium">Email:</span>
+                <div>{resumeData.personalInfo.email}</div>
+              </div>
+              <div>
+                <span className="font-medium">Residential Location:</span>
+                <div>{resumeData.personalInfo.location}</div>
+              </div>
+              <div>
+                <span className="font-medium">Date of Birth:</span>
+                <div>July 23 1995</div>
+              </div>
+            </div>
+          </div>
+
+          {sectionOrder.slice(Math.ceil(sectionOrder.length / 2)).map(section => renderSection(section))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderPathfinderLayout = () => (
+    <div className="max-w-4xl mx-auto bg-white shadow-lg" style={{ fontFamily }}>
+      <div className="flex">
+        <div className="w-80 p-6" style={{ backgroundColor: customColors.timeline || '#E0F2FE' }}>
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-4 shadow-md overflow-hidden">
+              {resumeData.personalInfo.photo ? (
+                <img 
+                  src={resumeData.personalInfo.photo} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User size={24} style={{ color: customColors.primary }} />
+              )}
+            </div>
+            <h1 className="text-xl font-bold mb-2" style={{ color: customColors.primary }}>
+              {resumeData.personalInfo.name}
             </h1>
-            <p className="text-lg text-gray-600 mb-3">{resumeData.personalInfo.title}</p>
+            <p className="text-sm" style={{ color: customColors.secondary }}>
+              {resumeData.personalInfo.title}
+            </p>
+          </div>
+
+          <div className="space-y-4 text-sm">
+            {resumeData.personalInfo.email && (
+              <div className="flex items-center gap-2">
+                <Mail size={14} />
+                <span>{resumeData.personalInfo.email}</span>
+              </div>
+            )}
+            {resumeData.personalInfo.phone && (
+              <div className="flex items-center gap-2">
+                <Phone size={14} />
+                <span>{resumeData.personalInfo.phone}</span>
+              </div>
+            )}
+            {resumeData.personalInfo.location && (
+              <div className="flex items-center gap-2">
+                <MapPin size={14} />
+                <span>{resumeData.personalInfo.location}</span>
+              </div>
+            )}
+          </div>
+
+          {resumeData.skills.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
+                Skills
+              </h3>
+              <div className="space-y-2">
+                {resumeData.skills.map((skill, index) => (
+                  <div key={index} className="bg-white p-2 rounded text-sm">
+                    {skill.name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 p-6">
+          {resumeData.summary && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
+                Career Path
+              </h3>
+              <p className="text-gray-700 leading-relaxed">{resumeData.summary}</p>
+            </div>
+          )}
+
+          {resumeData.experience.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4" style={{ color: customColors.primary }}>
+                Work Experience
+              </h3>
+              <div className="relative">
+                <div className="absolute left-4 top-0 bottom-0 w-0.5" style={{ backgroundColor: customColors.accent }}></div>
+                {resumeData.experience.map((exp, index) => (
+                  <div key={index} className="relative pl-12 pb-6 last:pb-0">
+                    <div className="absolute left-2 w-4 h-4 rounded-full" style={{ backgroundColor: customColors.accent }}></div>
+                    <div className="bg-white p-4 rounded-lg border">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-semibold">{exp.position}</h4>
+                        <span className="text-sm text-gray-500">
+                          {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+                        </span>
+                      </div>
+                      <p className="font-medium text-gray-700 mb-2">{exp.company}</p>
+                      <p className="text-sm text-gray-600">{exp.description[0]}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {sectionOrder.filter(s => s !== 'experience' && s !== 'skills').map(section => renderSection(section))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderEssenceOfYouLayout = () => (
+    <div className="max-w-4xl mx-auto bg-white shadow-lg" style={{ fontFamily }}>
+      <div className="p-8">
+        <div className="text-center mb-8 p-6 border-t-2 border-b-2" style={{ borderColor: customColors.primary }}>
+          <h1 className="text-3xl font-bold mb-3" style={{ color: customColors.primary }}>
+            {resumeData.personalInfo.name}
+          </h1>
+          <div className="w-16 h-0.5 mx-auto mb-3" style={{ backgroundColor: customColors.accent }}></div>
+          <p className="text-lg italic" style={{ color: customColors.secondary }}>
+            {resumeData.personalInfo.title}
+          </p>
+          <div className="mt-4">
             {renderContactInfo()}
           </div>
         </div>
 
-        {resumeData.personalInfo.summary && (
-          <div className="mb-6">
-            <p className="text-gray-700 leading-relaxed">{resumeData.personalInfo.summary}</p>
+        {resumeData.summary && (
+          <div className="mb-8 text-center">
+            <p className="text-lg leading-relaxed italic max-w-3xl mx-auto">
+              "{resumeData.summary}"
+            </p>
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-8">
           <div>
             {sectionOrder.slice(0, Math.ceil(sectionOrder.length / 2)).map(section => renderSection(section))}
           </div>
@@ -326,94 +548,99 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
     </div>
   );
 
-  const renderPathfinderLayout = () => (
-    <div className="max-w-4xl mx-auto bg-white shadow-lg" style={{ fontFamily }}>
-      <div className="relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 opacity-10" style={{ backgroundColor: customColors.primary }}>
-          <div className="w-full h-full rounded-full transform translate-x-32 -translate-y-32"></div>
-        </div>
-        
-        <div className="relative p-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2" style={{ color: customColors.primary }}>
-              {resumeData.personalInfo.fullName}
-            </h1>
-            <p className="text-xl text-gray-600 mb-4">{resumeData.personalInfo.title}</p>
-            {renderContactInfo()}
-          </div>
-
-          {resumeData.personalInfo.summary && (
-            <div className="mb-8 p-4 rounded-lg" style={{ backgroundColor: customColors.secondary }}>
-              <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
-                Career Path
-              </h3>
-              <p className="text-gray-700 leading-relaxed">{resumeData.personalInfo.summary}</p>
-            </div>
-          )}
-
-          {sectionOrder.map(section => renderSection(section))}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderEssenceOfYouLayout = () => (
-    <div className="max-w-4xl mx-auto bg-white shadow-lg" style={{ fontFamily }}>
-      <div className="p-8">
-        <div className="text-center mb-8 p-6 rounded-lg" style={{ backgroundColor: customColors.secondary }}>
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: customColors.primary }}>
-            <User size={24} className="text-white" />
-          </div>
-          <h1 className="text-3xl font-bold mb-2" style={{ color: customColors.primary }}>
-            {resumeData.personalInfo.fullName}
-          </h1>
-          <p className="text-lg text-gray-600 mb-4">{resumeData.personalInfo.title}</p>
-          {renderContactInfo()}
-        </div>
-
-        {resumeData.personalInfo.summary && (
-          <div className="mb-8 text-center">
-            <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
-              My Essence
-            </h3>
-            <p className="text-gray-700 leading-relaxed max-w-3xl mx-auto">{resumeData.personalInfo.summary}</p>
-          </div>
-        )}
-
-        {sectionOrder.map(section => renderSection(section))}
-      </div>
-    </div>
-  );
-
   const renderVibrantViewLayout = () => (
     <div className="max-w-4xl mx-auto bg-white shadow-lg" style={{ fontFamily }}>
       <div className="relative">
         <div className="h-4" style={{ background: `linear-gradient(90deg, ${customColors.primary}, ${customColors.secondary})` }}></div>
         
-        <div className="p-8">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: customColors.primary }}>
-              <User size={24} className="text-white" />
+        <div className="flex">
+          <div className="flex-1 p-6">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                {resumeData.personalInfo.photo ? (
+                  <img 
+                    src={resumeData.personalInfo.photo} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User size={24} style={{ color: customColors.primary }} />
+                )}
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold mb-1" style={{ color: customColors.primary }}>
+                  {resumeData.personalInfo.name}
+                </h1>
+                <p className="text-lg text-gray-600">{resumeData.personalInfo.title}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold mb-1" style={{ color: customColors.primary }}>
-                {resumeData.personalInfo.fullName}
-              </h1>
-              <p className="text-lg text-gray-600">{resumeData.personalInfo.title}</p>
-            </div>
+
+            {resumeData.summary && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
+                  About Me
+                </h3>
+                <p className="text-gray-700 leading-relaxed">{resumeData.summary}</p>
+              </div>
+            )}
+
+            {sectionOrder.filter(s => s !== 'skills').map(section => renderSection(section))}
           </div>
 
-          <div className="mb-8">
-            {renderContactInfo()}
-          </div>
-
-          {resumeData.personalInfo.summary && (
-            <div className="mb-8 p-4 border-l-4" style={{ borderColor: customColors.primary, backgroundColor: customColors.secondary }}>
-              <p className="text-gray-700 leading-relaxed">{resumeData.personalInfo.summary}</p>
+          <div className="w-80 p-6" style={{ backgroundColor: customColors.vibrant || '#FEF3C7' }}>
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
+                Details about me
+              </h3>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <span className="font-medium">Contact Number:</span>
+                  <div>{resumeData.personalInfo.phone}</div>
+                </div>
+                <div>
+                  <span className="font-medium">Email:</span>
+                  <div>{resumeData.personalInfo.email}</div>
+                </div>
+                <div>
+                  <span className="font-medium">Residential Location:</span>
+                  <div>{resumeData.personalInfo.location}</div>
+                </div>
+                <div>
+                  <span className="font-medium">Date of Birth:</span>
+                  <div>July 23 1995</div>
+                </div>
+              </div>
             </div>
-          )}
 
-          {sectionOrder.map(section => renderSection(section))}
+            {resumeData.skills.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
+                  Skills
+                </h3>
+                <div className="space-y-3">
+                  {resumeData.skills.map((skill, index) => (
+                    <div key={index}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>{skill.name}</span>
+                        <span className="text-xs">{skill.level}</span>
+                      </div>
+                      <div className="w-full bg-white rounded-full h-2">
+                        <div 
+                          className="h-2 rounded-full" 
+                          style={{ 
+                            backgroundColor: customColors.accent,
+                            width: skill.level === 'Expert' ? '100%' : 
+                                   skill.level === 'Advanced' ? '80%' : 
+                                   skill.level === 'Intermediate' ? '60%' : '40%'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -425,7 +652,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
         <div className="p-8">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold mb-2" style={{ color: customColors.primary }}>
-              {resumeData.personalInfo.fullName}
+              {resumeData.personalInfo.name}
             </h1>
             <p className="text-xl text-gray-600 mb-4">{resumeData.personalInfo.title}</p>
             <div className="flex justify-center">
@@ -433,12 +660,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             </div>
           </div>
 
-          {resumeData.personalInfo.summary && (
+          {resumeData.summary && (
             <div className="mb-8 text-center">
               <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
                 Executive Summary
               </h3>
-              <p className="text-gray-700 leading-relaxed max-w-3xl mx-auto">{resumeData.personalInfo.summary}</p>
+              <p className="text-gray-700 leading-relaxed max-w-3xl mx-auto">{resumeData.summary}</p>
             </div>
           )}
 
@@ -455,24 +682,32 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
         
         <div className="p-8 pt-12">
           <div className="flex items-start gap-6 mb-8">
-            <div className="w-24 h-24 rounded-lg flex items-center justify-center" style={{ backgroundColor: customColors.secondary }}>
-              <Camera size={32} style={{ color: customColors.primary }} />
+            <div className="w-24 h-24 rounded-lg bg-gray-200 flex items-center justify-center overflow-hidden" style={{ backgroundColor: customColors.secondary }}>
+              {resumeData.personalInfo.photo ? (
+                <img 
+                  src={resumeData.personalInfo.photo} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Camera size={32} style={{ color: customColors.primary }} />
+              )}
             </div>
             <div className="flex-1">
               <h1 className="text-3xl font-bold mb-2" style={{ color: customColors.primary }}>
-                {resumeData.personalInfo.fullName}
+                {resumeData.personalInfo.name}
               </h1>
               <p className="text-lg text-gray-600 mb-4">{resumeData.personalInfo.title}</p>
               {renderContactInfo()}
             </div>
           </div>
 
-          {resumeData.personalInfo.summary && (
+          {resumeData.summary && (
             <div className="mb-8">
               <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
                 Creative Vision
               </h3>
-              <p className="text-gray-700 leading-relaxed">{resumeData.personalInfo.summary}</p>
+              <p className="text-gray-700 leading-relaxed">{resumeData.summary}</p>
             </div>
           )}
 
@@ -487,15 +722,15 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       <div className="p-8">
         <div className="mb-8">
           <h1 className="text-4xl font-light mb-2 text-gray-900">
-            {resumeData.personalInfo.fullName}
+            {resumeData.personalInfo.name}
           </h1>
           <p className="text-lg text-gray-600 mb-4">{resumeData.personalInfo.title}</p>
           {renderContactInfo()}
         </div>
 
-        {resumeData.personalInfo.summary && (
+        {resumeData.summary && (
           <div className="mb-8">
-            <p className="text-gray-700 leading-relaxed">{resumeData.personalInfo.summary}</p>
+            <p className="text-gray-700 leading-relaxed">{resumeData.summary}</p>
           </div>
         )}
 
@@ -511,7 +746,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           <div className="flex items-center gap-3 mb-4">
             <Code size={24} style={{ color: customColors.primary }} />
             <h1 className="text-3xl font-bold" style={{ color: customColors.primary }}>
-              {resumeData.personalInfo.fullName}
+              {resumeData.personalInfo.name}
             </h1>
           </div>
           <p className="text-lg text-gray-300 mb-4">{resumeData.personalInfo.title}</p>
@@ -537,13 +772,13 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           </div>
         </div>
 
-        {resumeData.personalInfo.summary && (
+        {resumeData.summary && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: customColors.primary }}>
               <TrendingUp size={18} />
               System Overview
             </h3>
-            <p className="text-gray-300 leading-relaxed">{resumeData.personalInfo.summary}</p>
+            <p className="text-gray-300 leading-relaxed">{resumeData.summary}</p>
           </div>
         )}
 
@@ -561,10 +796,14 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                       <div key={index} className="mb-4 last:mb-0 p-4 bg-gray-800 rounded">
                         <div className="flex justify-between items-start mb-1">
                           <h4 className="font-medium text-white">{exp.position}</h4>
-                          <span className="text-sm text-gray-400">{exp.startDate} - {exp.endDate}</span>
+                          <span className="text-sm text-gray-400">{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</span>
                         </div>
                         <p className="text-sm font-medium text-gray-300 mb-1">{exp.company}</p>
-                        <p className="text-sm text-gray-400">{exp.description}</p>
+                        <ul className="text-sm text-gray-400 space-y-1">
+                          {exp.description.map((desc, i) => (
+                            <li key={i}>• {desc}</li>
+                          ))}
+                        </ul>
                       </div>
                     ))}
                   </div>
@@ -583,7 +822,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                           className="px-3 py-1 text-sm rounded bg-gray-800 text-gray-300 border"
                           style={{ borderColor: customColors.primary }}
                         >
-                          {skill}
+                          {skill.name}
                         </span>
                       ))}
                     </div>
@@ -603,18 +842,18 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       <div className="p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2" style={{ color: customColors.primary }}>
-            {resumeData.personalInfo.fullName}
+            {resumeData.personalInfo.name}
           </h1>
           <p className="text-lg text-gray-600 mb-4">{resumeData.personalInfo.title}</p>
           {renderContactInfo()}
         </div>
 
-        {resumeData.personalInfo.summary && (
+        {resumeData.summary && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
               Professional Journey
             </h3>
-            <p className="text-gray-700 leading-relaxed">{resumeData.personalInfo.summary}</p>
+            <p className="text-gray-700 leading-relaxed">{resumeData.summary}</p>
           </div>
         )}
 
@@ -633,11 +872,15 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-medium">{exp.position}</h4>
                       <span className="text-sm text-gray-600 bg-white px-2 py-1 rounded">
-                        {exp.startDate} - {exp.endDate}
+                        {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
                       </span>
                     </div>
                     <p className="text-sm font-medium text-gray-700 mb-2">{exp.company}</p>
-                    <p className="text-sm text-gray-600">{exp.description}</p>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      {exp.description.map((desc, i) => (
+                        <li key={i}>• {desc}</li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               ))}
@@ -655,18 +898,18 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       <div className="border-l-8 pl-8 pr-8 py-8" style={{ borderColor: customColors.primary }}>
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2" style={{ color: customColors.primary }}>
-            {resumeData.personalInfo.fullName}
+            {resumeData.personalInfo.name}
           </h1>
           <p className="text-lg text-gray-600 mb-4">{resumeData.personalInfo.title}</p>
           {renderContactInfo()}
         </div>
 
-        {resumeData.personalInfo.summary && (
+        {resumeData.summary && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
               Research Interests
             </h3>
-            <p className="text-gray-700 leading-relaxed">{resumeData.personalInfo.summary}</p>
+            <p className="text-gray-700 leading-relaxed">{resumeData.summary}</p>
           </div>
         )}
 
@@ -680,18 +923,18 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       <div className="p-8">
         <div className="text-center mb-8 p-6 rounded-lg" style={{ backgroundColor: customColors.secondary }}>
           <h1 className="text-3xl font-bold mb-2" style={{ color: customColors.primary }}>
-            {resumeData.personalInfo.fullName}
+            {resumeData.personalInfo.name}
           </h1>
           <p className="text-lg text-gray-600 mb-4">{resumeData.personalInfo.title}</p>
           {renderContactInfo()}
         </div>
 
-        {resumeData.personalInfo.summary && (
+        {resumeData.summary && (
           <div className="mb-8 text-center">
             <div className="inline-block p-4 rounded-full mb-4" style={{ backgroundColor: customColors.primary }}>
               <User size={32} className="text-white" />
             </div>
-            <p className="text-gray-700 leading-relaxed max-w-3xl mx-auto">{resumeData.personalInfo.summary}</p>
+            <p className="text-gray-700 leading-relaxed max-w-3xl mx-auto">{resumeData.summary}</p>
           </div>
         )}
 
@@ -711,7 +954,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       <div className="p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold mb-1" style={{ color: customColors.primary }}>
-            {resumeData.personalInfo.fullName}
+            {resumeData.personalInfo.name}
           </h1>
           <p className="text-lg text-gray-600 mb-3">{resumeData.personalInfo.title}</p>
           <div className="text-sm">
@@ -719,9 +962,9 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           </div>
         </div>
 
-        {resumeData.personalInfo.summary && (
+        {resumeData.summary && (
           <div className="mb-6">
-            <p className="text-sm text-gray-700 leading-relaxed">{resumeData.personalInfo.summary}</p>
+            <p className="text-sm text-gray-700 leading-relaxed">{resumeData.summary}</p>
           </div>
         )}
 
@@ -737,16 +980,16 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       <div className="p-8">
         <div className="text-center mb-8 pb-6 border-b-2" style={{ borderColor: customColors.primary }}>
           <h1 className="text-4xl font-light mb-2" style={{ color: customColors.primary }}>
-            {resumeData.personalInfo.fullName}
+            {resumeData.personalInfo.name}
           </h1>
           <p className="text-xl text-gray-600 mb-4 italic">{resumeData.personalInfo.title}</p>
           {renderContactInfo()}
         </div>
 
-        {resumeData.personalInfo.summary && (
+        {resumeData.summary && (
           <div className="mb-8 text-center">
             <div className="max-w-3xl mx-auto">
-              <p className="text-gray-700 leading-relaxed italic text-lg">"{resumeData.personalInfo.summary}"</p>
+              <p className="text-gray-700 leading-relaxed italic text-lg">"{resumeData.summary}"</p>
             </div>
           </div>
         )}

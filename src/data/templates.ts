@@ -97,6 +97,56 @@ export const resumeTemplates: ResumeTemplate[] = [
     preview: '/templates/vibrant-view.jpg'
   },
   {
+    id: 'double-column',
+    name: 'Double Column',
+    description: 'Free, Two Column CV template. Perfect for any industry.',
+    category: 'modern',
+    layout: 'double-column',
+    colors: {
+      primary: '#2563EB',
+      secondary: '#1E40AF',
+      accent: '#10B981',
+      text: '#1F2937',
+      background: '#FFFFFF',
+      sidebar: '#F8FAFC',
+      highlight: '#EFF6FF'
+    },
+    preview: '/templates/double-column.jpg'
+  },
+  {
+    id: 'ivy-league',
+    name: 'Ivy League',
+    description: 'The classic Harvard CV template, updated for the 21st century with a refined ATS-friendly design that recruiters love.',
+    category: 'classic',
+    layout: 'ivy-league',
+    colors: {
+      primary: '#1F2937',
+      secondary: '#374151',
+      accent: '#3B82F6',
+      text: '#111827',
+      background: '#FFFFFF',
+      subtle: '#F9FAFB'
+    },
+    preview: '/templates/ivy-league.jpg'
+  },
+  {
+    id: 'elegant-dark',
+    name: 'Elegant',
+    description: 'Modern CV template. Beautiful, stylish design that highlights your background and achievements.',
+    category: 'modern',
+    layout: 'elegant-dark',
+    colors: {
+      primary: '#FFFFFF',
+      secondary: '#E5E7EB',
+      accent: '#60A5FA',
+      text: '#FFFFFF',
+      background: '#1E293B',
+      sidebar: '#334155',
+      highlight: '#475569'
+    },
+    preview: '/templates/elegant-dark.jpg'
+  },
+  {
     id: 'modern',
     name: 'Modern Professional',
     description: 'Clean lines with bold accents and modern typography',

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ResumeData } from '../types/resume';
-import { Mail, Phone, MapPin, Globe, Linkedin, Calendar, Code, Award, BookOpen, Briefcase, User, Star, TrendingUp } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, Linkedin, Calendar, Code, Award, BookOpen, Briefcase, User, Star, TrendingUp, Languages } from 'lucide-react';
 
 interface ResumePreviewProps {
   resumeData: ResumeData;
@@ -28,6 +28,37 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
   // A4 dimensions in pixels (at 96 DPI)
   const A4_WIDTH = 794; // 210mm
   const A4_HEIGHT = 1123; // 297mm
+
+  // Helper function to get proficiency level percentage
+  const getProficiencyPercentage = (level: string): number => {
+    const levelMap: { [key: string]: number } = {
+      'beginner': 25,
+      'elementary': 35,
+      'intermediate': 50,
+      'upper intermediate': 65,
+      'advanced': 80,
+      'proficient': 85,
+      'fluent': 90,
+      'native': 100,
+      'native or bilingual': 100,
+      'full professional': 85,
+      'professional working': 75,
+      'limited working': 60,
+      'conversational': 55,
+      'basic': 30
+    };
+    
+    const normalizedLevel = level.toLowerCase().trim();
+    return levelMap[normalizedLevel] || 50; // Default to intermediate if not found
+  };
+
+  // Helper function to get proficiency color
+  const getProficiencyColor = (percentage: number): string => {
+    if (percentage >= 90) return '#10B981'; // Green for native/fluent
+    if (percentage >= 75) return '#3B82F6'; // Blue for advanced
+    if (percentage >= 50) return '#F59E0B'; // Orange for intermediate
+    return '#6B7280'; // Gray for beginner
+  };
 
   // Helper function to split content into pages
   const splitIntoPages = (content: React.ReactNode[], maxHeight: number = A4_HEIGHT - 100) => {
@@ -65,10 +96,108 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       if (type === 'education') return 80;
       if (type === 'skills') return 120;
       if (type === 'certifications') return 100;
-      if (type === 'languages') return 80;
+      if (type === 'languages') return 120; // Increased for new design
     }
     return 100; // Default
   };
+
+  // Modern Languages Section Component
+  const renderModernLanguages = () => (
+    resumeData.languages && resumeData.languages.length > 0 && (
+      <div className="mb-8">
+        <div className="flex items-center mb-6">
+          <div 
+            className="w-10 h-10 rounded-xl flex items-center justify-center mr-4"
+            style={{ backgroundColor: customColors.accent + '20' }}
+          >
+            <Languages className="w-5 h-5" style={{ color: customColors.accent }} />
+          </div>
+          <h3 className="text-xl font-bold" style={{ color: customColors.primary }}>
+            LANGUAGES
+          </h3>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {resumeData.languages.map((language) => {
+            const percentage = getProficiencyPercentage(language.level);
+            const proficiencyColor = getProficiencyColor(percentage);
+            
+            return (
+              <div key={language.id} className="group">
+                {/* Language Header */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <div 
+                      className="w-3 h-3 rounded-full mr-3 shadow-sm"
+                      style={{ backgroundColor: proficiencyColor }}
+                    />
+                    <h4 className="font-semibold text-lg" style={{ color: customColors.text }}>
+                      {language.name}
+                    </h4>
+                  </div>
+                  <span 
+                    className="text-sm font-medium px-3 py-1 rounded-full"
+                    style={{ 
+                      backgroundColor: proficiencyColor + '15',
+                      color: proficiencyColor
+                    }}
+                  >
+                    {language.level}
+                  </span>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="relative">
+                  <div 
+                    className="w-full h-2 rounded-full overflow-hidden"
+                    style={{ backgroundColor: customColors.accent + '10' }}
+                  >
+                    <div
+                      className="h-full rounded-full transition-all duration-700 ease-out group-hover:shadow-lg"
+                      style={{
+                        backgroundColor: proficiencyColor,
+                        width: `${percentage}%`,
+                        boxShadow: `0 0 10px ${proficiencyColor}40`
+                      }}
+                    />
+                  </div>
+                  
+                  {/* Percentage Indicator */}
+                  <div 
+                    className="absolute top-0 h-2 w-0.5 bg-white rounded-full shadow-sm transition-all duration-700"
+                    style={{ left: `${percentage}%`, transform: 'translateX(-50%)' }}
+                  />
+                </div>
+
+                {/* Proficiency Description */}
+                <div className="mt-2 text-xs text-gray-500">
+                  {percentage >= 90 && "Native or near-native proficiency"}
+                  {percentage >= 75 && percentage < 90 && "Advanced professional proficiency"}
+                  {percentage >= 50 && percentage < 75 && "Intermediate working proficiency"}
+                  {percentage < 50 && "Basic conversational ability"}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Language Summary Stats */}
+        <div className="mt-8 p-4 rounded-xl" style={{ backgroundColor: customColors.accent + '08' }}>
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center">
+              <Globe className="w-4 h-4 mr-2" style={{ color: customColors.accent }} />
+              <span style={{ color: customColors.text }}>
+                Multilingual Professional
+              </span>
+            </div>
+            <span className="font-medium" style={{ color: customColors.accent }}>
+              {resumeData.languages.length} Language{resumeData.languages.length > 1 ? 's' : ''}
+            </span>
+          </div>
+        </div>
+      </div>
+    )
+  );
 
   // Template-specific layouts with multi-page support
   const renderTemplate = () => {
@@ -116,7 +245,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       ...resumeData.experience.map((exp, i) => ({ type: 'experience', content: renderExperienceItem(exp, i) })),
       ...resumeData.education.map((edu, i) => ({ type: 'education', content: renderEducationItem(edu, i) })),
       { type: 'certifications', content: renderCertificationsSection() },
-      { type: 'languages', content: renderLanguagesSection() }
+      { type: 'languages', content: renderModernLanguages() }
     ];
 
     const pages = splitIntoPages(content.map(item => item.content));
@@ -200,19 +329,37 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                     </div>
                   </div>
 
-                  {/* Languages */}
+                  {/* Languages - Compact Sidebar Version */}
                   {resumeData.languages && resumeData.languages.length > 0 && (
                     <div>
                       <h3 className="font-semibold mb-3 text-sm uppercase tracking-wide" style={{ color: customColors.primary }}>
                         Languages
                       </h3>
-                      <div className="space-y-2">
-                        {resumeData.languages.map((language) => (
-                          <div key={language.id} className="flex justify-between items-center">
-                            <span className="text-sm font-medium">{language.name}</span>
-                            <span className="text-xs text-gray-600">{language.level}</span>
-                          </div>
-                        ))}
+                      <div className="space-y-3">
+                        {resumeData.languages.map((language) => {
+                          const percentage = getProficiencyPercentage(language.level);
+                          const proficiencyColor = getProficiencyColor(percentage);
+                          
+                          return (
+                            <div key={language.id}>
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="text-sm font-medium">{language.name}</span>
+                                <span className="text-xs" style={{ color: proficiencyColor }}>
+                                  {language.level}
+                                </span>
+                              </div>
+                              <div className="w-full bg-white rounded-full h-2 shadow-inner">
+                                <div
+                                  className="h-2 rounded-full transition-all duration-300"
+                                  style={{
+                                    backgroundColor: proficiencyColor,
+                                    width: `${percentage}%`
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -246,7 +393,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       { type: 'summary', content: renderProfilePlusSummary() },
       ...resumeData.experience.map((exp, i) => ({ type: 'experience', content: renderExperienceItem(exp, i) })),
       ...resumeData.education.map((edu, i) => ({ type: 'education', content: renderEducationItem(edu, i) })),
-      { type: 'certifications', content: renderCertificationsSection() }
+      { type: 'certifications', content: renderCertificationsSection() },
+      { type: 'languages', content: renderModernLanguages() }
     ];
 
     const pages = splitIntoPages(content.map(item => item.content));
@@ -455,19 +603,39 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                     </div>
                   </div>
 
-                  {/* Languages */}
+                  {/* Languages - Executive Sidebar Version */}
                   {resumeData.languages && resumeData.languages.length > 0 && (
                     <div>
                       <h3 className="font-semibold mb-3 text-sm uppercase tracking-wide" style={{ color: customColors.primary }}>
                         Languages
                       </h3>
-                      <div className="space-y-1">
-                        {resumeData.languages.map((language) => (
-                          <div key={language.id} className="text-sm">
-                            <span className="font-medium">{language.name}</span>
-                            {language.level && <span className="text-gray-500 ml-2">({language.level})</span>}
-                          </div>
-                        ))}
+                      <div className="space-y-3">
+                        {resumeData.languages.map((language) => {
+                          const percentage = getProficiencyPercentage(language.level);
+                          const proficiencyColor = getProficiencyColor(percentage);
+                          
+                          return (
+                            <div key={language.id}>
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="text-sm font-medium">{language.name}</span>
+                                <div className="flex space-x-1">
+                                  {[1, 2, 3, 4, 5].map((level) => (
+                                    <div
+                                      key={level}
+                                      className="w-2 h-2 rounded-full"
+                                      style={{
+                                        backgroundColor: level <= Math.ceil(percentage / 20)
+                                          ? proficiencyColor
+                                          : '#E5E7EB'
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="text-xs text-gray-500">{language.level}</div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -594,24 +762,6 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 <p className="text-sm" style={{ color: customColors.secondary }}>{cert.issuer}</p>
               </div>
               <div className="text-sm text-gray-500">{cert.date}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  );
-
-  const renderLanguagesSection = () => (
-    resumeData.languages && resumeData.languages.length > 0 && (
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-3" style={{ color: customColors.primary }}>
-          Languages
-        </h3>
-        <div className="grid grid-cols-2 gap-2">
-          {resumeData.languages.map((language) => (
-            <div key={language.id} className="flex justify-between items-center">
-              <span className="font-medium">{language.name}</span>
-              <span className="text-sm text-gray-600">{language.level}</span>
             </div>
           ))}
         </div>
@@ -763,24 +913,6 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 <p className="text-sm" style={{ color: customColors.secondary }}>{cert.issuer}</p>
               </div>
               <div className="text-sm text-gray-500">{cert.date}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  );
-
-  const renderModernLanguages = () => (
-    resumeData.languages && resumeData.languages.length > 0 && (
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-3 pb-1 border-b-2" style={{ color: customColors.primary, borderColor: customColors.accent }}>
-          LANGUAGES
-        </h3>
-        <div className="grid grid-cols-2 gap-3">
-          {resumeData.languages.map((language) => (
-            <div key={language.id} className="flex justify-between items-center">
-              <span className="font-medium">{language.name}</span>
-              <span className="text-sm text-gray-600">{language.level}</span>
             </div>
           ))}
         </div>

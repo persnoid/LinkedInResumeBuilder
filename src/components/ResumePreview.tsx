@@ -202,6 +202,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
   // Template-specific layouts with multi-page support
   const renderTemplate = () => {
     switch (template) {
+      case 'double-column':
+        return renderDoubleColumnLayout();
+      case 'ivy-league':
+        return renderIvyLeagueLayout();
+      case 'elegant-dark':
+        return renderElegantDarkLayout();
       case 'skill-focus':
         return renderSkillFocusLayout();
       case 'profile-plus':
@@ -236,6 +242,636 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
         return renderModernLayout();
     }
   };
+
+  // Double Column Layout (Jacob Roberts style)
+  const renderDoubleColumnLayout = () => {
+    const content = [
+      { type: 'header', content: renderDoubleColumnHeader() },
+      { type: 'summary', content: renderDoubleColumnSummary() },
+      ...resumeData.experience.map((exp, i) => ({ type: 'experience', content: renderDoubleColumnExperience(exp, i) })),
+      ...resumeData.education.map((edu, i) => ({ type: 'education', content: renderDoubleColumnEducation(edu, i) }))
+    ];
+
+    const pages = splitIntoPages(content.map(item => item.content));
+
+    return (
+      <div style={{ fontFamily, color: customColors.text }}>
+        {pages.map((pageContent, pageIndex) => (
+          <div
+            key={pageIndex}
+            className="bg-white flex"
+            style={{ 
+              width: `${A4_WIDTH}px`, 
+              minHeight: `${A4_HEIGHT}px`,
+              pageBreakAfter: pageIndex < pages.length - 1 ? 'always' : 'auto'
+            }}
+          >
+            {/* Left Sidebar */}
+            <div className="w-1/3 p-6" style={{ backgroundColor: customColors.sidebar || '#F8FAFC' }}>
+              {pageIndex === 0 ? (
+                <>
+                  {/* Profile Photo */}
+                  <div className="text-center mb-6">
+                    {resumeData.personalInfo.photo ? (
+                      <img
+                        src={resumeData.personalInfo.photo}
+                        alt="Profile"
+                        className="w-20 h-20 rounded-full mx-auto mb-4 object-cover border-4 border-white shadow-lg"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 rounded-full mx-auto mb-4 bg-white shadow-lg flex items-center justify-center">
+                        <User className="w-10 h-10 text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Contact Info */}
+                  <div className="mb-6">
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-center">
+                        <Mail className="w-4 h-4 mr-2" style={{ color: customColors.accent }} />
+                        <span className="break-all">{resumeData.personalInfo.email}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Phone className="w-4 h-4 mr-2" style={{ color: customColors.accent }} />
+                        {resumeData.personalInfo.phone}
+                      </div>
+                      <div className="flex items-center">
+                        <MapPin className="w-4 h-4 mr-2" style={{ color: customColors.accent }} />
+                        {resumeData.personalInfo.location}
+                      </div>
+                      {resumeData.personalInfo.linkedin && (
+                        <div className="flex items-center">
+                          <Linkedin className="w-4 h-4 mr-2" style={{ color: customColors.accent }} />
+                          <span className="break-all text-xs">{resumeData.personalInfo.linkedin}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Skills Section */}
+                  <div className="mb-6">
+                    <h3 className="font-bold mb-3 text-sm uppercase tracking-wide" style={{ color: customColors.primary }}>
+                      SKILLS
+                    </h3>
+                    <div className="space-y-2">
+                      {resumeData.skills.map((skill) => (
+                        <div key={skill.id} className="text-sm">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="font-medium">{skill.name}</span>
+                          </div>
+                          <div className="w-full bg-white rounded-full h-1.5 shadow-inner">
+                            <div
+                              className="h-1.5 rounded-full transition-all duration-300"
+                              style={{
+                                backgroundColor: customColors.accent,
+                                width: skill.level === 'Expert' ? '100%' : 
+                                       skill.level === 'Advanced' ? '80%' : 
+                                       skill.level === 'Intermediate' ? '60%' : '40%'
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Achievements */}
+                  <div className="mb-6">
+                    <h3 className="font-bold mb-3 text-sm uppercase tracking-wide" style={{ color: customColors.primary }}>
+                      ACHIEVEMENTS
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex items-start">
+                        <Award className="w-4 h-4 mr-2 mt-0.5" style={{ color: customColors.accent }} />
+                        <div className="text-xs">
+                          <div className="font-semibold">20% Market Penetration Growth</div>
+                          <div className="text-gray-600">Led strategic initiatives resulting in significant market expansion</div>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <TrendingUp className="w-4 h-4 mr-2 mt-0.5" style={{ color: customColors.accent }} />
+                        <div className="text-xs">
+                          <div className="font-semibold">40% Reduction in Time to Market</div>
+                          <div className="text-gray-600">Streamlined processes and improved efficiency</div>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <Star className="w-4 h-4 mr-2 mt-0.5" style={{ color: customColors.accent }} />
+                        <div className="text-xs">
+                          <div className="font-semibold">95% Customer Satisfaction</div>
+                          <div className="text-gray-600">Consistently exceeded client expectations</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Languages - Compact Sidebar Version */}
+                  {resumeData.languages && resumeData.languages.length > 0 && (
+                    <div>
+                      <h3 className="font-bold mb-3 text-sm uppercase tracking-wide" style={{ color: customColors.primary }}>
+                        Languages
+                      </h3>
+                      <div className="space-y-3">
+                        {resumeData.languages.map((language) => {
+                          const percentage = getProficiencyPercentage(language.level);
+                          const proficiencyColor = getProficiencyColor(percentage);
+                          
+                          return (
+                            <div key={language.id}>
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="text-sm font-medium">{language.name}</span>
+                                <span className="text-xs" style={{ color: proficiencyColor }}>
+                                  {language.level}
+                                </span>
+                              </div>
+                              <div className="w-full bg-white rounded-full h-2 shadow-inner">
+                                <div
+                                  className="h-2 rounded-full transition-all duration-300"
+                                  style={{
+                                    backgroundColor: proficiencyColor,
+                                    width: `${percentage}%`
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center">
+                  <h1 className="text-lg font-bold" style={{ color: customColors.primary }}>
+                    {resumeData.personalInfo.name}
+                  </h1>
+                  <p className="text-sm" style={{ color: customColors.secondary }}>
+                    Page {pageIndex + 1}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Main Content */}
+            <div className="flex-1 p-6">
+              {pageIndex === 0 && (
+                <div className="mb-6">
+                  <h1 className="text-2xl font-bold mb-1" style={{ color: customColors.primary }}>
+                    {resumeData.personalInfo.name}
+                  </h1>
+                  <h2 className="text-lg mb-4" style={{ color: customColors.secondary }}>
+                    {resumeData.personalInfo.title}
+                  </h2>
+                </div>
+              )}
+              {pageContent}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Ivy League Layout (Jack Taylor style)
+  const renderIvyLeagueLayout = () => {
+    const content = [
+      { type: 'header', content: renderIvyLeagueHeader() },
+      { type: 'summary', content: renderIvyLeagueSummary() },
+      ...resumeData.experience.map((exp, i) => ({ type: 'experience', content: renderIvyLeagueExperience(exp, i) })),
+      ...resumeData.education.map((edu, i) => ({ type: 'education', content: renderIvyLeagueEducation(edu, i) })),
+      { type: 'skills', content: renderIvyLeagueSkills() },
+      { type: 'languages', content: renderModernLanguages() }
+    ];
+
+    const pages = splitIntoPages(content.map(item => item.content));
+
+    return (
+      <div style={{ fontFamily, color: customColors.text }}>
+        {pages.map((pageContent, pageIndex) => (
+          <div
+            key={pageIndex}
+            className="bg-white p-8"
+            style={{ 
+              width: `${A4_WIDTH}px`, 
+              minHeight: `${A4_HEIGHT}px`,
+              pageBreakAfter: pageIndex < pages.length - 1 ? 'always' : 'auto'
+            }}
+          >
+            {pageIndex > 0 && (
+              <div className="text-center mb-6 pb-4 border-b" style={{ borderColor: customColors.primary }}>
+                <h1 className="text-xl font-bold" style={{ color: customColors.primary }}>
+                  {resumeData.personalInfo.name} - Page {pageIndex + 1}
+                </h1>
+              </div>
+            )}
+            <div className="space-y-6">
+              {pageContent}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Elegant Dark Layout (Samuel Campbell style)
+  const renderElegantDarkLayout = () => {
+    const content = [
+      { type: 'header', content: renderElegantDarkHeader() },
+      { type: 'summary', content: renderElegantDarkSummary() },
+      ...resumeData.experience.map((exp, i) => ({ type: 'experience', content: renderElegantDarkExperience(exp, i) })),
+      ...resumeData.education.map((edu, i) => ({ type: 'education', content: renderElegantDarkEducation(edu, i) })),
+      { type: 'languages', content: renderModernLanguages() }
+    ];
+
+    const pages = splitIntoPages(content.map(item => item.content));
+
+    return (
+      <div style={{ fontFamily, color: customColors.text }}>
+        {pages.map((pageContent, pageIndex) => (
+          <div
+            key={pageIndex}
+            className="flex"
+            style={{ 
+              width: `${A4_WIDTH}px`, 
+              minHeight: `${A4_HEIGHT}px`,
+              backgroundColor: customColors.background,
+              pageBreakAfter: pageIndex < pages.length - 1 ? 'always' : 'auto'
+            }}
+          >
+            {/* Right Sidebar */}
+            <div className="flex-1 p-6">
+              {pageIndex === 0 && (
+                <div className="mb-6">
+                  <h1 className="text-2xl font-bold mb-1" style={{ color: customColors.primary }}>
+                    {resumeData.personalInfo.name}
+                  </h1>
+                  <h2 className="text-lg mb-4" style={{ color: customColors.secondary }}>
+                    {resumeData.personalInfo.title}
+                  </h2>
+                  <div className="flex flex-wrap gap-4 text-sm" style={{ color: customColors.secondary }}>
+                    <div className="flex items-center">
+                      <Phone className="w-4 h-4 mr-1" />
+                      {resumeData.personalInfo.phone}
+                    </div>
+                    <div className="flex items-center">
+                      <Mail className="w-4 h-4 mr-1" />
+                      {resumeData.personalInfo.email}
+                    </div>
+                    <div className="flex items-center">
+                      <MapPin className="w-4 h-4 mr-1" />
+                      {resumeData.personalInfo.location}
+                    </div>
+                  </div>
+                </div>
+              )}
+              {pageContent}
+            </div>
+
+            {/* Dark Sidebar */}
+            <div className="w-1/3 p-6" style={{ backgroundColor: customColors.sidebar }}>
+              {pageIndex === 0 ? (
+                <>
+                  {/* Profile Photo */}
+                  <div className="text-center mb-6">
+                    {resumeData.personalInfo.photo ? (
+                      <img
+                        src={resumeData.personalInfo.photo}
+                        alt="Profile"
+                        className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4"
+                        style={{ borderColor: customColors.accent }}
+                      />
+                    ) : (
+                      <div 
+                        className="w-24 h-24 rounded-full mx-auto mb-4 border-4 flex items-center justify-center"
+                        style={{ borderColor: customColors.accent, backgroundColor: customColors.highlight }}
+                      >
+                        <User className="w-12 h-12" style={{ color: customColors.accent }} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Achievements */}
+                  <div className="mb-6">
+                    <h3 className="font-bold mb-4 text-sm uppercase tracking-wide" style={{ color: customColors.primary }}>
+                      ACHIEVEMENTS
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-start">
+                        <div className="w-2 h-2 rounded-full mr-3 mt-2" style={{ backgroundColor: customColors.accent }} />
+                        <div className="text-sm" style={{ color: customColors.secondary }}>
+                          <div className="font-semibold">Successfully Cloud Migration</div>
+                          <div className="text-xs opacity-80">Led enterprise cloud transformation</div>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <div className="w-2 h-2 rounded-full mr-3 mt-2" style={{ backgroundColor: customColors.accent }} />
+                        <div className="text-sm" style={{ color: customColors.secondary }}>
+                          <div className="font-semibold">Team Leadership Excellence</div>
+                          <div className="text-xs opacity-80">Managed cross-functional teams</div>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <div className="w-2 h-2 rounded-full mr-3 mt-2" style={{ backgroundColor: customColors.accent }} />
+                        <div className="text-sm" style={{ color: customColors.secondary }}>
+                          <div className="font-semibold">Notable Budget Optimization</div>
+                          <div className="text-xs opacity-80">Reduced operational costs by 30%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Skills */}
+                  <div className="mb-6">
+                    <h3 className="font-bold mb-4 text-sm uppercase tracking-wide" style={{ color: customColors.primary }}>
+                      SKILLS
+                    </h3>
+                    <div className="space-y-3">
+                      {resumeData.skills.slice(0, 8).map((skill) => (
+                        <div key={skill.id}>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium" style={{ color: customColors.secondary }}>
+                              {skill.name}
+                            </span>
+                          </div>
+                          <div className="w-full rounded-full h-1.5" style={{ backgroundColor: customColors.highlight }}>
+                            <div
+                              className="h-1.5 rounded-full transition-all duration-300"
+                              style={{
+                                backgroundColor: customColors.accent,
+                                width: skill.level === 'Expert' ? '100%' : 
+                                       skill.level === 'Advanced' ? '80%' : 
+                                       skill.level === 'Intermediate' ? '60%' : '40%'
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Courses */}
+                  <div>
+                    <h3 className="font-bold mb-4 text-sm uppercase tracking-wide" style={{ color: customColors.primary }}>
+                      COURSES
+                    </h3>
+                    <div className="space-y-3 text-sm" style={{ color: customColors.secondary }}>
+                      <div>
+                        <div className="font-semibold">Certified ScrumMaster (CSM)</div>
+                        <div className="text-xs opacity-80">Scrum Alliance</div>
+                      </div>
+                      <div>
+                        <div className="font-semibold">AWS Solutions Architect</div>
+                        <div className="text-xs opacity-80">Amazon Web Services</div>
+                      </div>
+                      <div>
+                        <div className="font-semibold">Project Management Certification</div>
+                        <div className="text-xs opacity-80">PMI Institute</div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center">
+                  <h1 className="text-lg font-bold" style={{ color: customColors.primary }}>
+                    {resumeData.personalInfo.name}
+                  </h1>
+                  <p className="text-sm" style={{ color: customColors.secondary }}>
+                    Page {pageIndex + 1}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Helper functions for Double Column layout
+  const renderDoubleColumnHeader = () => null;
+
+  const renderDoubleColumnSummary = () => (
+    resumeData.summary && (
+      <div className="mb-6">
+        <h3 className="font-bold mb-3 text-sm uppercase tracking-wide" style={{ color: customColors.primary }}>
+          SUMMARY
+        </h3>
+        <p className="text-sm leading-relaxed">{resumeData.summary}</p>
+      </div>
+    )
+  );
+
+  const renderDoubleColumnExperience = (exp: any, index: number) => (
+    <div key={exp.id} className="mb-6">
+      {index === 0 && (
+        <h3 className="font-bold mb-4 text-sm uppercase tracking-wide" style={{ color: customColors.primary }}>
+          EXPERIENCE
+        </h3>
+      )}
+      <div className="mb-4">
+        <div className="flex justify-between items-start mb-2">
+          <div>
+            <h4 className="font-bold text-sm">{exp.position}</h4>
+            <p className="text-sm" style={{ color: customColors.secondary }}>{exp.company}</p>
+            {exp.location && <p className="text-xs text-gray-600">{exp.location}</p>}
+          </div>
+          <div className="text-xs text-gray-500">
+            {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+          </div>
+        </div>
+        <ul className="text-xs space-y-1">
+          {exp.description.map((desc: string, i: number) => (
+            <li key={i} className="flex items-start">
+              <span className="mr-2 mt-1 w-1 h-1 rounded-full flex-shrink-0" style={{ backgroundColor: customColors.accent }} />
+              {desc}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+
+  const renderDoubleColumnEducation = (edu: any, index: number) => (
+    <div key={edu.id} className="mb-4">
+      {index === 0 && (
+        <h3 className="font-bold mb-3 text-sm uppercase tracking-wide" style={{ color: customColors.primary }}>
+          EDUCATION
+        </h3>
+      )}
+      <div className="flex justify-between items-start">
+        <div>
+          <h4 className="font-bold text-sm">{edu.degree}</h4>
+          <p className="text-sm" style={{ color: customColors.secondary }}>{edu.school}</p>
+          <p className="text-xs text-gray-600">{edu.location}</p>
+        </div>
+        <div className="text-xs text-gray-500">
+          {edu.startDate} - {edu.endDate}
+        </div>
+      </div>
+      {edu.gpa && <p className="text-xs text-gray-600 mt-1">GPA: {edu.gpa}</p>}
+    </div>
+  );
+
+  // Helper functions for Ivy League layout
+  const renderIvyLeagueHeader = () => (
+    <div className="text-center mb-8 pb-6 border-b-2" style={{ borderColor: customColors.primary }}>
+      <h1 className="text-3xl font-bold mb-2" style={{ color: customColors.primary }}>
+        {resumeData.personalInfo.name}
+      </h1>
+      <h2 className="text-xl mb-4" style={{ color: customColors.secondary }}>
+        {resumeData.personalInfo.title}
+      </h2>
+      <div className="flex justify-center space-x-6 text-sm">
+        <span>{resumeData.personalInfo.phone}</span>
+        <span>{resumeData.personalInfo.email}</span>
+        <span>{resumeData.personalInfo.location}</span>
+      </div>
+    </div>
+  );
+
+  const renderIvyLeagueSummary = () => (
+    resumeData.summary && (
+      <div className="mb-8">
+        <h3 className="font-bold mb-4 text-lg" style={{ color: customColors.primary }}>
+          Summary
+        </h3>
+        <p className="leading-relaxed">{resumeData.summary}</p>
+      </div>
+    )
+  );
+
+  const renderIvyLeagueExperience = (exp: any, index: number) => (
+    <div key={exp.id} className="mb-6">
+      {index === 0 && (
+        <h3 className="font-bold mb-4 text-lg" style={{ color: customColors.primary }}>
+          Experience
+        </h3>
+      )}
+      <div className="mb-4">
+        <div className="flex justify-between items-start mb-2">
+          <div>
+            <h4 className="font-bold">{exp.position}</h4>
+            <p style={{ color: customColors.secondary }}>{exp.company}</p>
+            {exp.location && <p className="text-sm text-gray-600">{exp.location}</p>}
+          </div>
+          <div className="text-sm text-gray-500">
+            {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+          </div>
+        </div>
+        <ul className="space-y-1">
+          {exp.description.map((desc: string, i: number) => (
+            <li key={i} className="flex items-start">
+              <span className="mr-2 mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: customColors.accent }} />
+              {desc}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+
+  const renderIvyLeagueEducation = (edu: any, index: number) => (
+    <div key={edu.id} className="mb-4">
+      {index === 0 && (
+        <h3 className="font-bold mb-4 text-lg" style={{ color: customColors.primary }}>
+          Education
+        </h3>
+      )}
+      <div className="flex justify-between items-start">
+        <div>
+          <h4 className="font-bold">{edu.degree}</h4>
+          <p style={{ color: customColors.secondary }}>{edu.school}</p>
+          <p className="text-sm text-gray-600">{edu.location}</p>
+        </div>
+        <div className="text-sm text-gray-500">
+          {edu.startDate} - {edu.endDate}
+        </div>
+      </div>
+      {edu.gpa && <p className="text-sm text-gray-600 mt-1">GPA: {edu.gpa}</p>}
+    </div>
+  );
+
+  const renderIvyLeagueSkills = () => (
+    <div className="mb-6">
+      <h3 className="font-bold mb-4 text-lg" style={{ color: customColors.primary }}>
+        Skills
+      </h3>
+      <div className="grid grid-cols-3 gap-4">
+        {resumeData.skills.map((skill) => (
+          <div key={skill.id} className="text-center">
+            <div className="font-medium">{skill.name}</div>
+            <div className="text-sm text-gray-600">{skill.level}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Helper functions for Elegant Dark layout
+  const renderElegantDarkHeader = () => null;
+
+  const renderElegantDarkSummary = () => (
+    resumeData.summary && (
+      <div className="mb-6">
+        <h3 className="font-bold mb-3 text-sm uppercase tracking-wide" style={{ color: customColors.primary }}>
+          SUMMARY
+        </h3>
+        <p className="leading-relaxed" style={{ color: customColors.secondary }}>{resumeData.summary}</p>
+      </div>
+    )
+  );
+
+  const renderElegantDarkExperience = (exp: any, index: number) => (
+    <div key={exp.id} className="mb-6">
+      {index === 0 && (
+        <h3 className="font-bold mb-4 text-sm uppercase tracking-wide" style={{ color: customColors.primary }}>
+          EXPERIENCE
+        </h3>
+      )}
+      <div className="mb-4">
+        <div className="flex justify-between items-start mb-2">
+          <div>
+            <h4 className="font-bold" style={{ color: customColors.primary }}>{exp.position}</h4>
+            <p style={{ color: customColors.secondary }}>{exp.company}</p>
+            {exp.location && <p className="text-sm opacity-80" style={{ color: customColors.secondary }}>{exp.location}</p>}
+          </div>
+          <div className="text-sm opacity-80" style={{ color: customColors.secondary }}>
+            {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+          </div>
+        </div>
+        <ul className="space-y-1">
+          {exp.description.map((desc: string, i: number) => (
+            <li key={i} className="flex items-start">
+              <span className="mr-2 mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: customColors.accent }} />
+              <span style={{ color: customColors.secondary }}>{desc}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+
+  const renderElegantDarkEducation = (edu: any, index: number) => (
+    <div key={edu.id} className="mb-4">
+      {index === 0 && (
+        <h3 className="font-bold mb-4 text-sm uppercase tracking-wide" style={{ color: customColors.primary }}>
+          EDUCATION
+        </h3>
+      )}
+      <div className="flex justify-between items-start">
+        <div>
+          <h4 className="font-bold" style={{ color: customColors.primary }}>{edu.degree}</h4>
+          <p style={{ color: customColors.secondary }}>{edu.school}</p>
+          <p className="text-sm opacity-80" style={{ color: customColors.secondary }}>{edu.location}</p>
+        </div>
+        <div className="text-sm opacity-80" style={{ color: customColors.secondary }}>
+          {edu.startDate} - {edu.endDate}
+        </div>
+      </div>
+      {edu.gpa && <p className="text-sm opacity-80 mt-1" style={{ color: customColors.secondary }}>GPA: {edu.gpa}</p>}
+    </div>
+  );
 
   // Skill Focus Layout with multi-page support
   const renderSkillFocusLayout = () => {

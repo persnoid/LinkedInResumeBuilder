@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Palette, Type, Move, Download, FileText, FileType } from 'lucide-react';
+import { Palette, Type, Move, Download, FileText, FileType, Save } from 'lucide-react';
 import { ResumeData } from '../types/resume';
 import { resumeTemplates } from '../data/templates';
 import { ResumePreview } from './ResumePreview';
@@ -7,30 +7,25 @@ import { ResumePreview } from './ResumePreview';
 interface ResumeCustomizerProps {
   resumeData: ResumeData;
   selectedTemplate: string;
+  customizations: any;
+  onCustomizationsUpdate: (customizations: any) => void;
   onExport: (format: 'pdf' | 'docx') => void;
   onBack: () => void;
+  onSaveDraft: () => void;
+  currentDraftId?: string | null;
 }
 
 export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   resumeData,
   selectedTemplate,
+  customizations,
+  onCustomizationsUpdate,
   onExport,
-  onBack
+  onBack,
+  onSaveDraft,
+  currentDraftId
 }) => {
   const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'layout'>('colors');
-  const [customColors, setCustomColors] = useState({
-    primary: resumeTemplates.find(t => t.id === selectedTemplate)?.colors.primary || '#3B82F6',
-    secondary: resumeTemplates.find(t => t.id === selectedTemplate)?.colors.secondary || '#1E40AF',
-    accent: resumeTemplates.find(t => t.id === selectedTemplate)?.colors.accent || '#10B981'
-  });
-  const [selectedFont, setSelectedFont] = useState('Inter');
-  const [sectionOrder, setSectionOrder] = useState([
-    'summary',
-    'experience',
-    'education',
-    'skills',
-    'certifications'
-  ]);
   const [isExporting, setIsExporting] = useState(false);
 
   const fonts = [
@@ -60,17 +55,39 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     }
   };
 
+  const handleCustomizationChange = (field: string, value: any) => {
+    const newCustomizations = { ...customizations };
+    if (field.includes('.')) {
+      const [parent, child] = field.split('.');
+      newCustomizations[parent] = { ...newCustomizations[parent], [child]: value };
+    } else {
+      newCustomizations[field] = value;
+    }
+    onCustomizationsUpdate(newCustomizations);
+  };
+
   const template = resumeTemplates.find(t => t.id === selectedTemplate);
-  const currentColors = { ...template?.colors, ...customColors };
+  const currentColors = { ...template?.colors, ...customizations.colors };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Customize Resume</h2>
-          <p className="text-sm text-gray-600">Personalize your resume design</p>
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Customize Resume</h2>
+            <p className="text-sm text-gray-600">Personalize your resume design</p>
+          </div>
+          
+          {/* Save Draft Button */}
+          <button
+            onClick={onSaveDraft}
+            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm flex items-center transition-colors"
+          >
+            <Save className="w-3 h-3 mr-1" />
+            {currentDraftId ? 'Update' : 'Save'}
+          </button>
         </div>
 
         {/* Tabs */}
@@ -107,7 +124,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                   {colorPresets.map((preset) => (
                     <button
                       key={preset.name}
-                      onClick={() => setCustomColors({
+                      onClick={() => handleCustomizationChange('colors', {
                         primary: preset.primary,
                         secondary: preset.secondary,
                         accent: preset.accent
@@ -146,11 +163,8 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                       <span className="text-sm text-gray-700">{color.label}</span>
                       <input
                         type="color"
-                        value={customColors[color.key as keyof typeof customColors]}
-                        onChange={(e) => setCustomColors({
-                          ...customColors,
-                          [color.key]: e.target.value
-                        })}
+                        value={customizations.colors?.[color.key] || template?.colors[color.key as keyof typeof template.colors] || '#3B82F6'}
+                        onChange={(e) => handleCustomizationChange(`colors.${color.key}`, e.target.value)}
                         className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
                       />
                     </div>
@@ -167,9 +181,9 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                 {fonts.map((font) => (
                   <button
                     key={font.name}
-                    onClick={() => setSelectedFont(font.name)}
+                    onClick={() => handleCustomizationChange('font', font.name)}
                     className={`w-full p-3 text-left border border-gray-200 rounded-lg transition-colors ${
-                      selectedFont === font.name
+                      customizations.font === font.name
                         ? 'border-blue-500 bg-blue-50'
                         : 'hover:border-gray-300'
                     }`}
@@ -188,7 +202,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
               <h3 className="text-sm font-semibold text-gray-900">Section Order</h3>
               <p className="text-sm text-gray-600">Drag to reorder sections</p>
               <div className="space-y-2">
-                {sectionOrder.map((section, index) => (
+                {customizations.sectionOrder.map((section: string, index: number) => (
                   <div
                     key={section}
                     className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg cursor-move"
@@ -252,8 +266,8 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
               resumeData={resumeData}
               template={selectedTemplate}
               customColors={currentColors}
-              font={selectedFont}
-              sectionOrder={sectionOrder}
+              font={customizations.font}
+              sectionOrder={customizations.sectionOrder}
             />
           </div>
         </div>

@@ -7,13 +7,17 @@ interface DataReviewProps {
   onDataUpdate: (data: ResumeData) => void;
   onNext: () => void;
   onBack: () => void;
+  onSaveDraft: () => void;
+  currentDraftId?: string | null;
 }
 
 export const DataReview: React.FC<DataReviewProps> = ({
   resumeData,
   onDataUpdate,
   onNext,
-  onBack
+  onBack,
+  onSaveDraft,
+  currentDraftId
 }) => {
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [localData, setLocalData] = useState<ResumeData>(resumeData);
@@ -120,9 +124,20 @@ export const DataReview: React.FC<DataReviewProps> = ({
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-6">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Review & Edit Your Information</h2>
-          <p className="text-gray-600">Make sure all your information is accurate and complete.</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Review & Edit Your Information</h2>
+            <p className="text-gray-600">Make sure all your information is accurate and complete.</p>
+          </div>
+          
+          {/* Save Draft Button */}
+          <button
+            onClick={onSaveDraft}
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            {currentDraftId ? 'Update Draft' : 'Save Draft'}
+          </button>
         </div>
 
         <div className="space-y-6">

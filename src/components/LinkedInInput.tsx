@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Linkedin, Upload, AlertCircle, CheckCircle, FileText, ExternalLink, Brain, Settings } from 'lucide-react';
+import { Linkedin, Upload, AlertCircle, CheckCircle, FileText, ExternalLink, Brain, Settings, FolderOpen } from 'lucide-react';
 import { parsePDFFile, checkAIAvailability } from '../utils/pdfParser';
+import { DraftManager } from '../utils/draftManager';
 import { ResumeData } from '../types/resume';
 
 interface LinkedInInputProps {
   onDataExtracted: (data: ResumeData) => void;
   onNext: () => void;
+  onOpenDraftManager: () => void;
 }
 
 export const LinkedInInput: React.FC<LinkedInInputProps> = ({
   onDataExtracted,
-  onNext
+  onNext,
+  onOpenDraftManager
 }) => {
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -27,6 +30,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
     openaiConfigured: false,
     message: 'Checking AI availability...'
   });
+  const [recentDrafts, setRecentDrafts] = useState(DraftManager.getRecentDrafts(3));
 
   // Check AI availability on component mount
   useEffect(() => {
@@ -35,6 +39,9 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
       setAiStatus(status);
     };
     checkAI();
+    
+    // Load recent drafts
+    setRecentDrafts(DraftManager.getRecentDrafts(3));
   }, []);
 
   const handleExtractData = async () => {
@@ -185,9 +192,18 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
     }, 1000);
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-6">
-      <div className="max-w-2xl w-full">
+      <div className="max-w-4xl w-full">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <Linkedin className="w-8 h-8 text-white" />
@@ -219,209 +235,267 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="space-y-6">
-            {/* LinkedIn URL Input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                LinkedIn Profile URL
-              </label>
-              <div className="relative">
-                <input
-                  type="url"
-                  value={linkedinUrl}
-                  onChange={(e) => {
-                    setLinkedinUrl(e.target.value);
-                    setError('');
-                    setSuccess(false);
-                  }}
-                  placeholder="https://www.linkedin.com/in/yourprofile"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                  disabled={isLoading || success}
-                />
-                {success && extractionMethod === 'url' && (
-                  <CheckCircle className="absolute right-3 top-3.5 w-5 h-5 text-green-500" />
-                )}
-              </div>
-            </div>
-
-            <button
-              onClick={handleExtractData}
-              disabled={!linkedinUrl || isLoading || success}
-              className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
-            >
-              {isLoading && extractionMethod === 'url' ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                  Checking Profile...
-                </>
-              ) : (
-                <>
-                  <ExternalLink className="w-5 h-5 mr-2" />
-                  Try Profile URL
-                </>
-              )}
-            </button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  {aiStatus.aiAvailable ? 'AI-Powered Method (Recommended)' : 'Upload Method'}
-                </span>
-              </div>
-            </div>
-
-            {/* PDF Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload LinkedIn PDF Export
-                {aiStatus.aiAvailable && (
-                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                    <Brain className="w-3 h-3 mr-1" />
-                    AI Enhanced
-                  </span>
-                )}
-              </label>
-              <div className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-lg transition-colors ${
-                aiStatus.aiAvailable 
-                  ? 'border-blue-300 hover:border-blue-400 bg-blue-50' 
-                  : 'border-gray-300 hover:border-gray-400 bg-gray-50'
-              }`}>
-                <div className="space-y-1 text-center">
-                  <Upload className={`mx-auto h-12 w-12 ${aiStatus.aiAvailable ? 'text-blue-400' : 'text-gray-400'}`} />
-                  <div className="flex text-sm text-gray-600">
-                    <label className={`relative cursor-pointer bg-white rounded-md font-medium focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 ${
-                      aiStatus.aiAvailable ? 'text-blue-600 hover:text-blue-500' : 'text-gray-600 hover:text-gray-500'
-                    }`}>
-                      <span>Upload a PDF file</span>
-                      <input
-                        type="file"
-                        accept=".pdf"
-                        onChange={handleFileUpload}
-                        className="sr-only"
-                        disabled={isLoading || success || !aiStatus.aiAvailable}
-                      />
-                    </label>
-                    <p className="pl-1">or drag and drop</p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Upload Section */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-2xl shadow-xl p-8">
+              <div className="space-y-6">
+                {/* LinkedIn URL Input */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    LinkedIn Profile URL
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="url"
+                      value={linkedinUrl}
+                      onChange={(e) => {
+                        setLinkedinUrl(e.target.value);
+                        setError('');
+                        setSuccess(false);
+                      }}
+                      placeholder="https://www.linkedin.com/in/yourprofile"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                      disabled={isLoading || success}
+                    />
+                    {success && extractionMethod === 'url' && (
+                      <CheckCircle className="absolute right-3 top-3.5 w-5 h-5 text-green-500" />
+                    )}
                   </div>
-                  <p className="text-xs text-gray-500">PDF up to 10MB</p>
-                  {aiStatus.aiAvailable && (
-                    <p className="text-xs text-blue-600 font-medium">
-                      ✨ AI will intelligently extract your information
-                    </p>
-                  )}
                 </div>
-              </div>
-              
-              {/* Upload Progress */}
-              {isLoading && extractionMethod === 'pdf' && uploadProgress > 0 && (
-                <div className="mt-4">
-                  <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
-                    <span>
-                      🤖 AI Processing PDF...
+
+                <button
+                  onClick={handleExtractData}
+                  disabled={!linkedinUrl || isLoading || success}
+                  className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                >
+                  {isLoading && extractionMethod === 'url' ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                      Checking Profile...
+                    </>
+                  ) : (
+                    <>
+                      <ExternalLink className="w-5 h-5 mr-2" />
+                      Try Profile URL
+                    </>
+                  )}
+                </button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">
+                      {aiStatus.aiAvailable ? 'AI-Powered Method (Recommended)' : 'Upload Method'}
                     </span>
-                    <span>{uploadProgress}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${uploadProgress}%` }}
-                    ></div>
                   </div>
                 </div>
-              )}
-            </div>
 
-            {/* Error Display */}
-            {error && (
-              <div className="flex items-center mt-2 text-red-600 text-sm bg-red-50 p-3 rounded-lg">
-                <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-                {error}
-              </div>
-            )}
-
-            {/* Success Display */}
-            {success && (
-              <div className="flex items-center mt-2 text-green-600 text-sm bg-green-50 p-3 rounded-lg">
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Data extracted successfully using AI! Proceeding to next step...
-              </div>
-            )}
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">or</span>
-              </div>
-            </div>
-
-            {/* Skip to Sample Data */}
-            <button
-              onClick={handleSkipToSample}
-              disabled={isLoading || success}
-              className="w-full bg-gray-100 hover:bg-gray-200 disabled:bg-gray-300 text-gray-700 font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
-            >
-              {isLoading && extractionMethod === null ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-transparent mr-2"></div>
-                  Loading Sample...
-                </>
-              ) : (
-                <>
-                  <FileText className="w-5 h-5 mr-2" />
-                  Try with Sample Data
-                </>
-              )}
-            </button>
-
-            {/* Instructions */}
-            <div className={`border-l-4 p-4 ${
-              aiStatus.aiAvailable 
-                ? 'bg-blue-50 border-blue-400' 
-                : 'bg-yellow-50 border-yellow-400'
-            }`}>
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  {aiStatus.aiAvailable ? (
-                    <Brain className="h-5 w-5 text-blue-400" />
-                  ) : (
-                    <AlertCircle className="h-5 w-5 text-yellow-400" />
+                {/* PDF Upload */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Upload LinkedIn PDF Export
+                    {aiStatus.aiAvailable && (
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                        <Brain className="w-3 h-3 mr-1" />
+                        AI Enhanced
+                      </span>
+                    )}
+                  </label>
+                  <div className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-lg transition-colors ${
+                    aiStatus.aiAvailable 
+                      ? 'border-blue-300 hover:border-blue-400 bg-blue-50' 
+                      : 'border-gray-300 hover:border-gray-400 bg-gray-50'
+                  }`}>
+                    <div className="space-y-1 text-center">
+                      <Upload className={`mx-auto h-12 w-12 ${aiStatus.aiAvailable ? 'text-blue-400' : 'text-gray-400'}`} />
+                      <div className="flex text-sm text-gray-600">
+                        <label className={`relative cursor-pointer bg-white rounded-md font-medium focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 ${
+                          aiStatus.aiAvailable ? 'text-blue-600 hover:text-blue-500' : 'text-gray-600 hover:text-gray-500'
+                        }`}>
+                          <span>Upload a PDF file</span>
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            onChange={handleFileUpload}
+                            className="sr-only"
+                            disabled={isLoading || success || !aiStatus.aiAvailable}
+                          />
+                        </label>
+                        <p className="pl-1">or drag and drop</p>
+                      </div>
+                      <p className="text-xs text-gray-500">PDF up to 10MB</p>
+                      {aiStatus.aiAvailable && (
+                        <p className="text-xs text-blue-600 font-medium">
+                          ✨ AI will intelligently extract your information
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Upload Progress */}
+                  {isLoading && extractionMethod === 'pdf' && uploadProgress > 0 && (
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
+                        <span>
+                          🤖 AI Processing PDF...
+                        </span>
+                        <span>{uploadProgress}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${uploadProgress}%` }}
+                        ></div>
+                      </div>
+                    </div>
                   )}
                 </div>
-                <div className="ml-3">
-                  {aiStatus.aiAvailable ? (
+
+                {/* Error Display */}
+                {error && (
+                  <div className="flex items-center mt-2 text-red-600 text-sm bg-red-50 p-3 rounded-lg">
+                    <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+                    {error}
+                  </div>
+                )}
+
+                {/* Success Display */}
+                {success && (
+                  <div className="flex items-center mt-2 text-green-600 text-sm bg-green-50 p-3 rounded-lg">
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Data extracted successfully using AI! Proceeding to next step...
+                  </div>
+                )}
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">or</span>
+                  </div>
+                </div>
+
+                {/* Skip to Sample Data */}
+                <button
+                  onClick={handleSkipToSample}
+                  disabled={isLoading || success}
+                  className="w-full bg-gray-100 hover:bg-gray-200 disabled:bg-gray-300 text-gray-700 font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                >
+                  {isLoading && extractionMethod === null ? (
                     <>
-                      <p className="text-sm text-blue-700">
-                        <strong>How to get your LinkedIn PDF:</strong>
-                      </p>
-                      <ol className="text-sm text-blue-700 mt-2 list-decimal list-inside space-y-1">
-                        <li>Go to your LinkedIn profile</li>
-                        <li>Click "More" → "Save to PDF"</li>
-                        <li>Upload the downloaded PDF here for AI-powered extraction</li>
-                        <li className="font-medium">✨ Our AI will intelligently extract all your information!</li>
-                      </ol>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-transparent mr-2"></div>
+                      Loading Sample...
                     </>
                   ) : (
                     <>
-                      <p className="text-sm text-yellow-700">
-                        <strong>AI Service Configuration Required:</strong>
-                      </p>
-                      <p className="text-sm text-yellow-700 mt-2">
-                        {aiStatus.message}
-                      </p>
-                      <p className="text-xs text-yellow-600 mt-1">
-                        Please configure your OpenAI API key to enable AI-powered parsing.
-                      </p>
+                      <FileText className="w-5 h-5 mr-2" />
+                      Try with Sample Data
                     </>
                   )}
+                </button>
+
+                {/* Instructions */}
+                <div className={`border-l-4 p-4 ${
+                  aiStatus.aiAvailable 
+                    ? 'bg-blue-50 border-blue-400' 
+                    : 'bg-yellow-50 border-yellow-400'
+                }`}>
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      {aiStatus.aiAvailable ? (
+                        <Brain className="h-5 w-5 text-blue-400" />
+                      ) : (
+                        <AlertCircle className="h-5 w-5 text-yellow-400" />
+                      )}
+                    </div>
+                    <div className="ml-3">
+                      {aiStatus.aiAvailable ? (
+                        <>
+                          <p className="text-sm text-blue-700">
+                            <strong>How to get your LinkedIn PDF:</strong>
+                          </p>
+                          <ol className="text-sm text-blue-700 mt-2 list-decimal list-inside space-y-1">
+                            <li>Go to your LinkedIn profile</li>
+                            <li>Click "More" → "Save to PDF"</li>
+                            <li>Upload the downloaded PDF here for AI-powered extraction</li>
+                            <li className="font-medium">✨ Our AI will intelligently extract all your information!</li>
+                          </ol>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm text-yellow-700">
+                            <strong>AI Service Configuration Required:</strong>
+                          </p>
+                          <p className="text-sm text-yellow-700 mt-2">
+                            {aiStatus.message}
+                          </p>
+                          <p className="text-xs text-yellow-600 mt-1">
+                            Please configure your OpenAI API key to enable AI-powered parsing.
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Sidebar with Recent Drafts and Draft Manager */}
+          <div className="space-y-6">
+            {/* Draft Manager */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <FolderOpen className="w-5 h-5 mr-2" />
+                Continue Previous Work
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Access your saved drafts and continue where you left off
+              </p>
+              <button
+                onClick={onOpenDraftManager}
+                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
+              >
+                <FolderOpen className="w-4 h-4 mr-2" />
+                Manage Drafts
+              </button>
+            </div>
+
+            {/* Recent Drafts */}
+            {recentDrafts.length > 0 && (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Drafts</h3>
+                <div className="space-y-3">
+                  {recentDrafts.map((draft) => (
+                    <div
+                      key={draft.id}
+                      className="p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors cursor-pointer"
+                      onClick={onOpenDraftManager}
+                    >
+                      <div className="font-medium text-gray-900 text-sm truncate">
+                        {draft.name}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {formatDate(draft.updatedAt)}
+                      </div>
+                      <div className="text-xs text-blue-600 mt-1">
+                        Step: {draft.step + 1} of 4
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={onOpenDraftManager}
+                  className="w-full mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  View all drafts →
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

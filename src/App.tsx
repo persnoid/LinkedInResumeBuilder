@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProgressIndicator } from './components/ProgressIndicator';
 import { LinkedInInput } from './components/LinkedInInput';
 import { DataReview } from './components/DataReview';
 import { TemplateSelector } from './components/TemplateSelector';
 import { ResumeCustomizer } from './components/ResumeCustomizer';
+import { DraftManagerComponent } from './components/DraftManager';
+import { DraftSavePrompt } from './components/DraftSavePrompt';
 import { sampleResumeData } from './data/sampleData';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
-import { ResumeData } from './types/resume';
+import { DraftManager } from './utils/draftManager';
+import { ResumeData, DraftResume } from './types/resume';
 
 const STEPS = [
   'LinkedIn Input',
@@ -19,12 +22,41 @@ function App() {
   const [currentStep, setCurrentStep] = useState(0);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
+  const [customizations, setCustomizations] = useState({
+    colors: { primary: '#3B82F6', secondary: '#1E40AF', accent: '#10B981' },
+    font: 'Inter',
+    sectionOrder: ['summary', 'experience', 'education', 'skills', 'certifications']
+  });
   const [linkedinData, setLinkedinData] = useState(null);
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
+  const [showDraftManager, setShowDraftManager] = useState(false);
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
+
+  // Load current draft on app start
+  useEffect(() => {
+    const draftId = DraftManager.getCurrentDraftId();
+    if (draftId) {
+      const draft = DraftManager.getDraft(draftId);
+      if (draft) {
+        loadDraftData(draft);
+      }
+    }
+  }, []);
+
+  const loadDraftData = (draft: DraftResume) => {
+    setResumeData(draft.resumeData);
+    setSelectedTemplate(draft.selectedTemplate);
+    setCustomizations(draft.customizations);
+    setCurrentStep(draft.step);
+    setCurrentDraftId(draft.id);
+    setShowDraftManager(false);
+  };
 
   const handleLinkedInData = (data: ResumeData) => {
     setLinkedinData(data);
-    // Use the actual extracted data instead of sample data
     setResumeData(data);
+    setCurrentDraftId(null); // Clear current draft when new data is loaded
+    DraftManager.clearCurrentDraft();
   };
 
   const handleDataUpdate = (data: ResumeData) => {
@@ -33,6 +65,10 @@ function App() {
 
   const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId);
+  };
+
+  const handleCustomizationsUpdate = (newCustomizations: any) => {
+    setCustomizations(newCustomizations);
   };
 
   const handleExport = async (format: 'pdf' | 'docx') => {
@@ -50,16 +86,78 @@ function App() {
     }
   };
 
+  const saveDraft = (name: string) => {
+    if (!resumeData) return;
+
+    const draftId = DraftManager.saveDraft(
+      name,
+      resumeData,
+      selectedTemplate,
+      customizations,
+      currentStep,
+      currentDraftId
+    );
+
+    setCurrentDraftId(draftId);
+    setShowSavePrompt(false);
+  };
+
   const nextStep = () => {
     if (currentStep < STEPS.length - 1) {
+      // Show save prompt when moving from data review step
+      if (currentStep === 1 && resumeData && !currentDraftId) {
+        setShowSavePrompt(true);
+        return;
+      }
+      
       setCurrentStep(currentStep + 1);
+      
+      // Auto-save if we have a current draft
+      if (currentDraftId && resumeData) {
+        const draft = DraftManager.getDraft(currentDraftId);
+        if (draft) {
+          DraftManager.saveDraft(
+            draft.name,
+            resumeData,
+            selectedTemplate,
+            customizations,
+            currentStep + 1,
+            currentDraftId
+          );
+        }
+      }
     }
   };
 
   const prevStep = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
+      
+      // Auto-save if we have a current draft
+      if (currentDraftId && resumeData) {
+        const draft = DraftManager.getDraft(currentDraftId);
+        if (draft) {
+          DraftManager.saveDraft(
+            draft.name,
+            resumeData,
+            selectedTemplate,
+            customizations,
+            currentStep - 1,
+            currentDraftId
+          );
+        }
+      }
     }
+  };
+
+  const handleSavePromptSave = (name: string) => {
+    saveDraft(name);
+    setCurrentStep(currentStep + 1);
+  };
+
+  const handleSavePromptSkip = () => {
+    setShowSavePrompt(false);
+    setCurrentStep(currentStep + 1);
   };
 
   const renderCurrentStep = () => {
@@ -69,6 +167,7 @@ function App() {
           <LinkedInInput
             onDataExtracted={handleLinkedInData}
             onNext={nextStep}
+            onOpenDraftManager={() => setShowDraftManager(true)}
           />
         );
       case 1:
@@ -78,6 +177,8 @@ function App() {
             onDataUpdate={handleDataUpdate}
             onNext={nextStep}
             onBack={prevStep}
+            onSaveDraft={() => setShowSavePrompt(true)}
+            currentDraftId={currentDraftId}
           />
         ) : (
           <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -94,6 +195,8 @@ function App() {
             onTemplateSelect={handleTemplateSelect}
             onNext={nextStep}
             onBack={prevStep}
+            onSaveDraft={() => setShowSavePrompt(true)}
+            currentDraftId={currentDraftId}
           />
         ) : null;
       case 3:
@@ -101,8 +204,12 @@ function App() {
           <ResumeCustomizer
             resumeData={resumeData}
             selectedTemplate={selectedTemplate}
+            customizations={customizations}
+            onCustomizationsUpdate={handleCustomizationsUpdate}
             onExport={handleExport}
             onBack={prevStep}
+            onSaveDraft={() => setShowSavePrompt(true)}
+            currentDraftId={currentDraftId}
           />
         ) : null;
       default:
@@ -117,9 +224,33 @@ function App() {
           currentStep={currentStep}
           totalSteps={STEPS.length}
           steps={STEPS}
+          onOpenDraftManager={() => setShowDraftManager(true)}
+          currentDraftId={currentDraftId}
         />
       )}
+      
       {renderCurrentStep()}
+
+      {/* Draft Manager Modal */}
+      <DraftManagerComponent
+        isOpen={showDraftManager}
+        onClose={() => setShowDraftManager(false)}
+        onLoadDraft={loadDraftData}
+        currentResumeData={resumeData}
+        currentTemplate={selectedTemplate}
+        currentCustomizations={customizations}
+        currentStep={currentStep}
+        currentDraftId={currentDraftId}
+      />
+
+      {/* Save Draft Prompt */}
+      <DraftSavePrompt
+        isOpen={showSavePrompt}
+        onSave={handleSavePromptSave}
+        onSkip={handleSavePromptSkip}
+        onCancel={() => setShowSavePrompt(false)}
+        defaultName={resumeData?.personalInfo.name ? `${resumeData.personalInfo.name} Resume` : ''}
+      />
     </div>
   );
 }

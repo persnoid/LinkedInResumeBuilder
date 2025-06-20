@@ -85,6 +85,25 @@ export interface ResumeTemplate {
   preview: string;
 }
 
+export interface DraftResume {
+  id: string;
+  name: string;
+  resumeData: ResumeData;
+  selectedTemplate: string;
+  customizations: {
+    colors: {
+      primary: string;
+      secondary: string;
+      accent: string;
+    };
+    font: string;
+    sectionOrder: string[];
+  };
+  createdAt: string;
+  updatedAt: string;
+  step: number; // Which step the user was on when they saved
+}
+
 export interface AppState {
   currentStep: number;
   resumeData: ResumeData;

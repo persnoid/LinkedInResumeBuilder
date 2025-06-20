@@ -2,151 +2,6 @@ import { ResumeTemplate } from '../types/resume';
 
 export const resumeTemplates: ResumeTemplate[] = [
   {
-    id: 'skill-focus',
-    name: 'Skill Focus',
-    description: 'A dedicated format emphasizing your strengths, with a clear section for your personal story',
-    category: 'modern',
-    layout: 'skill-focus',
-    colors: {
-      primary: '#F59E0B',
-      secondary: '#D97706',
-      accent: '#F59E0B',
-      text: '#1F2937',
-      background: '#FEF3C7',
-      sidebar: '#FEF3C7'
-    },
-    preview: '/templates/skill-focus.jpg'
-  },
-  {
-    id: 'profile-plus',
-    name: 'Profile Plus',
-    description: 'A comprehensive resume featuring your photo, skills, and experiences',
-    category: 'modern',
-    layout: 'profile-plus',
-    colors: {
-      primary: '#1E293B',
-      secondary: '#0EA5E9',
-      accent: '#0EA5E9',
-      text: '#0F172A',
-      background: '#FFFFFF',
-      photoFrame: '#E2E8F0'
-    },
-    preview: '/templates/profile-plus.jpg'
-  },
-  {
-    id: 'compact-connection',
-    name: 'Compact Connection',
-    description: 'A streamlined design that connects your credentials and certifications in a modern format',
-    category: 'modern',
-    layout: 'compact-connection',
-    colors: {
-      primary: '#F59E0B',
-      secondary: '#0EA5E9',
-      accent: '#0EA5E9',
-      text: '#1F2937',
-      background: '#FFFFFF',
-      highlight: '#E0F2FE'
-    },
-    preview: '/templates/compact-connection.jpg'
-  },
-  {
-    id: 'pathfinder',
-    name: 'Pathfinder',
-    description: 'A unique roadmap design that illustrates your educational and career journey effectively',
-    category: 'creative',
-    layout: 'pathfinder',
-    colors: {
-      primary: '#0EA5E9',
-      secondary: '#0284C7',
-      accent: '#0EA5E9',
-      text: '#1F2937',
-      background: '#FFFFFF',
-      timeline: '#E0F2FE'
-    },
-    preview: '/templates/pathfinder.jpg'
-  },
-  {
-    id: 'essence-of-you',
-    name: 'Essence of You',
-    description: 'A minimalist layout that highlights your qualifications, keeping it clean and impactful',
-    category: 'minimal',
-    layout: 'essence-of-you',
-    colors: {
-      primary: '#1E293B',
-      secondary: '#475569',
-      accent: '#0EA5E9',
-      text: '#0F172A',
-      background: '#FFFFFF'
-    },
-    preview: '/templates/essence-of-you.jpg'
-  },
-  {
-    id: 'vibrant-view',
-    name: 'Vibrant View',
-    description: 'An engaging resume that brings your achievements to life with an energetic layout',
-    category: 'creative',
-    layout: 'vibrant-view',
-    colors: {
-      primary: '#F59E0B',
-      secondary: '#D97706',
-      accent: '#F59E0B',
-      text: '#1F2937',
-      background: '#FFFFFF',
-      vibrant: '#FEF3C7'
-    },
-    preview: '/templates/vibrant-view.jpg'
-  },
-  {
-    id: 'double-column',
-    name: 'Double Column',
-    description: 'Free, Two Column CV template. Perfect for any industry.',
-    category: 'modern',
-    layout: 'double-column',
-    colors: {
-      primary: '#2563EB',
-      secondary: '#1E40AF',
-      accent: '#10B981',
-      text: '#1F2937',
-      background: '#FFFFFF',
-      sidebar: '#F8FAFC',
-      highlight: '#EFF6FF'
-    },
-    preview: '/templates/double-column.jpg'
-  },
-  {
-    id: 'ivy-league',
-    name: 'Ivy League',
-    description: 'The classic Harvard CV template, updated for the 21st century with a refined ATS-friendly design that recruiters love.',
-    category: 'classic',
-    layout: 'ivy-league',
-    colors: {
-      primary: '#1F2937',
-      secondary: '#374151',
-      accent: '#3B82F6',
-      text: '#111827',
-      background: '#FFFFFF',
-      subtle: '#F9FAFB'
-    },
-    preview: '/templates/ivy-league.jpg'
-  },
-  {
-    id: 'elegant-dark',
-    name: 'Elegant',
-    description: 'Modern CV template. Beautiful, stylish design that highlights your background and achievements.',
-    category: 'modern',
-    layout: 'elegant-dark',
-    colors: {
-      primary: '#FFFFFF',
-      secondary: '#E5E7EB',
-      accent: '#60A5FA',
-      text: '#FFFFFF',
-      background: '#1E293B',
-      sidebar: '#334155',
-      highlight: '#475569'
-    },
-    preview: '/templates/elegant-dark.jpg'
-  },
-  {
     id: 'modern',
     name: 'Modern Professional',
     description: 'Clean lines with bold accents and modern typography',
@@ -160,6 +15,23 @@ export const resumeTemplates: ResumeTemplate[] = [
       background: '#FFFFFF'
     },
     preview: '/templates/modern.jpg'
+  },
+  {
+    id: 'double-column',
+    name: 'Double Column',
+    description: 'Two-column layout with sidebar for skills and contact info',
+    category: 'modern',
+    layout: 'double-column',
+    colors: {
+      primary: '#2563EB',
+      secondary: '#1E40AF',
+      accent: '#10B981',
+      text: '#1F2937',
+      background: '#FFFFFF',
+      sidebar: '#F8FAFC',
+      highlight: '#EFF6FF'
+    },
+    preview: '/templates/double-column.jpg'
   },
   {
     id: 'executive',
@@ -300,5 +172,38 @@ export const resumeTemplates: ResumeTemplate[] = [
       background: '#FFFFFF'
     },
     preview: '/templates/elegant.jpg'
+  },
+  {
+    id: 'ivy-league',
+    name: 'Ivy League',
+    description: 'The classic Harvard CV template, updated for the 21st century with a refined ATS-friendly design',
+    category: 'classic',
+    layout: 'ivy-league',
+    colors: {
+      primary: '#1F2937',
+      secondary: '#374151',
+      accent: '#3B82F6',
+      text: '#111827',
+      background: '#FFFFFF',
+      subtle: '#F9FAFB'
+    },
+    preview: '/templates/ivy-league.jpg'
+  },
+  {
+    id: 'elegant-dark',
+    name: 'Elegant Dark',
+    description: 'Modern dark theme with elegant styling that highlights your background and achievements',
+    category: 'modern',
+    layout: 'elegant-dark',
+    colors: {
+      primary: '#FFFFFF',
+      secondary: '#E5E7EB',
+      accent: '#60A5FA',
+      text: '#FFFFFF',
+      background: '#1E293B',
+      sidebar: '#334155',
+      highlight: '#475569'
+    },
+    preview: '/templates/elegant-dark.jpg'
   }
 ];

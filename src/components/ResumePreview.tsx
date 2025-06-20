@@ -82,7 +82,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       case 'skill-focus':
         return renderSkillFocusLayout();
       case 'profile-plus':
-        return renderProfilePlusLayout();
+        return renderProfilePlusLayout
+          ();
       case 'compact-connection':
         return renderCompactConnectionLayout();
       case 'pathfinder':

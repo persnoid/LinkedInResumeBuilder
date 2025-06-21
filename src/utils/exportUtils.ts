@@ -11,33 +11,44 @@ export const exportToPDF = async (elementId: string, filename: string = 'resume.
   }
 
   try {
+    // A4 dimensions in mm
+    const A4_WIDTH_MM = 210;
+    const A4_HEIGHT_MM = 297;
+    
+    // Convert mm to pixels (96 DPI)
+    const A4_WIDTH_PX = (A4_WIDTH_MM * 96) / 25.4;
+    const A4_HEIGHT_PX = (A4_HEIGHT_MM * 96) / 25.4;
+
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
-      width: element.scrollWidth,
-      height: element.scrollHeight
+      width: A4_WIDTH_PX,
+      height: element.scrollHeight,
+      windowWidth: A4_WIDTH_PX,
+      windowHeight: element.scrollHeight
     });
 
-    const imgWidth = 210; // A4 width in mm
-    const pageHeight = 295; // A4 height in mm
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    let heightLeft = imgHeight;
-
+    const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF('p', 'mm', 'a4');
+    
+    const imgWidth = A4_WIDTH_MM;
+    const imgHeight = (canvas.height * A4_WIDTH_MM) / canvas.width;
+    
+    let heightLeft = imgHeight;
     let position = 0;
 
     // Add first page
-    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= A4_HEIGHT_MM;
 
-    // Add additional pages if needed
+    // Add additional pages if content overflows
     while (heightLeft >= 0) {
       position = heightLeft - imgHeight;
       pdf.addPage();
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= A4_HEIGHT_MM;
     }
 
     pdf.save(filename);
@@ -52,7 +63,20 @@ export const exportToWord = async (resumeData: ResumeData, filename: string = 'r
     const doc = new Document({
       sections: [
         {
-          properties: {},
+          properties: {
+            page: {
+              size: {
+                width: '210mm',
+                height: '297mm'
+              },
+              margin: {
+                top: '20mm',
+                right: '20mm',
+                bottom: '20mm',
+                left: '20mm'
+              }
+            }
+          },
           children: [
             // Header
             new Paragraph({

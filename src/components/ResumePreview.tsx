@@ -48,14 +48,9 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
   // Modern Two-Column Layout (Based on first image)
   if (template === 'modern-two-column') {
-    // Split experiences for better page management
-    const firstPageExperiences = resumeData.experience.slice(0, 2);
-    const remainingExperiences = resumeData.experience.slice(2);
-
     return (
       <div id="resume-preview" style={pageStyle} className="print:shadow-none shadow-lg">
-        {/* Page 1 */}
-        <div className="flex min-h-screen print:min-h-0" style={{ minHeight: '297mm' }}>
+        <div className="flex" style={{ minHeight: '297mm' }}>
           {/* Left Column - Main Content */}
           <div className="flex-1 p-5 pr-3" style={{ paddingTop: '15mm', paddingLeft: '15mm', paddingBottom: '15mm' }}>
             {/* Header */}
@@ -115,7 +110,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               </p>
             </div>
 
-            {/* Experience */}
+            {/* Experience - Show ALL experiences */}
             <div className="mb-5" style={{ marginBottom: '16px' }}>
               <h3 
                 className="text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide"
@@ -124,7 +119,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 EXPERIENCE
               </h3>
               <div className="space-y-3">
-                {firstPageExperiences.length > 0 ? firstPageExperiences.map((exp) => (
+                {resumeData.experience.length > 0 ? resumeData.experience.map((exp) => (
                   <div key={exp.id} className="page-break-inside-avoid" style={{ marginBottom: '12px' }}>
                     <h4 className="font-bold text-gray-900 leading-tight" style={{ fontSize: '10px' }}>{exp.position}</h4>
                     <p style={{ color: colors.accent, fontSize: '10px' }} className="font-semibold leading-tight">{exp.company}</p>
@@ -141,7 +136,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                     <div className="text-gray-700" style={{ fontSize: '8px' }}>
                       <p className="mb-1 font-medium">Company Description</p>
                       <ul className="space-y-0.5">
-                        {exp.description.slice(0, 3).map((desc, i) => (
+                        {exp.description.map((desc, i) => (
                           <li key={i} className="flex items-start">
                             <span className="text-gray-400 mr-1 mt-0.5">•</span>
                             <span className="leading-relaxed">{desc}</span>
@@ -283,7 +278,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 KEY ACHIEVEMENTS
               </h3>
               <div className="space-y-2">
-                {resumeData.certifications.length > 0 ? resumeData.certifications.slice(0, 3).map((cert) => (
+                {resumeData.certifications.length > 0 ? resumeData.certifications.map((cert) => (
                   <div key={cert.id} className="flex items-start">
                     <Diamond className="w-3 h-3 mr-1.5 mt-0.5 flex-shrink-0" style={{ color: colors.accent }} />
                     <div>
@@ -350,76 +345,15 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             </div>
           </div>
         </div>
-
-        {/* Additional pages for overflow content */}
-        {remainingExperiences.length > 0 && (
-          <div 
-            className="p-5 page-break-before"
-            style={{ 
-              minHeight: '297mm',
-              pageBreakBefore: 'always',
-              paddingTop: '15mm',
-              paddingLeft: '15mm',
-              paddingRight: '15mm',
-              paddingBottom: '15mm'
-            }}
-          >
-            <h3 
-              className="text-sm font-bold mb-4 pb-1 border-b uppercase tracking-wide"
-              style={{ color: colors.text, borderColor: colors.text, fontSize: '11px', marginBottom: '12px' }}
-            >
-              EXPERIENCE (CONTINUED)
-            </h3>
-            <div className="space-y-4">
-              {remainingExperiences.map((exp) => (
-                <div key={exp.id} className="page-break-inside-avoid" style={{ marginBottom: '16px' }}>
-                  <h4 className="font-bold text-gray-900" style={{ fontSize: '10px' }}>{exp.position}</h4>
-                  <p style={{ color: colors.accent, fontSize: '10px' }} className="font-semibold">{exp.company}</p>
-                  <div className="flex items-center text-gray-500 mb-2" style={{ fontSize: '8px', marginBottom: '6px' }}>
-                    <Calendar className="w-2.5 h-2.5 mr-1" />
-                    <span>{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</span>
-                    {exp.location && (
-                      <>
-                        <MapPin className="w-2.5 h-2.5 ml-2 mr-1" />
-                        <span>{exp.location}</span>
-                      </>
-                    )}
-                  </div>
-                  <div className="text-gray-700" style={{ fontSize: '8px' }}>
-                    <ul className="space-y-0.5">
-                      {exp.description.map((desc, i) => (
-                        <li key={i} className="flex items-start">
-                          <span className="text-gray-400 mr-1 mt-0.5">•</span>
-                          <span className="leading-relaxed">{desc}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     );
   }
 
   // Classic Centered Layout (Based on second image)
   if (template === 'classic-centered') {
-    const firstPageExperiences = resumeData.experience.slice(0, 2);
-    const remainingExperiences = resumeData.experience.slice(2);
-
     return (
       <div id="resume-preview" style={pageStyle} className="print:shadow-none shadow-lg">
-        {/* Page 1 */}
-        <div 
-          className="page-break-after"
-          style={{ 
-            minHeight: '297mm',
-            pageBreakAfter: 'always',
-            padding: '15mm'
-          }}
-        >
+        <div style={{ minHeight: '297mm', padding: '15mm' }}>
           {/* Header */}
           <div className="text-center mb-6" style={{ marginBottom: '20px' }}>
             {/* Profile Photo */}
@@ -488,7 +422,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             </p>
           </div>
 
-          {/* Experience */}
+          {/* Experience - Show ALL experiences */}
           <div className="mb-5" style={{ marginBottom: '16px' }}>
             <h3 
               className="text-lg font-bold mb-4 text-center pb-1 border-b"
@@ -497,7 +431,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               Experience
             </h3>
             <div className="space-y-3">
-              {firstPageExperiences.length > 0 ? firstPageExperiences.map((exp) => (
+              {resumeData.experience.length > 0 ? resumeData.experience.map((exp) => (
                 <div key={exp.id} className="border rounded-lg p-3 page-break-inside-avoid" style={{ padding: '8px' }}>
                   <div className="flex justify-between items-start mb-2" style={{ marginBottom: '6px' }}>
                     <div className="text-left">
@@ -512,7 +446,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                   <div className="text-gray-700" style={{ fontSize: '8px' }}>
                     <p className="mb-1 font-medium">Company Description</p>
                     <ul className="space-y-0.5">
-                      {exp.description.slice(0, 3).map((desc, i) => (
+                      {exp.description.map((desc, i) => (
                         <li key={i} className="flex items-start">
                           <span className="text-gray-400 mr-1 mt-0.5">•</span>
                           <span className="leading-relaxed">{desc}</span>
@@ -625,7 +559,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               Key Achievements
             </h3>
             <div className="space-y-2">
-              {resumeData.certifications.length > 0 ? resumeData.certifications.slice(0, 2).map((cert) => (
+              {resumeData.certifications.length > 0 ? resumeData.certifications.map((cert) => (
                 <div key={cert.id} className="flex items-start max-w-2xl mx-auto">
                   <Diamond className="w-3 h-3 mr-1.5 mt-0.5 flex-shrink-0" style={{ color: colors.accent }} />
                   <div>
@@ -691,51 +625,6 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             </div>
           </div>
         </div>
-
-        {/* Additional pages for overflow content */}
-        {remainingExperiences.length > 0 && (
-          <div 
-            className="page-break-before"
-            style={{ 
-              minHeight: '297mm',
-              pageBreakBefore: 'always',
-              padding: '15mm'
-            }}
-          >
-            <h3 
-              className="text-lg font-bold mb-6 text-center pb-1 border-b"
-              style={{ color: colors.primary, borderColor: colors.primary, fontSize: '12px', marginBottom: '16px' }}
-            >
-              Experience (Continued)
-            </h3>
-            <div className="space-y-4">
-              {remainingExperiences.map((exp) => (
-                <div key={exp.id} className="border rounded-lg p-3 page-break-inside-avoid" style={{ marginBottom: '12px', padding: '8px' }}>
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="text-left">
-                      <h4 className="font-bold text-gray-900" style={{ fontSize: '10px' }}>{exp.company}</h4>
-                      <p style={{ fontSize: '9px' }}>{exp.position}</p>
-                    </div>
-                    <div className="text-right" style={{ fontSize: '8px' }}>
-                      <p className="text-gray-500">{exp.location}</p>
-                      <p className="text-gray-500">{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</p>
-                    </div>
-                  </div>
-                  <div className="text-gray-700" style={{ fontSize: '8px' }}>
-                    <ul className="space-y-0.5">
-                      {exp.description.map((desc, i) => (
-                        <li key={i} className="flex items-start">
-                          <span className="text-gray-400 mr-1 mt-0.5">•</span>
-                          <span className="leading-relaxed">{desc}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     );
   }

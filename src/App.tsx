@@ -21,9 +21,9 @@ const STEPS = [
 function App() {
   const [currentStep, setCurrentStep] = useState(0);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState('modern');
+  const [selectedTemplate, setSelectedTemplate] = useState('modern-two-column');
   const [customizations, setCustomizations] = useState({
-    colors: { primary: '#3B82F6', secondary: '#1E40AF', accent: '#10B981' },
+    colors: { primary: '#2563EB', secondary: '#1E40AF', accent: '#3B82F6' },
     font: 'Inter',
     sectionOrder: ['summary', 'experience', 'education', 'skills', 'certifications']
   });

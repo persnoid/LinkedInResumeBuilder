@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle, Eye, Layout, Palette, Grid, Clock, Minimize2, Save } from 'lucide-react';
+import { CheckCircle, Eye, Layout, Grid, Save } from 'lucide-react';
 import { resumeTemplates } from '../data/templates';
 import { ResumeTemplate } from '../types/resume';
 
@@ -32,9 +32,6 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     switch (layout) {
       case 'double-column': return Grid;
       case 'ivy-league': return Layout;
-      case 'creative-blocks': return Palette;
-      case 'timeline': return Clock;
-      case 'minimal-spaced': return Minimize2;
       default: return Layout;
     }
   };
@@ -55,44 +52,56 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         {/* Template preview based on layout */}
         {template.layout === 'double-column' && (
           <div className="h-full flex">
-            <div className="w-1/3 p-3" style={{ backgroundColor: template.colors.sidebar || '#1E293B' }}>
-              <div className="w-8 h-8 rounded-full bg-gray-300 mx-auto mb-2"></div>
-              <div className="text-center text-xs space-y-1 text-white">
-                <div className="font-bold">John Doe</div>
-                <div className="text-gray-300">Software Engineer</div>
-                <div className="space-y-1 mt-3">
-                  <div className="text-xs font-bold text-white">CONTACT</div>
-                  <div className="text-xs text-gray-300">john@email.com</div>
-                  <div className="text-xs text-gray-300">+1 234 567 8900</div>
-                  <div className="text-xs font-bold text-white mt-2">SKILLS</div>
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="space-y-0.5">
-                      <div className="text-xs text-gray-300">React</div>
-                      <div className="w-full bg-gray-600 rounded-full h-1">
-                        <div className="h-1 rounded-full" style={{ backgroundColor: template.colors.accent, width: `${i * 30}%` }}></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            {/* Left side - main content */}
             <div className="flex-1 p-3">
               <div className="space-y-3">
                 <div>
-                  <div className="h-2 rounded mb-1" style={{ backgroundColor: template.colors.primary, width: '60%' }}></div>
-                  <div className="text-xs font-bold" style={{ color: template.colors.primary }}>EXPERIENCE</div>
-                  <div className="space-y-1 mt-1">
+                  <div className="text-lg font-bold mb-1" style={{ color: template.colors.primary }}>YOUR NAME</div>
+                  <div className="text-sm mb-2" style={{ color: template.colors.accent }}>The role you are applying for?</div>
+                  <div className="text-xs text-gray-500 mb-3">📞 Phone ✉ Email 🔗 LinkedIn/Portfolio 📍 Location</div>
+                </div>
+                
+                <div>
+                  <div className="text-sm font-bold mb-1 pb-1 border-b" style={{ color: template.colors.text, borderColor: template.colors.text }}>SUMMARY</div>
+                  <div className="space-y-1">
                     <div className="h-1 bg-gray-200 rounded"></div>
                     <div className="h-1 bg-gray-200 rounded w-4/5"></div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="text-sm font-bold mb-1 pb-1 border-b" style={{ color: template.colors.text, borderColor: template.colors.text }}>EXPERIENCE</div>
+                  <div className="space-y-1">
+                    <div className="text-xs font-bold">Title</div>
+                    <div className="text-xs" style={{ color: template.colors.accent }}>Company Name</div>
                     <div className="h-1 bg-gray-200 rounded w-3/4"></div>
                   </div>
                 </div>
+                
                 <div>
-                  <div className="text-xs font-bold" style={{ color: template.colors.primary }}>EDUCATION</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="h-1 bg-gray-200 rounded w-3/4"></div>
+                  <div className="text-sm font-bold mb-1 pb-1 border-b" style={{ color: template.colors.text, borderColor: template.colors.text }}>EDUCATION</div>
+                  <div className="space-y-1">
                     <div className="h-1 bg-gray-200 rounded w-2/3"></div>
                   </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Right side - sidebar */}
+            <div className="w-24 p-2" style={{ backgroundColor: template.colors.sidebar }}>
+              <div className="w-8 h-8 rounded-full bg-gray-300 mx-auto mb-2"></div>
+              <div className="space-y-2">
+                <div>
+                  <div className="text-xs font-bold mb-1" style={{ color: template.colors.text }}>KEY ACHIEVEMENTS</div>
+                  <div className="h-1 bg-gray-300 rounded w-full"></div>
+                </div>
+                <div>
+                  <div className="text-xs font-bold mb-1" style={{ color: template.colors.text }}>SKILLS</div>
+                  <div className="h-1 bg-gray-300 rounded w-full"></div>
+                </div>
+                <div>
+                  <div className="text-xs font-bold mb-1" style={{ color: template.colors.text }}>COURSES</div>
+                  <div className="h-1 bg-gray-300 rounded w-3/4"></div>
                 </div>
               </div>
             </div>
@@ -101,158 +110,41 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
         {template.layout === 'ivy-league' && (
           <div className="h-full p-4 text-center">
-            <div className="border-b pb-3 mb-3" style={{ borderColor: template.colors.primary }}>
-              <div className="text-lg font-bold" style={{ color: template.colors.primary }}>JOHN DOE</div>
-              <div className="text-sm" style={{ color: template.colors.secondary }}>Software Engineer</div>
-              <div className="text-xs text-gray-500 mt-1">john@email.com • +1 234 567 8900 • San Francisco, CA</div>
-            </div>
-            <div className="space-y-3 text-xs text-left">
-              <div>
-                <div className="font-semibold text-center mb-1" style={{ color: template.colors.primary }}>PROFESSIONAL SUMMARY</div>
-                <div className="space-y-1">
-                  <div className="h-1 bg-gray-200 rounded"></div>
-                  <div className="h-1 bg-gray-200 rounded w-4/5"></div>
-                  <div className="h-1 bg-gray-200 rounded w-3/4"></div>
-                </div>
-              </div>
-              <div>
-                <div className="font-semibold text-center mb-1" style={{ color: template.colors.primary }}>EXPERIENCE</div>
-                <div className="space-y-1">
-                  <div className="h-1 bg-gray-200 rounded"></div>
-                  <div className="h-1 bg-gray-200 rounded w-4/5"></div>
-                </div>
-              </div>
-              <div>
-                <div className="font-semibold text-center mb-1" style={{ color: template.colors.primary }}>EDUCATION</div>
-                <div className="space-y-1">
-                  <div className="h-1 bg-gray-200 rounded w-3/4"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {template.layout === 'creative-blocks' && (
-          <div className="h-full p-2">
-            <div className="grid grid-cols-3 gap-2 h-full">
-              <div className="col-span-2 space-y-2">
-                <div className="p-2 rounded" style={{ backgroundColor: template.colors.primary }}>
-                  <div className="text-white font-bold text-sm">JOHN DOE</div>
-                  <div className="text-white text-xs opacity-90">Creative Professional</div>
-                </div>
-                <div className="p-2 bg-gray-50 rounded">
-                  <div className="text-xs font-bold mb-1" style={{ color: template.colors.primary }}>EXPERIENCE</div>
-                  <div className="space-y-1">
-                    <div className="h-1 bg-gray-200 rounded"></div>
-                    <div className="h-1 bg-gray-200 rounded w-3/4"></div>
-                  </div>
-                </div>
-                <div className="p-2 rounded" style={{ backgroundColor: template.colors.highlight }}>
-                  <div className="text-xs font-bold mb-1" style={{ color: template.colors.secondary }}>PORTFOLIO</div>
-                  <div className="grid grid-cols-2 gap-1">
-                    <div className="h-3 rounded" style={{ backgroundColor: template.colors.accent }}></div>
-                    <div className="h-3 bg-gray-300 rounded"></div>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="p-2 rounded" style={{ backgroundColor: template.colors.accent }}>
-                  <div className="text-white text-xs font-bold">SKILLS</div>
-                  <div className="space-y-1 mt-1">
-                    <div className="h-1 bg-white bg-opacity-60 rounded"></div>
-                    <div className="h-1 bg-white bg-opacity-60 rounded w-3/4"></div>
-                    <div className="h-1 bg-white bg-opacity-60 rounded w-1/2"></div>
-                  </div>
-                </div>
-                <div className="p-2 bg-gray-100 rounded">
-                  <div className="text-xs font-bold mb-1" style={{ color: template.colors.primary }}>CONTACT</div>
-                  <div className="space-y-1">
-                    <div className="h-1 bg-gray-300 rounded w-full"></div>
-                    <div className="h-1 bg-gray-300 rounded w-2/3"></div>
-                  </div>
-                </div>
-                <div className="p-2 rounded" style={{ backgroundColor: template.colors.secondary }}>
-                  <div className="text-white text-xs font-bold">AWARDS</div>
-                  <div className="h-1 bg-white bg-opacity-60 rounded mt-1"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {template.layout === 'timeline' && (
-          <div className="h-full p-3">
-            <div className="text-center mb-3">
-              <div className="text-sm font-bold" style={{ color: template.colors.primary }}>John Doe</div>
-              <div className="text-xs" style={{ color: template.colors.secondary }}>Software Engineer</div>
-            </div>
-            <div className="relative">
-              {/* Timeline line */}
-              <div className="absolute left-4 top-0 bottom-0 w-0.5" style={{ backgroundColor: template.colors.timeline }}></div>
-              
-              {/* Timeline items */}
-              <div className="space-y-3">
-                {[2024, 2022, 2020].map((year, i) => (
-                  <div key={year} className="relative flex items-start">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white z-10" style={{ backgroundColor: template.colors.primary }}>
-                      {year.toString().slice(-2)}
-                    </div>
-                    <div className="ml-3 flex-1">
-                      <div className="text-xs font-semibold" style={{ color: template.colors.primary }}>
-                        {i === 0 ? 'Senior Developer' : i === 1 ? 'Developer' : 'Junior Developer'}
-                      </div>
-                      <div className="text-xs text-gray-500">Tech Company</div>
-                      <div className="space-y-0.5 mt-1">
-                        <div className="h-0.5 bg-gray-200 rounded w-full"></div>
-                        <div className="h-0.5 bg-gray-200 rounded w-3/4"></div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {template.layout === 'minimal-spaced' && (
-          <div className="h-full p-6 text-xs" style={{ color: template.colors.text }}>
-            <div className="text-center mb-6">
-              <div className="font-light text-2xl mb-1" style={{ color: template.colors.primary }}>
-                John Doe
-              </div>
-              <div className="text-sm font-light" style={{ color: template.colors.secondary }}>
-                Software Engineer
-              </div>
-              <div className="text-xs text-gray-400 mt-2">
-                john@email.com
-              </div>
+            <div className="w-8 h-8 rounded-full bg-gray-300 mx-auto mb-2"></div>
+            <div className="mb-4">
+              <div className="text-lg font-bold mb-1" style={{ color: template.colors.primary }}>YOUR NAME</div>
+              <div className="text-sm mb-2" style={{ color: template.colors.secondary }}>The role you are applying for?</div>
+              <div className="text-xs text-gray-500">Phone • Email • LinkedIn/Portfolio • Location</div>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-3 text-xs">
               <div>
-                <div className="font-light text-sm mb-3" style={{ color: template.colors.primary }}>
-                  Experience
+                <div className="font-semibold mb-1 pb-1 border-b" style={{ color: template.colors.primary, borderColor: template.colors.primary }}>Summary</div>
+                <div className="space-y-1">
+                  <div className="h-1 bg-gray-200 rounded"></div>
+                  <div className="h-1 bg-gray-200 rounded w-4/5"></div>
                 </div>
-                <div className="space-y-3">
-                  <div>
-                    <div className="font-medium text-xs">Senior Developer</div>
-                    <div className="text-xs" style={{ color: template.colors.secondary }}>Tech Corp</div>
-                    <div className="h-0.5 bg-gray-200 rounded w-full mt-2"></div>
+              </div>
+              
+              <div>
+                <div className="font-semibold mb-1 pb-1 border-b" style={{ color: template.colors.primary, borderColor: template.colors.primary }}>Experience</div>
+                <div className="border rounded p-2 mb-2">
+                  <div className="flex justify-between text-xs">
+                    <div>
+                      <div className="font-bold">Company Name</div>
+                      <div>Title</div>
+                    </div>
+                    <div>
+                      <div>Location</div>
+                      <div>Date period</div>
+                    </div>
                   </div>
                 </div>
               </div>
               
               <div>
-                <div className="font-light text-sm mb-3" style={{ color: template.colors.primary }}>
-                  Skills
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {['React', 'Node.js', 'Python'].map((skill) => (
-                    <span key={skill} className="text-xs px-2 py-1 rounded-full border" style={{ borderColor: template.colors.accent, color: template.colors.text }}>
-                      {skill}
-                    </span>
-                  ))}
-                </div>
+                <div className="font-semibold mb-1 pb-1 border-b" style={{ color: template.colors.primary, borderColor: template.colors.primary }}>Education</div>
+                <div className="h-1 bg-gray-200 rounded w-3/4"></div>
               </div>
             </div>
           </div>
@@ -267,7 +159,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Template</h2>
-            <p className="text-gray-600">Select from our collection of professionally designed resume layouts, each with unique structure and visual appeal.</p>
+            <p className="text-gray-600">Select from our professionally designed resume layouts, each with unique structure and visual appeal.</p>
           </div>
           
           {/* Save Draft Button */}
@@ -285,9 +177,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           {[
             { key: 'all', label: 'All Templates' },
             { key: 'modern', label: 'Modern' },
-            { key: 'classic', label: 'Classic' },
-            { key: 'creative', label: 'Creative' },
-            { key: 'minimal', label: 'Minimal' }
+            { key: 'classic', label: 'Classic' }
           ].map((tab) => (
             <button
               key={tab.key}
@@ -304,7 +194,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         </div>
 
         {/* Templates Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {filteredTemplates.map((template) => {
             const LayoutIcon = getLayoutIcon(template.layout);
             

@@ -33,73 +33,69 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                     font === 'Merriweather' ? 'Merriweather, serif' :
                     'Inter, sans-serif';
 
-  // A4 dimensions: 210mm x 297mm (8.27" x 11.69")
-  const A4_WIDTH = '210mm';
-  const A4_HEIGHT = '297mm';
+  // A4 dimensions with proper margins
+  const pageStyle = {
+    width: '210mm',
+    minHeight: '297mm',
+    maxWidth: '794px',
+    margin: '0 auto',
+    backgroundColor: 'white',
+    fontFamily,
+    fontSize: '10px',
+    lineHeight: '1.3',
+    color: '#1f2937'
+  };
 
   // Modern Two-Column Layout (Based on first image)
   if (template === 'modern-two-column') {
+    // Split experiences for better page management
+    const firstPageExperiences = resumeData.experience.slice(0, 2);
+    const remainingExperiences = resumeData.experience.slice(2);
+
     return (
-      <div 
-        id="resume-preview" 
-        className="bg-white shadow-lg mx-auto"
-        style={{ 
-          fontFamily, 
-          width: A4_WIDTH,
-          minHeight: A4_HEIGHT,
-          maxWidth: '794px', // A4 width in pixels at 96 DPI
-          fontSize: '11px',
-          lineHeight: '1.4'
-        }}
-      >
+      <div id="resume-preview" style={pageStyle} className="print:shadow-none shadow-lg">
         {/* Page 1 */}
-        <div 
-          className="flex h-full page-break-after"
-          style={{ 
-            minHeight: A4_HEIGHT,
-            pageBreakAfter: 'always'
-          }}
-        >
+        <div className="flex min-h-screen print:min-h-0" style={{ minHeight: '297mm' }}>
           {/* Left Column - Main Content */}
-          <div className="flex-1 p-6 pr-4">
+          <div className="flex-1 p-5 pr-3" style={{ paddingTop: '15mm', paddingLeft: '15mm', paddingBottom: '15mm' }}>
             {/* Header */}
-            <div className="mb-6">
+            <div className="mb-5">
               <h1 
-                className="text-2xl font-bold mb-1 uppercase tracking-wide leading-tight"
-                style={{ color: colors.primary }}
+                className="text-xl font-bold mb-1 uppercase tracking-wide leading-tight"
+                style={{ color: colors.primary, fontSize: '18px', marginBottom: '4px' }}
               >
                 {resumeData.personalInfo.name || 'YOUR NAME'}
               </h1>
               <h2 
                 className="text-sm mb-3 leading-tight"
-                style={{ color: colors.accent }}
+                style={{ color: colors.accent, fontSize: '12px', marginBottom: '8px' }}
               >
                 {resumeData.personalInfo.title || 'The role you are applying for?'}
               </h2>
               
               {/* Contact Info Row */}
-              <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600 mb-4">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600 mb-4" style={{ fontSize: '9px', marginBottom: '12px' }}>
                 {resumeData.personalInfo.phone && (
                   <div className="flex items-center">
-                    <Phone className="w-3 h-3 mr-1" />
+                    <Phone className="w-2.5 h-2.5 mr-1" />
                     <span>{resumeData.personalInfo.phone}</span>
                   </div>
                 )}
                 {resumeData.personalInfo.email && (
                   <div className="flex items-center">
-                    <Mail className="w-3 h-3 mr-1" />
+                    <Mail className="w-2.5 h-2.5 mr-1" />
                     <span>{resumeData.personalInfo.email}</span>
                   </div>
                 )}
                 {resumeData.personalInfo.linkedin && (
                   <div className="flex items-center">
-                    <Linkedin className="w-3 h-3 mr-1" />
+                    <Linkedin className="w-2.5 h-2.5 mr-1" />
                     <span>{resumeData.personalInfo.linkedin}</span>
                   </div>
                 )}
                 {resumeData.personalInfo.location && (
                   <div className="flex items-center">
-                    <MapPin className="w-3 h-3 mr-1" />
+                    <MapPin className="w-2.5 h-2.5 mr-1" />
                     <span>{resumeData.personalInfo.location}</span>
                   </div>
                 )}
@@ -107,47 +103,47 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             </div>
 
             {/* Summary */}
-            <div className="mb-6">
+            <div className="mb-5" style={{ marginBottom: '16px' }}>
               <h3 
                 className="text-sm font-bold mb-2 pb-1 border-b uppercase tracking-wide"
-                style={{ color: colors.text, borderColor: colors.text }}
+                style={{ color: colors.text, borderColor: colors.text, fontSize: '11px', marginBottom: '6px' }}
               >
                 SUMMARY
               </h3>
-              <p className="text-gray-600 leading-relaxed text-xs">
+              <p className="text-gray-600 leading-relaxed" style={{ fontSize: '9px', lineHeight: '1.4' }}>
                 {resumeData.summary || 'Briefly explain why you\'re a great fit for the role - use the AI assistant to tailor this summary for each job posting.'}
               </p>
             </div>
 
             {/* Experience */}
-            <div className="mb-6">
+            <div className="mb-5" style={{ marginBottom: '16px' }}>
               <h3 
                 className="text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide"
-                style={{ color: colors.text, borderColor: colors.text }}
+                style={{ color: colors.text, borderColor: colors.text, fontSize: '11px', marginBottom: '8px' }}
               >
                 EXPERIENCE
               </h3>
-              <div className="space-y-4">
-                {resumeData.experience.length > 0 ? resumeData.experience.map((exp, index) => (
-                  <div key={exp.id} className={index > 1 ? 'page-break-before' : ''}>
-                    <h4 className="font-bold text-gray-900 text-sm leading-tight">{exp.position}</h4>
-                    <p style={{ color: colors.accent }} className="font-semibold text-sm leading-tight">{exp.company}</p>
-                    <div className="flex items-center text-xs text-gray-500 mb-2">
-                      <Calendar className="w-3 h-3 mr-1" />
+              <div className="space-y-3">
+                {firstPageExperiences.length > 0 ? firstPageExperiences.map((exp) => (
+                  <div key={exp.id} className="page-break-inside-avoid" style={{ marginBottom: '12px' }}>
+                    <h4 className="font-bold text-gray-900 leading-tight" style={{ fontSize: '10px' }}>{exp.position}</h4>
+                    <p style={{ color: colors.accent, fontSize: '10px' }} className="font-semibold leading-tight">{exp.company}</p>
+                    <div className="flex items-center text-gray-500 mb-1" style={{ fontSize: '8px', marginBottom: '4px' }}>
+                      <Calendar className="w-2.5 h-2.5 mr-1" />
                       <span>{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</span>
                       {exp.location && (
                         <>
-                          <MapPin className="w-3 h-3 ml-3 mr-1" />
+                          <MapPin className="w-2.5 h-2.5 ml-2 mr-1" />
                           <span>{exp.location}</span>
                         </>
                       )}
                     </div>
-                    <div className="text-gray-700 text-xs">
+                    <div className="text-gray-700" style={{ fontSize: '8px' }}>
                       <p className="mb-1 font-medium">Company Description</p>
-                      <ul className="space-y-1">
-                        {exp.description.map((desc, i) => (
+                      <ul className="space-y-0.5">
+                        {exp.description.slice(0, 3).map((desc, i) => (
                           <li key={i} className="flex items-start">
-                            <span className="text-gray-400 mr-2 mt-0.5">•</span>
+                            <span className="text-gray-400 mr-1 mt-0.5">•</span>
                             <span className="leading-relaxed">{desc}</span>
                           </li>
                         ))}
@@ -155,20 +151,20 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                     </div>
                   </div>
                 )) : (
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-sm">Title</h4>
-                    <p style={{ color: colors.accent }} className="font-semibold text-sm">Company Name</p>
-                    <div className="flex items-center text-xs text-gray-500 mb-2">
-                      <Calendar className="w-3 h-3 mr-1" />
+                  <div className="page-break-inside-avoid">
+                    <h4 className="font-bold text-gray-900" style={{ fontSize: '10px' }}>Title</h4>
+                    <p style={{ color: colors.accent, fontSize: '10px' }} className="font-semibold">Company Name</p>
+                    <div className="flex items-center text-gray-500 mb-1" style={{ fontSize: '8px' }}>
+                      <Calendar className="w-2.5 h-2.5 mr-1" />
                       <span>Date period</span>
-                      <MapPin className="w-3 h-3 ml-3 mr-1" />
+                      <MapPin className="w-2.5 h-2.5 ml-2 mr-1" />
                       <span>Location</span>
                     </div>
-                    <div className="text-gray-700 text-xs">
+                    <div className="text-gray-700" style={{ fontSize: '8px' }}>
                       <p className="mb-1 font-medium">Company Description</p>
-                      <ul className="space-y-1">
+                      <ul>
                         <li className="flex items-start">
-                          <span className="text-gray-400 mr-2 mt-0.5">•</span>
+                          <span className="text-gray-400 mr-1 mt-0.5">•</span>
                           <span>Highlight your accomplishments, using numbers if possible.</span>
                         </li>
                       </ul>
@@ -179,29 +175,29 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             </div>
 
             {/* Education */}
-            <div className="mb-6">
+            <div className="mb-5" style={{ marginBottom: '16px' }}>
               <h3 
                 className="text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide"
-                style={{ color: colors.text, borderColor: colors.text }}
+                style={{ color: colors.text, borderColor: colors.text, fontSize: '11px', marginBottom: '8px' }}
               >
                 EDUCATION
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {resumeData.education.length > 0 ? resumeData.education.map((edu) => (
-                  <div key={edu.id}>
-                    <h4 className="font-bold text-gray-900 text-sm">{edu.degree}</h4>
-                    <p style={{ color: colors.accent }} className="font-semibold text-sm">{edu.school}</p>
-                    <div className="flex items-center text-xs text-gray-500">
-                      <Calendar className="w-3 h-3 mr-1" />
+                  <div key={edu.id} className="page-break-inside-avoid">
+                    <h4 className="font-bold text-gray-900" style={{ fontSize: '10px' }}>{edu.degree}</h4>
+                    <p style={{ color: colors.accent, fontSize: '10px' }} className="font-semibold">{edu.school}</p>
+                    <div className="flex items-center text-gray-500" style={{ fontSize: '8px' }}>
+                      <Calendar className="w-2.5 h-2.5 mr-1" />
                       <span>{edu.startDate} - {edu.endDate}</span>
                     </div>
                   </div>
                 )) : (
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-sm">Degree and Field of Study</h4>
-                    <p style={{ color: colors.accent }} className="font-semibold text-sm">School or University</p>
-                    <div className="flex items-center text-xs text-gray-500">
-                      <Calendar className="w-3 h-3 mr-1" />
+                  <div className="page-break-inside-avoid">
+                    <h4 className="font-bold text-gray-900" style={{ fontSize: '10px' }}>Degree and Field of Study</h4>
+                    <p style={{ color: colors.accent, fontSize: '10px' }} className="font-semibold">School or University</p>
+                    <div className="flex items-center text-gray-500" style={{ fontSize: '8px' }}>
+                      <Calendar className="w-2.5 h-2.5 mr-1" />
                       <span>Date period</span>
                     </div>
                   </div>
@@ -213,20 +209,20 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             <div>
               <h3 
                 className="text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide"
-                style={{ color: colors.text, borderColor: colors.text }}
+                style={{ color: colors.text, borderColor: colors.text, fontSize: '11px', marginBottom: '8px' }}
               >
                 LANGUAGES
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {resumeData.languages && resumeData.languages.length > 0 ? resumeData.languages.map((language) => (
                   <div key={language.id} className="flex items-center justify-between">
-                    <span className="font-medium text-xs">{language.name}</span>
+                    <span className="font-medium" style={{ fontSize: '9px' }}>{language.name}</span>
                     <div className="flex items-center">
-                      <div className="flex space-x-1 mr-2">
+                      <div className="flex space-x-0.5 mr-2">
                         {[1, 2, 3, 4, 5].map((level) => (
                           <div
                             key={level}
-                            className={`w-2 h-2 rounded-full ${
+                            className={`w-1.5 h-1.5 rounded-full ${
                               level <= (language.level === 'Beginner' ? 1 : 
                                        language.level === 'Intermediate' ? 3 : 
                                        language.level === 'Advanced' ? 4 : 5)
@@ -236,21 +232,21 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                           />
                         ))}
                       </div>
-                      <span className="text-xs text-gray-500">{language.level}</span>
+                      <span className="text-gray-500" style={{ fontSize: '8px' }}>{language.level}</span>
                     </div>
                   </div>
                 )) : (
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-xs">Language</span>
+                    <span className="font-medium" style={{ fontSize: '9px' }}>Language</span>
                     <div className="flex items-center">
-                      <div className="flex space-x-1 mr-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500" />
-                        <div className="w-2 h-2 rounded-full bg-gray-300" />
-                        <div className="w-2 h-2 rounded-full bg-gray-300" />
-                        <div className="w-2 h-2 rounded-full bg-gray-300" />
-                        <div className="w-2 h-2 rounded-full bg-gray-300" />
+                      <div className="flex space-x-0.5 mr-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
                       </div>
-                      <span className="text-xs text-gray-500">Beginner</span>
+                      <span className="text-gray-500" style={{ fontSize: '8px' }}>Beginner</span>
                     </div>
                   </div>
                 )}
@@ -259,10 +255,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           </div>
 
           {/* Right Column - Sidebar */}
-          <div className="w-64 bg-gray-50 p-6 pl-4">
+          <div className="w-56 p-5 pl-3" style={{ backgroundColor: colors.sidebar || '#F8FAFC', paddingTop: '15mm', paddingRight: '15mm', paddingBottom: '15mm' }}>
             {/* Profile Photo */}
-            <div className="mb-6 text-center">
-              <div className="w-24 h-24 rounded-full bg-gray-300 mx-auto flex items-center justify-center overflow-hidden">
+            <div className="mb-5 text-center" style={{ marginBottom: '16px' }}>
+              <div className="w-20 h-20 rounded-full bg-gray-300 mx-auto flex items-center justify-center overflow-hidden">
                 {resumeData.personalInfo.photo ? (
                   <img 
                     src={resumeData.personalInfo.photo} 
@@ -270,37 +266,37 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded-full bg-gray-400 flex items-center justify-center">
-                    <div className="w-6 h-6 bg-gray-500 rounded-full mb-1"></div>
-                    <div className="w-8 h-4 bg-gray-500 rounded-full"></div>
+                  <div className="w-14 h-14 rounded-full bg-gray-400 flex items-center justify-center">
+                    <div className="w-5 h-5 bg-gray-500 rounded-full mb-1"></div>
+                    <div className="w-7 h-3 bg-gray-500 rounded-full"></div>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Key Achievements */}
-            <div className="mb-6">
+            <div className="mb-5" style={{ marginBottom: '16px' }}>
               <h3 
                 className="text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide"
-                style={{ color: colors.text, borderColor: colors.text }}
+                style={{ color: colors.text, borderColor: colors.text, fontSize: '11px', marginBottom: '8px' }}
               >
                 KEY ACHIEVEMENTS
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {resumeData.certifications.length > 0 ? resumeData.certifications.slice(0, 3).map((cert) => (
                   <div key={cert.id} className="flex items-start">
-                    <Diamond className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" style={{ color: colors.accent }} />
+                    <Diamond className="w-3 h-3 mr-1.5 mt-0.5 flex-shrink-0" style={{ color: colors.accent }} />
                     <div>
-                      <h4 className="font-semibold text-gray-900 text-xs leading-tight">{cert.name}</h4>
-                      <p className="text-xs text-gray-600">{cert.issuer}</p>
+                      <h4 className="font-semibold text-gray-900 leading-tight" style={{ fontSize: '9px' }}>{cert.name}</h4>
+                      <p className="text-gray-600" style={{ fontSize: '8px' }}>{cert.issuer}</p>
                     </div>
                   </div>
                 )) : (
                   <div className="flex items-start">
-                    <Diamond className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" style={{ color: colors.accent }} />
+                    <Diamond className="w-3 h-3 mr-1.5 mt-0.5 flex-shrink-0" style={{ color: colors.accent }} />
                     <div>
-                      <h4 className="font-semibold text-gray-900 text-xs">Your Achievement</h4>
-                      <p className="text-xs text-gray-600">Describe what you did and the impact it had.</p>
+                      <h4 className="font-semibold text-gray-900" style={{ fontSize: '9px' }}>Your Achievement</h4>
+                      <p className="text-gray-600" style={{ fontSize: '8px' }}>Describe what you did and the impact it had.</p>
                     </div>
                   </div>
                 )}
@@ -308,34 +304,34 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             </div>
 
             {/* Skills */}
-            <div className="mb-6">
+            <div className="mb-5" style={{ marginBottom: '16px' }}>
               <h3 
                 className="text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide"
-                style={{ color: colors.text, borderColor: colors.text }}
+                style={{ color: colors.text, borderColor: colors.text, fontSize: '11px', marginBottom: '8px' }}
               >
                 SKILLS
               </h3>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {resumeData.skills.length > 0 ? resumeData.skills.map((skill) => (
-                  <div key={skill.id} className="text-gray-700 text-xs">
+                  <div key={skill.id} className="text-gray-700" style={{ fontSize: '9px' }}>
                     {skill.name}
                   </div>
                 )) : (
-                  <div className="text-gray-700 text-xs">Your Skill</div>
+                  <div className="text-gray-700" style={{ fontSize: '9px' }}>Your Skill</div>
                 )}
               </div>
             </div>
 
             {/* Courses */}
-            <div className="mb-6">
+            <div className="mb-5" style={{ marginBottom: '16px' }}>
               <h3 
                 className="text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide"
-                style={{ color: colors.text, borderColor: colors.text }}
+                style={{ color: colors.text, borderColor: colors.text, fontSize: '11px', marginBottom: '8px' }}
               >
                 COURSES
               </h3>
-              <div className="space-y-1">
-                <p style={{ color: colors.accent }} className="text-gray-600 text-xs">Course Title</p>
+              <div>
+                <p style={{ color: colors.accent, fontSize: '9px' }} className="text-gray-600">Course Title</p>
               </div>
             </div>
 
@@ -343,54 +339,58 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             <div>
               <h3 
                 className="text-sm font-bold mb-3 pb-1 border-b uppercase tracking-wide"
-                style={{ color: colors.text, borderColor: colors.text }}
+                style={{ color: colors.text, borderColor: colors.text, fontSize: '11px', marginBottom: '8px' }}
               >
                 INTERESTS
               </h3>
               <div className="flex items-start">
-                <Diamond className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" style={{ color: colors.accent }} />
-                <span className="text-gray-700 text-xs">Career Interest / Passion</span>
+                <Diamond className="w-3 h-3 mr-1.5 mt-0.5 flex-shrink-0" style={{ color: colors.accent }} />
+                <span className="text-gray-700" style={{ fontSize: '9px' }}>Career Interest / Passion</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Additional pages for overflow content */}
-        {resumeData.experience.length > 3 && (
+        {remainingExperiences.length > 0 && (
           <div 
-            className="p-6"
+            className="p-5 page-break-before"
             style={{ 
-              minHeight: A4_HEIGHT,
-              pageBreakBefore: 'always'
+              minHeight: '297mm',
+              pageBreakBefore: 'always',
+              paddingTop: '15mm',
+              paddingLeft: '15mm',
+              paddingRight: '15mm',
+              paddingBottom: '15mm'
             }}
           >
             <h3 
               className="text-sm font-bold mb-4 pb-1 border-b uppercase tracking-wide"
-              style={{ color: colors.text, borderColor: colors.text }}
+              style={{ color: colors.text, borderColor: colors.text, fontSize: '11px', marginBottom: '12px' }}
             >
               EXPERIENCE (CONTINUED)
             </h3>
             <div className="space-y-4">
-              {resumeData.experience.slice(3).map((exp) => (
-                <div key={exp.id}>
-                  <h4 className="font-bold text-gray-900 text-sm">{exp.position}</h4>
-                  <p style={{ color: colors.accent }} className="font-semibold text-sm">{exp.company}</p>
-                  <div className="flex items-center text-xs text-gray-500 mb-2">
-                    <Calendar className="w-3 h-3 mr-1" />
+              {remainingExperiences.map((exp) => (
+                <div key={exp.id} className="page-break-inside-avoid" style={{ marginBottom: '16px' }}>
+                  <h4 className="font-bold text-gray-900" style={{ fontSize: '10px' }}>{exp.position}</h4>
+                  <p style={{ color: colors.accent, fontSize: '10px' }} className="font-semibold">{exp.company}</p>
+                  <div className="flex items-center text-gray-500 mb-2" style={{ fontSize: '8px', marginBottom: '6px' }}>
+                    <Calendar className="w-2.5 h-2.5 mr-1" />
                     <span>{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</span>
                     {exp.location && (
                       <>
-                        <MapPin className="w-3 h-3 ml-3 mr-1" />
+                        <MapPin className="w-2.5 h-2.5 ml-2 mr-1" />
                         <span>{exp.location}</span>
                       </>
                     )}
                   </div>
-                  <div className="text-gray-700 text-xs">
-                    <ul className="space-y-1">
+                  <div className="text-gray-700" style={{ fontSize: '8px' }}>
+                    <ul className="space-y-0.5">
                       {exp.description.map((desc, i) => (
                         <li key={i} className="flex items-start">
-                          <span className="text-gray-400 mr-2 mt-0.5">•</span>
-                          <span>{desc}</span>
+                          <span className="text-gray-400 mr-1 mt-0.5">•</span>
+                          <span className="leading-relaxed">{desc}</span>
                         </li>
                       ))}
                     </ul>
@@ -406,31 +406,24 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
   // Classic Centered Layout (Based on second image)
   if (template === 'classic-centered') {
+    const firstPageExperiences = resumeData.experience.slice(0, 2);
+    const remainingExperiences = resumeData.experience.slice(2);
+
     return (
-      <div 
-        id="resume-preview" 
-        className="bg-white shadow-lg mx-auto"
-        style={{ 
-          fontFamily, 
-          width: A4_WIDTH,
-          minHeight: A4_HEIGHT,
-          maxWidth: '794px',
-          fontSize: '11px',
-          lineHeight: '1.4'
-        }}
-      >
+      <div id="resume-preview" style={pageStyle} className="print:shadow-none shadow-lg">
         {/* Page 1 */}
         <div 
-          className="p-8 page-break-after"
+          className="page-break-after"
           style={{ 
-            minHeight: A4_HEIGHT,
-            pageBreakAfter: 'always'
+            minHeight: '297mm',
+            pageBreakAfter: 'always',
+            padding: '15mm'
           }}
         >
           {/* Header */}
-          <div className="text-center mb-6">
+          <div className="text-center mb-6" style={{ marginBottom: '20px' }}>
             {/* Profile Photo */}
-            <div className="w-20 h-20 rounded-full bg-gray-300 mx-auto mb-4 flex items-center justify-center overflow-hidden">
+            <div className="w-16 h-16 rounded-full bg-gray-300 mx-auto mb-3 flex items-center justify-center overflow-hidden">
               {resumeData.personalInfo.photo ? (
                 <img 
                   src={resumeData.personalInfo.photo} 
@@ -438,28 +431,28 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-14 h-14 rounded-full bg-gray-400 flex items-center justify-center">
-                  <div className="w-5 h-5 bg-gray-500 rounded-full mb-1"></div>
-                  <div className="w-7 h-3 bg-gray-500 rounded-full"></div>
+                <div className="w-12 h-12 rounded-full bg-gray-400 flex items-center justify-center">
+                  <div className="w-4 h-4 bg-gray-500 rounded-full mb-1"></div>
+                  <div className="w-6 h-2.5 bg-gray-500 rounded-full"></div>
                 </div>
               )}
             </div>
 
             <h1 
-              className="text-2xl font-bold mb-1 uppercase tracking-wide"
-              style={{ color: colors.primary }}
+              className="text-xl font-bold mb-1 uppercase tracking-wide"
+              style={{ color: colors.primary, fontSize: '16px', marginBottom: '4px' }}
             >
               {resumeData.personalInfo.name || 'YOUR NAME'}
             </h1>
             <h2 
               className="text-sm mb-3"
-              style={{ color: colors.secondary }}
+              style={{ color: colors.secondary, fontSize: '11px', marginBottom: '8px' }}
             >
               {resumeData.personalInfo.title || 'The role you are applying for?'}
             </h2>
             
             {/* Contact Info */}
-            <div className="flex justify-center items-center flex-wrap gap-2 text-xs text-gray-600 mb-6">
+            <div className="flex justify-center items-center flex-wrap gap-1 text-gray-600 mb-5" style={{ fontSize: '8px', marginBottom: '16px' }}>
               {resumeData.personalInfo.phone && <span>{resumeData.personalInfo.phone}</span>}
               {resumeData.personalInfo.email && (
                 <>
@@ -483,68 +476,68 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           </div>
 
           {/* Summary */}
-          <div className="mb-6">
+          <div className="mb-5" style={{ marginBottom: '16px' }}>
             <h3 
               className="text-lg font-bold mb-3 text-center pb-1 border-b"
-              style={{ color: colors.primary, borderColor: colors.primary }}
+              style={{ color: colors.primary, borderColor: colors.primary, fontSize: '12px', marginBottom: '8px' }}
             >
               Summary
             </h3>
-            <p className="text-gray-600 leading-relaxed text-center max-w-4xl mx-auto text-xs">
+            <p className="text-gray-600 leading-relaxed text-center max-w-4xl mx-auto" style={{ fontSize: '9px', lineHeight: '1.4' }}>
               {resumeData.summary || 'Briefly explain why you\'re a great fit for the role - use the AI assistant to tailor this summary for each job posting.'}
             </p>
           </div>
 
           {/* Experience */}
-          <div className="mb-6">
+          <div className="mb-5" style={{ marginBottom: '16px' }}>
             <h3 
               className="text-lg font-bold mb-4 text-center pb-1 border-b"
-              style={{ color: colors.primary, borderColor: colors.primary }}
+              style={{ color: colors.primary, borderColor: colors.primary, fontSize: '12px', marginBottom: '10px' }}
             >
               Experience
             </h3>
-            <div className="space-y-4">
-              {resumeData.experience.length > 0 ? resumeData.experience.slice(0, 2).map((exp) => (
-                <div key={exp.id} className="border rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-3">
+            <div className="space-y-3">
+              {firstPageExperiences.length > 0 ? firstPageExperiences.map((exp) => (
+                <div key={exp.id} className="border rounded-lg p-3 page-break-inside-avoid" style={{ padding: '8px' }}>
+                  <div className="flex justify-between items-start mb-2" style={{ marginBottom: '6px' }}>
                     <div className="text-left">
-                      <h4 className="font-bold text-gray-900 text-sm">{exp.company}</h4>
-                      <p className="text-sm">{exp.position}</p>
+                      <h4 className="font-bold text-gray-900" style={{ fontSize: '10px' }}>{exp.company}</h4>
+                      <p style={{ fontSize: '9px' }}>{exp.position}</p>
                     </div>
-                    <div className="text-right text-xs">
+                    <div className="text-right" style={{ fontSize: '8px' }}>
                       <p className="text-gray-500">{exp.location}</p>
                       <p className="text-gray-500">{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</p>
                     </div>
                   </div>
-                  <div className="text-gray-700 text-xs">
-                    <p className="mb-2 font-medium">Company Description</p>
-                    <ul className="space-y-1">
-                      {exp.description.map((desc, i) => (
+                  <div className="text-gray-700" style={{ fontSize: '8px' }}>
+                    <p className="mb-1 font-medium">Company Description</p>
+                    <ul className="space-y-0.5">
+                      {exp.description.slice(0, 3).map((desc, i) => (
                         <li key={i} className="flex items-start">
-                          <span className="text-gray-400 mr-2 mt-0.5">•</span>
-                          <span>{desc}</span>
+                          <span className="text-gray-400 mr-1 mt-0.5">•</span>
+                          <span className="leading-relaxed">{desc}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                 </div>
               )) : (
-                <div className="border rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-3">
+                <div className="border rounded-lg p-3 page-break-inside-avoid">
+                  <div className="flex justify-between items-start mb-2">
                     <div className="text-left">
-                      <h4 className="font-bold text-gray-900 text-sm">Company Name</h4>
-                      <p className="text-sm">Title</p>
+                      <h4 className="font-bold text-gray-900" style={{ fontSize: '10px' }}>Company Name</h4>
+                      <p style={{ fontSize: '9px' }}>Title</p>
                     </div>
-                    <div className="text-right text-xs">
+                    <div className="text-right" style={{ fontSize: '8px' }}>
                       <p className="text-gray-500">Location</p>
                       <p className="text-gray-500">Date period</p>
                     </div>
                   </div>
-                  <div className="text-gray-700 text-xs">
-                    <p className="mb-2 font-medium">Company Description</p>
-                    <ul className="space-y-1">
+                  <div className="text-gray-700" style={{ fontSize: '8px' }}>
+                    <p className="mb-1 font-medium">Company Description</p>
+                    <ul>
                       <li className="flex items-start">
-                        <span className="text-gray-400 mr-2 mt-0.5">•</span>
+                        <span className="text-gray-400 mr-1 mt-0.5">•</span>
                         <span>Highlight your accomplishments, using numbers if possible.</span>
                       </li>
                     </ul>
@@ -555,47 +548,47 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           </div>
 
           {/* Education */}
-          <div className="mb-6">
+          <div className="mb-5" style={{ marginBottom: '16px' }}>
             <h3 
               className="text-lg font-bold mb-4 text-center pb-1 border-b"
-              style={{ color: colors.primary, borderColor: colors.primary }}
+              style={{ color: colors.primary, borderColor: colors.primary, fontSize: '12px', marginBottom: '10px' }}
             >
               Education
             </h3>
-            <div className="text-center space-y-3">
+            <div className="text-center space-y-2">
               {resumeData.education.length > 0 ? resumeData.education.map((edu) => (
-                <div key={edu.id}>
-                  <h4 className="font-bold text-gray-900 text-sm">{edu.school}</h4>
-                  <p className="text-sm">{edu.degree}</p>
-                  <p className="text-gray-500 text-xs">{edu.startDate} - {edu.endDate}</p>
+                <div key={edu.id} className="page-break-inside-avoid">
+                  <h4 className="font-bold text-gray-900" style={{ fontSize: '10px' }}>{edu.school}</h4>
+                  <p style={{ fontSize: '9px' }}>{edu.degree}</p>
+                  <p className="text-gray-500" style={{ fontSize: '8px' }}>{edu.startDate} - {edu.endDate}</p>
                 </div>
               )) : (
-                <div>
-                  <h4 className="font-bold text-gray-900 text-sm">School or University</h4>
-                  <p className="text-sm">Degree and Field of Study</p>
-                  <p className="text-gray-500 text-xs">Date period</p>
+                <div className="page-break-inside-avoid">
+                  <h4 className="font-bold text-gray-900" style={{ fontSize: '10px' }}>School or University</h4>
+                  <p style={{ fontSize: '9px' }}>Degree and Field of Study</p>
+                  <p className="text-gray-500" style={{ fontSize: '8px' }}>Date period</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Languages */}
-          <div className="mb-6">
+          <div className="mb-5" style={{ marginBottom: '16px' }}>
             <h3 
               className="text-lg font-bold mb-4 text-center pb-1 border-b"
-              style={{ color: colors.primary, borderColor: colors.primary }}
+              style={{ color: colors.primary, borderColor: colors.primary, fontSize: '12px', marginBottom: '10px' }}
             >
               Languages
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-1">
               {resumeData.languages && resumeData.languages.length > 0 ? resumeData.languages.map((language) => (
                 <div key={language.id} className="flex items-center justify-between max-w-md mx-auto">
-                  <span className="font-medium text-xs">{language.name}</span>
-                  <div className="flex space-x-1">
+                  <span className="font-medium" style={{ fontSize: '9px' }}>{language.name}</span>
+                  <div className="flex space-x-0.5">
                     {[1, 2, 3, 4, 5].map((level) => (
                       <div
                         key={level}
-                        className={`w-2 h-2 rounded-full ${
+                        className={`w-1.5 h-1.5 rounded-full ${
                           level <= (language.level === 'Beginner' ? 1 : 
                                    language.level === 'Intermediate' ? 3 : 
                                    language.level === 'Advanced' ? 4 : 5)
@@ -605,47 +598,47 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                       />
                     ))}
                   </div>
-                  <span className="text-xs text-gray-500">{language.level}</span>
+                  <span className="text-gray-500" style={{ fontSize: '8px' }}>{language.level}</span>
                 </div>
               )) : (
                 <div className="flex items-center justify-between max-w-md mx-auto">
-                  <span className="font-medium text-xs">Language</span>
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 rounded-full bg-black" />
-                    <div className="w-2 h-2 rounded-full bg-gray-300" />
-                    <div className="w-2 h-2 rounded-full bg-gray-300" />
-                    <div className="w-2 h-2 rounded-full bg-gray-300" />
-                    <div className="w-2 h-2 rounded-full bg-gray-300" />
+                  <span className="font-medium" style={{ fontSize: '9px' }}>Language</span>
+                  <div className="flex space-x-0.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-black" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
                   </div>
-                  <span className="text-xs text-gray-500">Beginner</span>
+                  <span className="text-gray-500" style={{ fontSize: '8px' }}>Beginner</span>
                 </div>
               )}
             </div>
           </div>
 
           {/* Key Achievements */}
-          <div className="mb-6">
+          <div className="mb-5" style={{ marginBottom: '16px' }}>
             <h3 
               className="text-lg font-bold mb-4 text-center pb-1 border-b"
-              style={{ color: colors.primary, borderColor: colors.primary }}
+              style={{ color: colors.primary, borderColor: colors.primary, fontSize: '12px', marginBottom: '10px' }}
             >
               Key Achievements
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {resumeData.certifications.length > 0 ? resumeData.certifications.slice(0, 2).map((cert) => (
                 <div key={cert.id} className="flex items-start max-w-2xl mx-auto">
-                  <Diamond className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" style={{ color: colors.accent }} />
+                  <Diamond className="w-3 h-3 mr-1.5 mt-0.5 flex-shrink-0" style={{ color: colors.accent }} />
                   <div>
-                    <h4 className="font-semibold text-gray-900 text-xs">{cert.name}</h4>
-                    <p className="text-xs text-gray-600">{cert.issuer}</p>
+                    <h4 className="font-semibold text-gray-900" style={{ fontSize: '9px' }}>{cert.name}</h4>
+                    <p className="text-gray-600" style={{ fontSize: '8px' }}>{cert.issuer}</p>
                   </div>
                 </div>
               )) : (
                 <div className="flex items-start max-w-2xl mx-auto">
-                  <Diamond className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" style={{ color: colors.accent }} />
+                  <Diamond className="w-3 h-3 mr-1.5 mt-0.5 flex-shrink-0" style={{ color: colors.accent }} />
                   <div>
-                    <h4 className="font-semibold text-gray-900 text-xs">Your Achievement</h4>
-                    <p className="text-xs text-gray-600">Describe what you did and the impact it had.</p>
+                    <h4 className="font-semibold text-gray-900" style={{ fontSize: '9px' }}>Your Achievement</h4>
+                    <p className="text-gray-600" style={{ fontSize: '8px' }}>Describe what you did and the impact it had.</p>
                   </div>
                 </div>
               )}
@@ -653,34 +646,34 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           </div>
 
           {/* Skills */}
-          <div className="mb-6">
+          <div className="mb-5" style={{ marginBottom: '16px' }}>
             <h3 
               className="text-lg font-bold mb-4 text-center pb-1 border-b"
-              style={{ color: colors.primary, borderColor: colors.primary }}
+              style={{ color: colors.primary, borderColor: colors.primary, fontSize: '12px', marginBottom: '10px' }}
             >
               Skills
             </h3>
             <div className="text-center">
               {resumeData.skills.length > 0 ? (
-                <p className="text-gray-700 text-xs">
+                <p className="text-gray-700" style={{ fontSize: '9px' }}>
                   {resumeData.skills.map(skill => skill.name).join(' • ')}
                 </p>
               ) : (
-                <p className="text-gray-700 text-xs">Your Skill</p>
+                <p className="text-gray-700" style={{ fontSize: '9px' }}>Your Skill</p>
               )}
             </div>
           </div>
 
           {/* Courses */}
-          <div className="mb-6">
+          <div className="mb-5" style={{ marginBottom: '16px' }}>
             <h3 
               className="text-lg font-bold mb-4 text-center pb-1 border-b"
-              style={{ color: colors.primary, borderColor: colors.primary }}
+              style={{ color: colors.primary, borderColor: colors.primary, fontSize: '12px', marginBottom: '10px' }}
             >
               Courses
             </h3>
             <div className="text-center">
-              <p style={{ color: colors.accent }} className="text-gray-600 text-xs">Course Title</p>
+              <p style={{ color: colors.accent, fontSize: '9px' }} className="text-gray-600">Course Title</p>
             </div>
           </div>
 
@@ -688,51 +681,52 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           <div>
             <h3 
               className="text-lg font-bold mb-4 text-center pb-1 border-b"
-              style={{ color: colors.primary, borderColor: colors.primary }}
+              style={{ color: colors.primary, borderColor: colors.primary, fontSize: '12px', marginBottom: '10px' }}
             >
               Interests
             </h3>
             <div className="flex items-center justify-center">
-              <Diamond className="w-4 h-4 mr-2" style={{ color: colors.accent }} />
-              <span className="text-gray-700 text-xs">Career Interest / Passion</span>
+              <Diamond className="w-3 h-3 mr-1.5" style={{ color: colors.accent }} />
+              <span className="text-gray-700" style={{ fontSize: '9px' }}>Career Interest / Passion</span>
             </div>
           </div>
         </div>
 
         {/* Additional pages for overflow content */}
-        {resumeData.experience.length > 2 && (
+        {remainingExperiences.length > 0 && (
           <div 
-            className="p-8"
+            className="page-break-before"
             style={{ 
-              minHeight: A4_HEIGHT,
-              pageBreakBefore: 'always'
+              minHeight: '297mm',
+              pageBreakBefore: 'always',
+              padding: '15mm'
             }}
           >
             <h3 
               className="text-lg font-bold mb-6 text-center pb-1 border-b"
-              style={{ color: colors.primary, borderColor: colors.primary }}
+              style={{ color: colors.primary, borderColor: colors.primary, fontSize: '12px', marginBottom: '16px' }}
             >
               Experience (Continued)
             </h3>
             <div className="space-y-4">
-              {resumeData.experience.slice(2).map((exp) => (
-                <div key={exp.id} className="border rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-3">
+              {remainingExperiences.map((exp) => (
+                <div key={exp.id} className="border rounded-lg p-3 page-break-inside-avoid" style={{ marginBottom: '12px', padding: '8px' }}>
+                  <div className="flex justify-between items-start mb-2">
                     <div className="text-left">
-                      <h4 className="font-bold text-gray-900 text-sm">{exp.company}</h4>
-                      <p className="text-sm">{exp.position}</p>
+                      <h4 className="font-bold text-gray-900" style={{ fontSize: '10px' }}>{exp.company}</h4>
+                      <p style={{ fontSize: '9px' }}>{exp.position}</p>
                     </div>
-                    <div className="text-right text-xs">
+                    <div className="text-right" style={{ fontSize: '8px' }}>
                       <p className="text-gray-500">{exp.location}</p>
                       <p className="text-gray-500">{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</p>
                     </div>
                   </div>
-                  <div className="text-gray-700 text-xs">
-                    <ul className="space-y-1">
+                  <div className="text-gray-700" style={{ fontSize: '8px' }}>
+                    <ul className="space-y-0.5">
                       {exp.description.map((desc, i) => (
                         <li key={i} className="flex items-start">
-                          <span className="text-gray-400 mr-2 mt-0.5">•</span>
-                          <span>{desc}</span>
+                          <span className="text-gray-400 mr-1 mt-0.5">•</span>
+                          <span className="leading-relaxed">{desc}</span>
                         </li>
                       ))}
                     </ul>
@@ -750,15 +744,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
   return (
     <div 
       id="resume-preview" 
-      className="bg-white shadow-lg mx-auto p-8"
-      style={{ 
-        fontFamily, 
-        width: A4_WIDTH,
-        minHeight: A4_HEIGHT,
-        maxWidth: '794px'
-      }}
+      style={pageStyle}
+      className="print:shadow-none shadow-lg"
     >
-      <div className="text-center">
+      <div className="text-center p-8">
         <h1 className="text-2xl font-bold mb-4">{resumeData.personalInfo.name}</h1>
         <h2 className="text-lg mb-4">{resumeData.personalInfo.title}</h2>
         <p>Template not found. Please select a valid template.</p>

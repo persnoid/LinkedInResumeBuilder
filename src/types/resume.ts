@@ -66,7 +66,7 @@ export interface ResumeTemplate {
   name: string;
   description: string;
   category: 'modern' | 'classic' | 'creative' | 'minimal';
-  layout: 'double-column' | 'ivy-league' | 'elegant-dark' | 'creative-blocks' | 'minimal-spaced' | 'timeline' | 'infographic' | 'profile-plus';
+  layout: 'double-column' | 'ivy-league' | 'creative-blocks' | 'timeline' | 'minimal-spaced';
   colors: {
     primary: string;
     secondary: string;
@@ -76,8 +76,6 @@ export interface ResumeTemplate {
     sidebar?: string;
     highlight?: string;
     timeline?: string;
-    chart?: string;
-    photoFrame?: string;
     subtle?: string;
   };
   preview: string;

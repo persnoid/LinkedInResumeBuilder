@@ -52,6 +52,64 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </div>
         </div>
 
+        {/* Soft Blue Elegant Template Preview - EXACT MATCH to your image */}
+        {template.id === 'soft-blue-elegant' && (
+          <div className="h-full p-3 relative">
+            {/* Decorative elements */}
+            <div className="absolute top-2 right-2 w-8 h-8 rounded-full opacity-20" 
+                 style={{ backgroundColor: template.colors.accent }}></div>
+            
+            {/* Header with name and photo */}
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex-1">
+                <div className="text-sm font-bold text-gray-400 uppercase">YOUR NAME</div>
+                <div className="text-xs" style={{ color: template.colors.accent }}>Role Title</div>
+                <div className="text-xs text-gray-500 mt-1">Phone • Email • LinkedIn • Location</div>
+              </div>
+              <div className="w-6 h-6 rounded-full bg-gray-300 ml-2"></div>
+            </div>
+            
+            {/* Three column grid */}
+            <div className="grid grid-cols-12 gap-1 mt-2">
+              {/* Left column - Summary and Experience */}
+              <div className="col-span-7 space-y-2">
+                <div className="font-bold text-xs pb-1 border-b" style={{ color: template.colors.primary, borderColor: template.colors.primary }}>
+                  SUMMARY
+                </div>
+                <div className="space-y-1">
+                  <div className="h-1 bg-gray-200 rounded"></div>
+                  <div className="h-1 bg-gray-200 rounded w-3/4"></div>
+                </div>
+                
+                <div className="font-bold text-xs pb-1 border-b mt-2" style={{ color: template.colors.primary, borderColor: template.colors.primary }}>
+                  EXPERIENCE
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs font-medium">Title</div>
+                  <div className="text-xs" style={{ color: template.colors.accent }}>Company Name</div>
+                  <div className="h-1 bg-gray-200 rounded w-2/3"></div>
+                </div>
+              </div>
+              
+              {/* Right column - Key Achievements, Skills */}
+              <div className="col-span-5 space-y-2">
+                <div className="font-bold text-xs pb-1 border-b" style={{ color: template.colors.primary, borderColor: template.colors.primary }}>
+                  KEY ACHIEVEMENTS
+                </div>
+                <div className="h-1 bg-gray-200 rounded w-full"></div>
+                
+                <div className="font-bold text-xs pb-1 border-b mt-2" style={{ color: template.colors.primary, borderColor: template.colors.primary }}>
+                  SKILLS
+                </div>
+                <div className="space-y-1">
+                  <div className="h-1 bg-gray-200 rounded w-full"></div>
+                  <div className="h-1 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Ivy League Classic Template Preview - EXACT MATCH */}
         {template.id === 'ivy-league-classic' && (
           <div className="h-full p-3 text-center">
@@ -198,31 +256,6 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 <div className="space-y-1">
                   <div className="h-1 bg-gray-300 rounded w-full"></div>
                   <div className="h-1 bg-gray-300 rounded w-3/4"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {template.id === 'soft-blue-elegant' && (
-          <div className="h-full p-3 relative">
-            {/* Decorative elements */}
-            <div className="absolute top-2 right-2 w-8 h-8 rounded-full opacity-20" 
-                 style={{ backgroundColor: template.colors.accent }}></div>
-            <div className="space-y-2">
-              <div className="text-sm font-bold" style={{ color: template.colors.primary }}>Your Name</div>
-              <div className="text-xs" style={{ color: template.colors.accent }}>Role Title</div>
-              <div className="grid grid-cols-3 gap-2 mt-3">
-                <div className="space-y-1">
-                  <div className="font-bold text-xs" style={{ color: template.colors.primary }}>SKILLS</div>
-                  <div className="h-1 bg-gray-200 rounded"></div>
-                </div>
-                <div className="col-span-2 space-y-1">
-                  <div className="font-bold text-xs" style={{ color: template.colors.primary }}>SUMMARY</div>
-                  <div className="space-y-1">
-                    <div className="h-1 bg-gray-200 rounded"></div>
-                    <div className="h-1 bg-gray-200 rounded w-3/4"></div>
-                  </div>
                 </div>
               </div>
             </div>

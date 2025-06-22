@@ -85,6 +85,23 @@ export const resumeTemplates: ResumeTemplate[] = [
     },
     preview: '/templates/soft-blue-elegant.jpg'
   },
+  // SINGLE Ivy League template - EXACT MATCH to your image
+  {
+    id: 'ivy-league-classic',
+    name: 'Ivy League Classic',
+    description: 'The classic Harvard CV template, updated for the 21st century with a refined ATS-friendly design that recruiters love',
+    category: 'classic',
+    layout: 'ivy-league',
+    colors: {
+      primary: '#1F2937',
+      secondary: '#6B7280',
+      accent: '#3B82F6',
+      text: '#111827',
+      background: '#FFFFFF',
+      subtle: '#F9FAFB'
+    },
+    preview: '/templates/ivy-league-classic.jpg'
+  },
   // Existing templates
   {
     id: 'modern-two-column',
@@ -102,21 +119,5 @@ export const resumeTemplates: ResumeTemplate[] = [
       highlight: '#EFF6FF'
     },
     preview: '/templates/modern-two-column.jpg'
-  },
-  {
-    id: 'classic-centered',
-    name: 'Classic Centered',
-    description: 'Traditional centered layout with clean typography and professional formatting',
-    category: 'classic',
-    layout: 'ivy-league',
-    colors: {
-      primary: '#1F2937',
-      secondary: '#6B7280',
-      accent: '#3B82F6',
-      text: '#111827',
-      background: '#FFFFFF',
-      subtle: '#F9FAFB'
-    },
-    preview: '/templates/classic-centered.jpg'
   }
 ];

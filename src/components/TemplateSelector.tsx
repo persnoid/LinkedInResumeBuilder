@@ -52,6 +52,31 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </div>
         </div>
 
+        {/* Ivy League Classic Template Preview - EXACT MATCH */}
+        {template.id === 'ivy-league-classic' && (
+          <div className="h-full p-3 text-center">
+            <div className="w-8 h-8 rounded-full bg-gray-300 mx-auto mb-2"></div>
+            <div className="text-sm font-bold mb-1" style={{ color: template.colors.primary }}>YOUR NAME</div>
+            <div className="text-xs mb-2" style={{ color: template.colors.secondary }}>Role Title</div>
+            <div className="text-xs mb-3 text-gray-500">Phone • Email • LinkedIn • Location</div>
+            
+            <div className="space-y-2 text-xs">
+              <div className="font-semibold pb-1 border-b border-gray-800" style={{ color: template.colors.primary }}>Summary</div>
+              <div className="space-y-1">
+                <div className="h-1 bg-gray-200 rounded"></div>
+                <div className="h-1 bg-gray-200 rounded w-3/4 mx-auto"></div>
+              </div>
+              
+              <div className="font-semibold pb-1 border-b border-gray-800 mt-3" style={{ color: template.colors.primary }}>Experience</div>
+              <div className="space-y-1">
+                <div className="text-xs font-medium">Company Name</div>
+                <div className="text-xs" style={{ color: template.colors.secondary }}>Title</div>
+                <div className="h-1 bg-gray-200 rounded w-2/3 mx-auto"></div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Template preview based on layout and specific template */}
         {template.id === 'green-organic-sidebar' && (
           <div className="h-full flex">
@@ -205,7 +230,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         )}
 
         {/* Default preview for existing templates */}
-        {!['green-organic-sidebar', 'navy-header-professional', 'orange-timeline-modern', 'blue-sidebar-clean', 'soft-blue-elegant'].includes(template.id) && (
+        {!['ivy-league-classic', 'green-organic-sidebar', 'navy-header-professional', 'orange-timeline-modern', 'blue-sidebar-clean', 'soft-blue-elegant'].includes(template.id) && (
           <div className="h-full flex">
             {template.layout === 'double-column' ? (
               <>

@@ -3,6 +3,90 @@ import { ResumeTemplate } from '../types/resume';
 export const resumeTemplates: ResumeTemplate[] = [
   // New templates based on provided images
   {
+    id: 'green-organic-sidebar',
+    name: 'Green Organic Sidebar',
+    description: 'Modern design with organic green shapes and clean sidebar layout, perfect for creative and environmental roles',
+    category: 'creative',
+    layout: 'double-column',
+    colors: {
+      primary: '#10B981',
+      secondary: '#059669',
+      accent: '#34D399',
+      text: '#1F2937',
+      background: '#FFFFFF',
+      sidebar: '#F0FDF4',
+      highlight: '#ECFDF5'
+    },
+    preview: '/templates/green-organic-sidebar.jpg'
+  },
+  {
+    id: 'navy-header-professional',
+    name: 'Navy Header Professional',
+    description: 'Executive template with navy header section and clean two-column content layout for senior professionals',
+    category: 'modern',
+    layout: 'double-column',
+    colors: {
+      primary: '#1E293B',
+      secondary: '#475569',
+      accent: '#60A5FA',
+      text: '#1F2937',
+      background: '#FFFFFF',
+      sidebar: '#1E293B',
+      highlight: '#F1F5F9'
+    },
+    preview: '/templates/navy-header-professional.jpg'
+  },
+  {
+    id: 'orange-timeline-modern',
+    name: 'Orange Timeline Modern',
+    description: 'Contemporary design with orange accents and timeline-style layout, ideal for dynamic professionals',
+    category: 'modern',
+    layout: 'ivy-league',
+    colors: {
+      primary: '#1E293B',
+      secondary: '#475569',
+      accent: '#F97316',
+      text: '#1F2937',
+      background: '#FFFFFF',
+      subtle: '#FFF7ED'
+    },
+    preview: '/templates/orange-timeline-modern.jpg'
+  },
+  {
+    id: 'blue-sidebar-clean',
+    name: 'Blue Sidebar Clean',
+    description: 'Clean and professional with blue accents and organized sidebar for skills and achievements',
+    category: 'modern',
+    layout: 'double-column',
+    colors: {
+      primary: '#1E40AF',
+      secondary: '#3B82F6',
+      accent: '#60A5FA',
+      text: '#1F2937',
+      background: '#FFFFFF',
+      sidebar: '#EFF6FF',
+      highlight: '#DBEAFE'
+    },
+    preview: '/templates/blue-sidebar-clean.jpg'
+  },
+  {
+    id: 'soft-blue-elegant',
+    name: 'Soft Blue Elegant',
+    description: 'Elegant design with soft blue tones and flowing layout elements, perfect for sophisticated professionals',
+    category: 'minimal',
+    layout: 'ivy-league',
+    colors: {
+      primary: '#1E40AF',
+      secondary: '#6B7280',
+      accent: '#93C5FD',
+      text: '#374151',
+      background: '#FFFFFF',
+      subtle: '#F0F9FF'
+    },
+    preview: '/templates/soft-blue-elegant.jpg'
+  },
+  // Existing templates
+  {
     id: 'green-modern-sidebar',
     name: 'Green Modern Sidebar',
     description: 'Clean two-column layout with green accents and modern typography, perfect for creative professionals',
@@ -69,7 +153,6 @@ export const resumeTemplates: ResumeTemplate[] = [
     },
     preview: '/templates/minimal-clean.jpg'
   },
-  // Existing templates
   {
     id: 'modern-two-column',
     name: 'Modern Two-Column',

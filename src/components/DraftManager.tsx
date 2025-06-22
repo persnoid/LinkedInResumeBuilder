@@ -176,7 +176,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       setLoadingDraftId(draft.id);
       setError(null);
       
-      console.log('Loading draft:', draft); // Debug log
+      console.log('Loading draft in DraftManager:', draft); // Debug log
       
       // Validate draft data before loading
       if (!draft.resumeData || !draft.resumeData.personalInfo) {
@@ -204,13 +204,12 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         step: Math.max(0, Math.min(3, draft.step || 0)) // Ensure step is between 0-3
       };
 
+      console.log('Validated draft before loading:', validatedDraft);
+
       // Call the parent component's load function
       onLoadDraft(validatedDraft);
       
-      // Close the draft manager after successful load
-      setTimeout(() => {
-        onClose();
-      }, 100);
+      console.log('Draft load function called successfully');
       
     } catch (err) {
       console.error('Error loading draft:', err);

@@ -50,23 +50,26 @@ function App() {
       // Validate and set resume data
       if (draft.resumeData) {
         setResumeData(draft.resumeData);
+        console.log('Resume data set:', draft.resumeData);
       }
       
       // Set template
       if (draft.selectedTemplate) {
         setSelectedTemplate(draft.selectedTemplate);
+        console.log('Template set:', draft.selectedTemplate);
       }
       
       // Set customizations
       if (draft.customizations) {
         setCustomizations(draft.customizations);
+        console.log('Customizations set:', draft.customizations);
       }
       
       // Set step (ensure it's within valid range)
       const validStep = Math.max(0, Math.min(3, draft.step || 0));
-      setCurrentStep(validStep);
+      console.log('Setting step to:', validStep);
       
-      // Set current draft ID
+      // Set current draft ID first
       setCurrentDraftId(draft.id);
       
       // Update current draft in storage
@@ -82,10 +85,18 @@ function App() {
       // Close draft manager
       setShowDraftManager(false);
       
+      // Set the step AFTER all other state is set
+      // Use setTimeout to ensure state updates are processed
+      setTimeout(() => {
+        setCurrentStep(validStep);
+        console.log('Step set to:', validStep);
+      }, 100);
+      
       console.log('Draft loaded successfully:', {
         step: validStep,
         template: draft.selectedTemplate,
-        hasData: !!draft.resumeData
+        hasData: !!draft.resumeData,
+        draftId: draft.id
       });
       
     } catch (error) {
@@ -212,6 +223,8 @@ function App() {
   };
 
   const renderCurrentStep = () => {
+    console.log('Rendering step:', currentStep, 'Has data:', !!resumeData); // Debug log
+    
     switch (currentStep) {
       case 0:
         return (

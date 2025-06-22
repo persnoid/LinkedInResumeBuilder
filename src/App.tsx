@@ -44,12 +44,54 @@ function App() {
   }, []);
 
   const loadDraftData = (draft: DraftResume) => {
-    setResumeData(draft.resumeData);
-    setSelectedTemplate(draft.selectedTemplate);
-    setCustomizations(draft.customizations);
-    setCurrentStep(draft.step);
-    setCurrentDraftId(draft.id);
-    setShowDraftManager(false);
+    try {
+      console.log('Loading draft data in App:', draft); // Debug log
+      
+      // Validate and set resume data
+      if (draft.resumeData) {
+        setResumeData(draft.resumeData);
+      }
+      
+      // Set template
+      if (draft.selectedTemplate) {
+        setSelectedTemplate(draft.selectedTemplate);
+      }
+      
+      // Set customizations
+      if (draft.customizations) {
+        setCustomizations(draft.customizations);
+      }
+      
+      // Set step (ensure it's within valid range)
+      const validStep = Math.max(0, Math.min(3, draft.step || 0));
+      setCurrentStep(validStep);
+      
+      // Set current draft ID
+      setCurrentDraftId(draft.id);
+      
+      // Update current draft in storage
+      DraftManager.saveDraft(
+        draft.name,
+        draft.resumeData,
+        draft.selectedTemplate,
+        draft.customizations,
+        validStep,
+        draft.id
+      );
+      
+      // Close draft manager
+      setShowDraftManager(false);
+      
+      console.log('Draft loaded successfully:', {
+        step: validStep,
+        template: draft.selectedTemplate,
+        hasData: !!draft.resumeData
+      });
+      
+    } catch (error) {
+      console.error('Error loading draft data:', error);
+      alert('Failed to load draft. Please try again.');
+    }
   };
 
   const handleLinkedInData = (data: ResumeData) => {
@@ -89,17 +131,24 @@ function App() {
   const saveDraft = (name: string) => {
     if (!resumeData) return;
 
-    const draftId = DraftManager.saveDraft(
-      name,
-      resumeData,
-      selectedTemplate,
-      customizations,
-      currentStep,
-      currentDraftId
-    );
+    try {
+      const draftId = DraftManager.saveDraft(
+        name,
+        resumeData,
+        selectedTemplate,
+        customizations,
+        currentStep,
+        currentDraftId
+      );
 
-    setCurrentDraftId(draftId);
-    setShowSavePrompt(false);
+      setCurrentDraftId(draftId);
+      setShowSavePrompt(false);
+      
+      console.log('Draft saved with ID:', draftId);
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      alert('Failed to save draft. Please try again.');
+    }
   };
 
   const nextStep = () => {
@@ -110,7 +159,8 @@ function App() {
         return;
       }
       
-      setCurrentStep(currentStep + 1);
+      const newStep = currentStep + 1;
+      setCurrentStep(newStep);
       
       // Auto-save if we have a current draft
       if (currentDraftId && resumeData) {
@@ -121,7 +171,7 @@ function App() {
             resumeData,
             selectedTemplate,
             customizations,
-            currentStep + 1,
+            newStep,
             currentDraftId
           );
         }
@@ -131,7 +181,8 @@ function App() {
 
   const prevStep = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      const newStep = currentStep - 1;
+      setCurrentStep(newStep);
       
       // Auto-save if we have a current draft
       if (currentDraftId && resumeData) {
@@ -142,7 +193,7 @@ function App() {
             resumeData,
             selectedTemplate,
             customizations,
-            currentStep - 1,
+            newStep,
             currentDraftId
           );
         }

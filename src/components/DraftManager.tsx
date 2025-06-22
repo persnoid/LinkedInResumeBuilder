@@ -31,6 +31,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   const [showSaveForm, setShowSaveForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadingDraftId, setLoadingDraftId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -60,6 +61,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     }
 
     try {
+      setIsLoading(true);
       const name = saveName.trim();
       const draftId = DraftManager.saveDraft(
         name,
@@ -85,18 +87,23 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     } catch (err) {
       console.error('Error saving draft:', err);
       setError('Failed to save draft');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDeleteDraft = (id: string) => {
     if (confirm('Are you sure you want to delete this draft?')) {
       try {
+        setIsLoading(true);
         DraftManager.deleteDraft(id);
         loadDrafts();
         setError(null);
       } catch (err) {
         console.error('Error deleting draft:', err);
         setError('Failed to delete draft');
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -109,6 +116,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     }
 
     try {
+      setIsLoading(true);
       DraftManager.saveDraft(
         newName.trim(),
         draft.resumeData,
@@ -125,6 +133,8 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     } catch (err) {
       console.error('Error renaming draft:', err);
       setError('Failed to rename draft');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -161,14 +171,52 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     event.target.value = '';
   };
 
-  const handleLoadDraft = (draft: DraftResume) => {
+  const handleLoadDraft = async (draft: DraftResume) => {
     try {
-      console.log('Loading draft:', draft); // Debug log
-      onLoadDraft(draft);
+      setLoadingDraftId(draft.id);
       setError(null);
+      
+      console.log('Loading draft:', draft); // Debug log
+      
+      // Validate draft data before loading
+      if (!draft.resumeData || !draft.resumeData.personalInfo) {
+        throw new Error('Invalid draft data structure');
+      }
+
+      // Ensure all required fields exist
+      const validatedDraft = {
+        ...draft,
+        resumeData: {
+          personalInfo: draft.resumeData.personalInfo || {},
+          summary: draft.resumeData.summary || '',
+          experience: draft.resumeData.experience || [],
+          education: draft.resumeData.education || [],
+          skills: draft.resumeData.skills || [],
+          certifications: draft.resumeData.certifications || [],
+          languages: draft.resumeData.languages || []
+        },
+        selectedTemplate: draft.selectedTemplate || 'modern-two-column',
+        customizations: draft.customizations || {
+          colors: { primary: '#2563EB', secondary: '#1E40AF', accent: '#3B82F6' },
+          font: 'Inter',
+          sectionOrder: ['summary', 'experience', 'education', 'skills', 'certifications']
+        },
+        step: Math.max(0, Math.min(3, draft.step || 0)) // Ensure step is between 0-3
+      };
+
+      // Call the parent component's load function
+      onLoadDraft(validatedDraft);
+      
+      // Close the draft manager after successful load
+      setTimeout(() => {
+        onClose();
+      }, 100);
+      
     } catch (err) {
       console.error('Error loading draft:', err);
-      setError('Failed to load draft');
+      setError(`Failed to load draft: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setLoadingDraftId(null);
     }
   };
 
@@ -214,7 +262,15 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
           {/* Error Display */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
+              <div className="flex items-center justify-between">
+                <span>{error}</span>
+                <button 
+                  onClick={() => setError(null)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           )}
 
@@ -291,7 +347,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
               Saved Drafts ({drafts.length})
             </h3>
 
-            {isLoading ? (
+            {isLoading && !loadingDraftId ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-3"></div>
                 <p className="text-gray-500">Loading drafts...</p>
@@ -377,7 +433,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                             <span className="font-medium">Template:</span> {draft.selectedTemplate}
                           </div>
                           <div>
-                            <span className="font-medium">Name:</span> {draft.resumeData.personalInfo.name || 'Not set'}
+                            <span className="font-medium">Name:</span> {draft.resumeData?.personalInfo?.name || 'Not set'}
                           </div>
                         </div>
                       </div>
@@ -385,10 +441,17 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                       <div className="flex items-center space-x-2 ml-4">
                         <button
                           onClick={() => handleLoadDraft(draft)}
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition-colors"
-                          disabled={isLoading}
+                          className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-3 py-1 rounded text-sm transition-colors flex items-center"
+                          disabled={isLoading || loadingDraftId === draft.id}
                         >
-                          Load
+                          {loadingDraftId === draft.id ? (
+                            <>
+                              <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent mr-1"></div>
+                              Loading...
+                            </>
+                          ) : (
+                            'Load'
+                          )}
                         </button>
                         <button
                           onClick={() => handleExportDraft(draft.id)}

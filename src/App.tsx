@@ -31,6 +31,7 @@ function App() {
   const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
   const [showDraftManager, setShowDraftManager] = useState(false);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Load current draft on app start
   useEffect(() => {
@@ -43,9 +44,10 @@ function App() {
     }
   }, []);
 
-  const loadDraftData = (draft: DraftResume) => {
+  const loadDraftData = async (draft: DraftResume) => {
     try {
-      console.log('Loading draft data in App:', draft); // Debug log
+      console.log('Loading draft data in App:', draft);
+      setIsTransitioning(true);
       
       // Validate and set resume data
       if (draft.resumeData) {
@@ -65,11 +67,7 @@ function App() {
         console.log('Customizations set:', draft.customizations);
       }
       
-      // Set step (ensure it's within valid range)
-      const validStep = Math.max(0, Math.min(3, draft.step || 0));
-      console.log('Setting step to:', validStep);
-      
-      // Set current draft ID first
+      // Set current draft ID
       setCurrentDraftId(draft.id);
       
       // Update current draft in storage
@@ -78,22 +76,39 @@ function App() {
         draft.resumeData,
         draft.selectedTemplate,
         draft.customizations,
-        validStep,
+        draft.step,
         draft.id
       );
       
       // Close draft manager
       setShowDraftManager(false);
       
-      // Set the step AFTER all other state is set
-      // Use setTimeout to ensure state updates are processed
-      setTimeout(() => {
-        setCurrentStep(validStep);
-        console.log('Step set to:', validStep);
-      }, 100);
+      // Determine the next step based on draft progress
+      let nextStep = draft.step;
       
-      console.log('Draft loaded successfully:', {
-        step: validStep,
+      // If we're on step 0 (LinkedIn Input) and have data, move to step 1 (Review Data)
+      if (nextStep === 0 && draft.resumeData) {
+        nextStep = 1;
+      }
+      
+      // Ensure step is within valid range
+      nextStep = Math.max(0, Math.min(3, nextStep));
+      
+      console.log('Transitioning to step:', nextStep);
+      
+      // Add a small delay to ensure all state updates are processed
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Set the step and show transition
+      setCurrentStep(nextStep);
+      
+      // Add another small delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      setIsTransitioning(false);
+      
+      console.log('Draft loaded and transitioned successfully:', {
+        step: nextStep,
         template: draft.selectedTemplate,
         hasData: !!draft.resumeData,
         draftId: draft.id
@@ -101,6 +116,7 @@ function App() {
       
     } catch (error) {
       console.error('Error loading draft data:', error);
+      setIsTransitioning(false);
       alert('Failed to load draft. Please try again.');
     }
   };
@@ -223,7 +239,19 @@ function App() {
   };
 
   const renderCurrentStep = () => {
-    console.log('Rendering step:', currentStep, 'Has data:', !!resumeData); // Debug log
+    console.log('Rendering step:', currentStep, 'Has data:', !!resumeData, 'Is transitioning:', isTransitioning);
+    
+    // Show loading state during transition
+    if (isTransitioning) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your draft...</p>
+          </div>
+        </div>
+      );
+    }
     
     switch (currentStep) {
       case 0:
@@ -283,7 +311,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {currentStep > 0 && (
+      {currentStep > 0 && !isTransitioning && (
         <ProgressIndicator
           currentStep={currentStep}
           totalSteps={STEPS.length}

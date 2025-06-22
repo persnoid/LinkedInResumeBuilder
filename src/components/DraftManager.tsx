@@ -44,7 +44,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       setIsLoading(true);
       setError(null);
       const allDrafts = DraftManager.getAllDrafts();
-      console.log('Loaded drafts:', allDrafts); // Debug log
+      console.log('Loaded drafts:', allDrafts);
       setDrafts(allDrafts);
     } catch (err) {
       console.error('Error loading drafts:', err);
@@ -176,7 +176,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       setLoadingDraftId(draft.id);
       setError(null);
       
-      console.log('Loading draft in DraftManager:', draft); // Debug log
+      console.log('Loading draft in DraftManager:', draft);
       
       // Validate draft data before loading
       if (!draft.resumeData || !draft.resumeData.personalInfo) {
@@ -201,15 +201,26 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
           font: 'Inter',
           sectionOrder: ['summary', 'experience', 'education', 'skills', 'certifications']
         },
-        step: Math.max(0, Math.min(3, draft.step || 0)) // Ensure step is between 0-3
+        step: Math.max(0, Math.min(3, draft.step || 0))
       };
 
       console.log('Validated draft before loading:', validatedDraft);
 
+      // Show loading feedback
+      setLoadingDraftId(draft.id);
+      
+      // Add a small delay to show loading state
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       // Call the parent component's load function
-      onLoadDraft(validatedDraft);
+      await onLoadDraft(validatedDraft);
       
       console.log('Draft load function called successfully');
+      
+      // Success feedback
+      setTimeout(() => {
+        alert('Draft loaded successfully! Transitioning to your work...');
+      }, 100);
       
     } catch (err) {
       console.error('Error loading draft:', err);
@@ -440,13 +451,13 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                       <div className="flex items-center space-x-2 ml-4">
                         <button
                           onClick={() => handleLoadDraft(draft)}
-                          className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-3 py-1 rounded text-sm transition-colors flex items-center"
+                          className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-3 py-1 rounded text-sm transition-colors flex items-center min-w-[80px] justify-center"
                           disabled={isLoading || loadingDraftId === draft.id}
                         >
                           {loadingDraftId === draft.id ? (
                             <>
                               <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent mr-1"></div>
-                              Loading...
+                              Loading
                             </>
                           ) : (
                             'Load'

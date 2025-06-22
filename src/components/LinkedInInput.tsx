@@ -30,7 +30,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
     openaiConfigured: false,
     message: 'Checking AI availability...'
   });
-  const [recentDrafts, setRecentDrafts] = useState(DraftManager.getRecentDrafts(3));
+  const [recentDrafts, setRecentDrafts] = useState<any[]>([]);
 
   // Check AI availability on component mount
   useEffect(() => {
@@ -41,8 +41,19 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
     checkAI();
     
     // Load recent drafts
-    setRecentDrafts(DraftManager.getRecentDrafts(3));
+    loadRecentDrafts();
   }, []);
+
+  const loadRecentDrafts = () => {
+    try {
+      const recent = DraftManager.getRecentDrafts(3);
+      console.log('Recent drafts loaded:', recent); // Debug log
+      setRecentDrafts(recent);
+    } catch (error) {
+      console.error('Error loading recent drafts:', error);
+      setRecentDrafts([]);
+    }
+  };
 
   const handleExtractData = async () => {
     if (!linkedinUrl.includes('linkedin.com')) {
@@ -193,12 +204,22 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Invalid date';
+    }
+  };
+
+  const handleOpenDraftManager = () => {
+    // Refresh recent drafts before opening
+    loadRecentDrafts();
+    onOpenDraftManager();
   };
 
   return (
@@ -457,7 +478,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                 Access your saved drafts and continue where you left off
               </p>
               <button
-                onClick={onOpenDraftManager}
+                onClick={handleOpenDraftManager}
                 className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
               >
                 <FolderOpen className="w-4 h-4 mr-2" />
@@ -474,7 +495,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                     <div
                       key={draft.id}
                       className="p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors cursor-pointer"
-                      onClick={onOpenDraftManager}
+                      onClick={handleOpenDraftManager}
                     >
                       <div className="font-medium text-gray-900 text-sm truncate">
                         {draft.name}
@@ -489,7 +510,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                   ))}
                 </div>
                 <button
-                  onClick={onOpenDraftManager}
+                  onClick={handleOpenDraftManager}
                   className="w-full mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium"
                 >
                   View all drafts →

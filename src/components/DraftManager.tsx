@@ -7,11 +7,11 @@ interface DraftManagerProps {
   isOpen: boolean;
   onClose: () => void;
   onLoadDraft: (draft: DraftResume) => void;
-  currentResumeData?: ResumeData;
+  currentResumeData?: ResumeData | null;
   currentTemplate?: string;
   currentCustomizations?: any;
   currentStep?: number;
-  currentDraftId?: string;
+  currentDraftId?: string | null;
 }
 
 export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
@@ -29,6 +29,8 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
   const [showSaveForm, setShowSaveForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -37,89 +39,151 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   }, [isOpen]);
 
   const loadDrafts = () => {
-    setDrafts(DraftManager.getAllDrafts());
+    try {
+      setIsLoading(true);
+      setError(null);
+      const allDrafts = DraftManager.getAllDrafts();
+      console.log('Loaded drafts:', allDrafts); // Debug log
+      setDrafts(allDrafts);
+    } catch (err) {
+      console.error('Error loading drafts:', err);
+      setError('Failed to load drafts');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSaveDraft = () => {
-    if (!currentResumeData || !saveName.trim()) return;
+    if (!currentResumeData || !saveName.trim()) {
+      setError('Please enter a draft name and ensure you have resume data');
+      return;
+    }
 
-    const name = saveName.trim();
-    const draftId = DraftManager.saveDraft(
-      name,
-      currentResumeData,
-      currentTemplate || 'modern',
-      currentCustomizations || {
-        colors: { primary: '#3B82F6', secondary: '#1E40AF', accent: '#10B981' },
-        font: 'Inter',
-        sectionOrder: ['summary', 'experience', 'education', 'skills', 'certifications']
-      },
-      currentStep || 1,
-      currentDraftId
-    );
+    try {
+      const name = saveName.trim();
+      const draftId = DraftManager.saveDraft(
+        name,
+        currentResumeData,
+        currentTemplate || 'modern-two-column',
+        currentCustomizations || {
+          colors: { primary: '#2563EB', secondary: '#1E40AF', accent: '#3B82F6' },
+          font: 'Inter',
+          sectionOrder: ['summary', 'experience', 'education', 'skills', 'certifications']
+        },
+        currentStep || 1,
+        currentDraftId || undefined
+      );
 
-    setSaveName('');
-    setShowSaveForm(false);
-    loadDrafts();
-    
-    // Show success message
-    const message = currentDraftId ? 'Draft updated successfully!' : 'Draft saved successfully!';
-    alert(message);
+      setSaveName('');
+      setShowSaveForm(false);
+      setError(null);
+      loadDrafts();
+      
+      // Show success message
+      const message = currentDraftId ? 'Draft updated successfully!' : 'Draft saved successfully!';
+      alert(message);
+    } catch (err) {
+      console.error('Error saving draft:', err);
+      setError('Failed to save draft');
+    }
   };
 
   const handleDeleteDraft = (id: string) => {
     if (confirm('Are you sure you want to delete this draft?')) {
-      DraftManager.deleteDraft(id);
-      loadDrafts();
+      try {
+        DraftManager.deleteDraft(id);
+        loadDrafts();
+        setError(null);
+      } catch (err) {
+        console.error('Error deleting draft:', err);
+        setError('Failed to delete draft');
+      }
     }
   };
 
   const handleRenameDraft = (id: string, newName: string) => {
     const draft = DraftManager.getDraft(id);
-    if (!draft || !newName.trim()) return;
+    if (!draft || !newName.trim()) {
+      setError('Invalid draft or name');
+      return;
+    }
 
-    DraftManager.saveDraft(
-      newName.trim(),
-      draft.resumeData,
-      draft.selectedTemplate,
-      draft.customizations,
-      draft.step,
-      id
-    );
+    try {
+      DraftManager.saveDraft(
+        newName.trim(),
+        draft.resumeData,
+        draft.selectedTemplate,
+        draft.customizations,
+        draft.step,
+        id
+      );
 
-    setEditingId(null);
-    setEditingName('');
-    loadDrafts();
+      setEditingId(null);
+      setEditingName('');
+      setError(null);
+      loadDrafts();
+    } catch (err) {
+      console.error('Error renaming draft:', err);
+      setError('Failed to rename draft');
+    }
   };
 
   const handleExportDraft = (id: string) => {
-    DraftManager.exportDraft(id);
+    try {
+      DraftManager.exportDraft(id);
+      setError(null);
+    } catch (err) {
+      console.error('Error exporting draft:', err);
+      setError('Failed to export draft');
+    }
   };
 
   const handleImportDraft = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setIsLoading(true);
     DraftManager.importDraft(file)
       .then(() => {
         loadDrafts();
+        setError(null);
         alert('Draft imported successfully!');
       })
       .catch((error) => {
-        alert(`Failed to import draft: ${error.message}`);
+        console.error('Import error:', error);
+        setError(`Failed to import draft: ${error.message}`);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
 
     // Reset file input
     event.target.value = '';
   };
 
+  const handleLoadDraft = (draft: DraftResume) => {
+    try {
+      console.log('Loading draft:', draft); // Debug log
+      onLoadDraft(draft);
+      setError(null);
+    } catch (err) {
+      console.error('Error loading draft:', err);
+      setError('Failed to load draft');
+    }
+  };
+
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (err) {
+      return 'Invalid date';
+    }
   };
 
   const getStepName = (step: number) => {
@@ -147,6 +211,13 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         </div>
 
         <div className="p-6 overflow-y-auto max-h-[70vh]">
+          {/* Error Display */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
           {/* Save Current Draft */}
           {currentResumeData && (
             <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -155,6 +226,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                 <button
                   onClick={() => setShowSaveForm(!showSaveForm)}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center text-sm transition-colors"
+                  disabled={isLoading}
                 >
                   <Save className="w-4 h-4 mr-2" />
                   {currentDraftId ? 'Update Draft' : 'Save as Draft'}
@@ -170,21 +242,24 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                     placeholder={currentDraftId ? "Update draft name..." : "Enter draft name..."}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     onKeyPress={(e) => e.key === 'Enter' && handleSaveDraft()}
+                    disabled={isLoading}
                   />
                   <div className="flex space-x-2">
                     <button
                       onClick={handleSaveDraft}
-                      disabled={!saveName.trim()}
+                      disabled={!saveName.trim() || isLoading}
                       className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white px-4 py-2 rounded-md text-sm transition-colors"
                     >
-                      {currentDraftId ? 'Update' : 'Save'}
+                      {isLoading ? 'Saving...' : (currentDraftId ? 'Update' : 'Save')}
                     </button>
                     <button
                       onClick={() => {
                         setShowSaveForm(false);
                         setSaveName('');
+                        setError(null);
                       }}
                       className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm transition-colors"
+                      disabled={isLoading}
                     >
                       Cancel
                     </button>
@@ -204,6 +279,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                 accept=".json"
                 onChange={handleImportDraft}
                 className="hidden"
+                disabled={isLoading}
               />
             </label>
           </div>
@@ -215,7 +291,12 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
               Saved Drafts ({drafts.length})
             </h3>
 
-            {drafts.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-3"></div>
+                <p className="text-gray-500">Loading drafts...</p>
+              </div>
+            ) : drafts.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                 <p>No drafts saved yet</p>
@@ -249,6 +330,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                             <button
                               onClick={() => handleRenameDraft(draft.id, editingName)}
                               className="text-green-600 hover:text-green-700"
+                              disabled={isLoading}
                             >
                               <Check className="w-4 h-4" />
                             </button>
@@ -276,6 +358,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                                 setEditingName(draft.name);
                               }}
                               className="text-gray-400 hover:text-gray-600"
+                              disabled={isLoading}
                             >
                               <Edit3 className="w-3 h-3" />
                             </button>
@@ -301,8 +384,9 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
 
                       <div className="flex items-center space-x-2 ml-4">
                         <button
-                          onClick={() => onLoadDraft(draft)}
+                          onClick={() => handleLoadDraft(draft)}
                           className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition-colors"
+                          disabled={isLoading}
                         >
                           Load
                         </button>
@@ -310,6 +394,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                           onClick={() => handleExportDraft(draft.id)}
                           className="text-gray-500 hover:text-gray-700 transition-colors"
                           title="Export draft"
+                          disabled={isLoading}
                         >
                           <Download className="w-4 h-4" />
                         </button>
@@ -317,6 +402,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                           onClick={() => handleDeleteDraft(draft.id)}
                           className="text-red-500 hover:text-red-700 transition-colors"
                           title="Delete draft"
+                          disabled={isLoading}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -338,6 +424,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
             <button
               onClick={onClose}
               className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+              disabled={isLoading}
             >
               Close
             </button>

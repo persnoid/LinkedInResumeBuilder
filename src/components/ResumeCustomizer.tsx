@@ -43,7 +43,9 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     { name: 'Creative Purple', primary: '#8B5CF6', secondary: '#7C3AED', accent: '#F59E0B' },
     { name: 'Modern Teal', primary: '#14B8A6', secondary: '#0F766E', accent: '#F97316' },
     { name: 'Classic Black', primary: '#1F2937', secondary: '#4B5563', accent: '#EF4444' },
-    { name: 'Tech Green', primary: '#059669', secondary: '#047857', accent: '#3B82F6' }
+    { name: 'Tech Green', primary: '#059669', secondary: '#047857', accent: '#F59E0B' },
+    { name: 'Orange Modern', primary: '#F97316', secondary: '#EA580C', accent: '#3B82F6' },
+    { name: 'Soft Blue', primary: '#1E40AF', secondary: '#6B7280', accent: '#93C5FD' }
   ];
 
   const handleExport = async (format: 'pdf' | 'docx') => {
@@ -56,6 +58,8 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   };
 
   const handleCustomizationChange = (field: string, value: any) => {
+    console.log('Customization change:', field, value); // Debug log
+    
     const newCustomizations = { ...customizations };
     if (field.includes('.')) {
       const [parent, child] = field.split('.');
@@ -63,11 +67,22 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     } else {
       newCustomizations[field] = value;
     }
+    
+    console.log('New customizations:', newCustomizations); // Debug log
     onCustomizationsUpdate(newCustomizations);
   };
 
   const template = resumeTemplates.find(t => t.id === selectedTemplate);
-  const currentColors = { ...template?.colors, ...customizations.colors };
+  
+  // Merge template colors with customizations - ensure we have all color properties
+  const currentColors = {
+    ...template?.colors,
+    ...customizations.colors
+  };
+
+  console.log('Current colors in customizer:', currentColors); // Debug log
+  console.log('Template:', template); // Debug log
+  console.log('Customizations:', customizations); // Debug log
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -120,15 +135,18 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
             <div className="space-y-6">
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Color Presets</h3>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3">
                   {colorPresets.map((preset) => (
                     <button
                       key={preset.name}
-                      onClick={() => handleCustomizationChange('colors', {
-                        primary: preset.primary,
-                        secondary: preset.secondary,
-                        accent: preset.accent
-                      })}
+                      onClick={() => {
+                        console.log('Applying color preset:', preset); // Debug log
+                        handleCustomizationChange('colors', {
+                          primary: preset.primary,
+                          secondary: preset.secondary,
+                          accent: preset.accent
+                        });
+                      }}
                       className="p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors text-left"
                     >
                       <div className="flex space-x-1 mb-2">
@@ -163,12 +181,44 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                       <span className="text-sm text-gray-700">{color.label}</span>
                       <input
                         type="color"
-                        value={customizations.colors?.[color.key] || template?.colors[color.key as keyof typeof template.colors] || '#3B82F6'}
-                        onChange={(e) => handleCustomizationChange(`colors.${color.key}`, e.target.value)}
+                        value={currentColors[color.key as keyof typeof currentColors] || '#3B82F6'}
+                        onChange={(e) => {
+                          console.log(`Changing ${color.key} to:`, e.target.value); // Debug log
+                          handleCustomizationChange(`colors.${color.key}`, e.target.value);
+                        }}
                         className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
                       />
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* Current Color Preview */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Current Colors</h3>
+                <div className="p-3 border border-gray-200 rounded-lg">
+                  <div className="flex space-x-2 mb-2">
+                    <div 
+                      className="w-6 h-6 rounded-full border border-gray-300"
+                      style={{ backgroundColor: currentColors.primary }}
+                      title="Primary"
+                    />
+                    <div 
+                      className="w-6 h-6 rounded-full border border-gray-300"
+                      style={{ backgroundColor: currentColors.secondary }}
+                      title="Secondary"
+                    />
+                    <div 
+                      className="w-6 h-6 rounded-full border border-gray-300"
+                      style={{ backgroundColor: currentColors.accent }}
+                      title="Accent"
+                    />
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    <div>Primary: {currentColors.primary}</div>
+                    <div>Secondary: {currentColors.secondary}</div>
+                    <div>Accent: {currentColors.accent}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -259,6 +309,11 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Live Preview</h3>
             <p className="text-gray-600">See how your resume looks with your customizations</p>
+            
+            {/* Debug info */}
+            <div className="mt-2 text-xs text-gray-500">
+              Template: {selectedTemplate} | Colors: {JSON.stringify(currentColors)}
+            </div>
           </div>
           
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">

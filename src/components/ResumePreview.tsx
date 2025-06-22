@@ -21,7 +21,13 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
   const templateConfig = resumeTemplates.find(t => t.id === template);
   if (!templateConfig) return null;
 
+  // Merge template colors with custom colors - custom colors take precedence
   const colors = { ...templateConfig.colors, ...customColors };
+  
+  console.log('ResumePreview - Template colors:', templateConfig.colors);
+  console.log('ResumePreview - Custom colors:', customColors);
+  console.log('ResumePreview - Final colors:', colors);
+  
   const fontFamily = font === 'Inter' ? 'Inter, sans-serif' : 
                     font === 'Roboto' ? 'Roboto, sans-serif' :
                     font === 'Open Sans' ? 'Open Sans, sans-serif' :
@@ -47,19 +53,19 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             <div className="flex items-center space-x-6 text-sm text-gray-500">
               <div className="flex items-center">
                 <Phone className="w-4 h-4 mr-2" />
-                <span>Phone</span>
+                <span>{resumeData.personalInfo.phone || 'Phone'}</span>
               </div>
               <div className="flex items-center">
                 <Mail className="w-4 h-4 mr-2" />
-                <span>Email</span>
+                <span>{resumeData.personalInfo.email || 'Email'}</span>
               </div>
               <div className="flex items-center">
                 <Linkedin className="w-4 h-4 mr-2" />
-                <span>LinkedIn/Portfolio</span>
+                <span>{resumeData.personalInfo.linkedin || 'LinkedIn/Portfolio'}</span>
               </div>
               <div className="flex items-center">
                 <MapPin className="w-4 h-4 mr-2" />
-                <span>Location</span>
+                <span>{resumeData.personalInfo.location || 'Location'}</span>
               </div>
             </div>
           </div>
@@ -286,36 +292,37 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             )}
           </div>
           
-          <h1 className="text-3xl font-bold mb-2 text-gray-800 uppercase tracking-wide">
+          <h1 className="text-3xl font-bold mb-2 uppercase tracking-wide" style={{ color: colors.primary }}>
             {resumeData.personalInfo.name || 'YOUR NAME'}
           </h1>
           
-          <div className="text-lg mb-4 text-gray-600">
+          <div className="text-lg mb-4" style={{ color: colors.secondary }}>
             {resumeData.personalInfo.title || 'The role you are applying for?'}
           </div>
           
           <div className="flex items-center justify-center space-x-6 text-sm text-gray-600 mb-6">
             <div className="flex items-center">
-              <span>Phone</span>
+              <span>{resumeData.personalInfo.phone || 'Phone'}</span>
               <span className="mx-2">•</span>
             </div>
             <div className="flex items-center">
-              <span>Email</span>
+              <span>{resumeData.personalInfo.email || 'Email'}</span>
               <span className="mx-2">•</span>
             </div>
             <div className="flex items-center">
-              <span>LinkedIn/Portfolio</span>
+              <span>{resumeData.personalInfo.linkedin || 'LinkedIn/Portfolio'}</span>
               <span className="mx-2">•</span>
             </div>
             <div className="flex items-center">
-              <span>Location</span>
+              <span>{resumeData.personalInfo.location || 'Location'}</span>
             </div>
           </div>
         </div>
 
         {/* Summary */}
         <div className="mb-8">
-          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 border-gray-800 text-center uppercase tracking-wide">
+          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 text-center uppercase tracking-wide" 
+              style={{ color: colors.primary, borderColor: colors.primary }}>
             Summary
           </h2>
           <p className="text-sm leading-relaxed text-gray-700 text-center">
@@ -325,7 +332,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
         {/* Experience */}
         <div className="mb-8">
-          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 border-gray-800 text-center uppercase tracking-wide">
+          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 text-center uppercase tracking-wide" 
+              style={{ color: colors.primary, borderColor: colors.primary }}>
             Experience
           </h2>
           <div className="space-y-6">
@@ -374,7 +382,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
         {/* Education */}
         <div className="mb-8">
-          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 border-gray-800 text-center uppercase tracking-wide">
+          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 text-center uppercase tracking-wide" 
+              style={{ color: colors.primary, borderColor: colors.primary }}>
             Education
           </h2>
           <div className="space-y-4">
@@ -396,7 +405,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
         {/* Languages */}
         <div className="mb-8">
-          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 border-gray-800 text-center uppercase tracking-wide">
+          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 text-center uppercase tracking-wide" 
+              style={{ color: colors.primary, borderColor: colors.primary }}>
             Languages
           </h2>
           <div className="space-y-3">
@@ -408,7 +418,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                   <div className="flex space-x-1">
                     {[1, 2, 3, 4, 5].map((dot) => (
                       <div key={dot} className="w-3 h-3 rounded-full" 
-                           style={{ backgroundColor: dot <= 2 ? '#1F2937' : '#E5E7EB' }}></div>
+                           style={{ backgroundColor: dot <= 2 ? colors.primary : '#E5E7EB' }}></div>
                     ))}
                   </div>
                 </div>
@@ -421,7 +431,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                   <div className="flex space-x-1">
                     {[1, 2, 3, 4, 5].map((dot) => (
                       <div key={dot} className="w-3 h-3 rounded-full" 
-                           style={{ backgroundColor: dot <= 2 ? '#1F2937' : '#E5E7EB' }}></div>
+                           style={{ backgroundColor: dot <= 2 ? colors.primary : '#E5E7EB' }}></div>
                     ))}
                   </div>
                 </div>
@@ -432,11 +442,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
         {/* Key Achievements */}
         <div className="mb-8">
-          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 border-gray-800 text-center uppercase tracking-wide">
+          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 text-center uppercase tracking-wide" 
+              style={{ color: colors.primary, borderColor: colors.primary }}>
             Key Achievements
           </h2>
           <div className="flex items-start justify-center">
-            <Diamond className="w-4 h-4 mt-1 mr-3 flex-shrink-0 text-gray-600" />
+            <Diamond className="w-4 h-4 mt-1 mr-3 flex-shrink-0" style={{ color: colors.accent }} />
             <div className="text-center">
               <div className="font-semibold text-sm text-gray-800">Your Achievement</div>
               <div className="text-xs text-gray-600 leading-relaxed">Describe what you did and the impact it had.</div>
@@ -446,7 +457,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
         {/* Skills */}
         <div className="mb-8">
-          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 border-gray-800 text-center uppercase tracking-wide">
+          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 text-center uppercase tracking-wide" 
+              style={{ color: colors.primary, borderColor: colors.primary }}>
             Skills
           </h2>
           <div className="text-center">
@@ -462,7 +474,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
         {/* Courses */}
         <div className="mb-8">
-          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 border-gray-800 text-center uppercase tracking-wide">
+          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 text-center uppercase tracking-wide" 
+              style={{ color: colors.primary, borderColor: colors.primary }}>
             Courses
           </h2>
           <div className="text-center text-sm text-gray-700">Course Title</div>
@@ -470,11 +483,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
         {/* Interests */}
         <div>
-          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 border-gray-800 text-center uppercase tracking-wide">
+          <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 text-center uppercase tracking-wide" 
+              style={{ color: colors.primary, borderColor: colors.primary }}>
             Interests
           </h2>
           <div className="flex items-start justify-center">
-            <Diamond className="w-4 h-4 mt-1 mr-3 flex-shrink-0 text-gray-600" />
+            <Diamond className="w-4 h-4 mt-1 mr-3 flex-shrink-0" style={{ color: colors.accent }} />
             <div className="text-sm text-gray-700">Career Interest / Passion</div>
           </div>
         </div>
@@ -488,14 +502,14 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       <div id="resume-preview" className="a4-page bg-white" style={{ fontFamily }}>
         <div className="flex h-full">
           {/* Left Sidebar - Exact match to image */}
-          <div className="w-1/3 p-8 relative" style={{ backgroundColor: '#F0FDF4' }}>
+          <div className="w-1/3 p-8 relative" style={{ backgroundColor: colors.sidebar || '#F0FDF4' }}>
             {/* Organic shape decorations - exact positioning */}
             <div className="absolute top-8 left-6 w-24 h-24 rounded-full opacity-40" 
-                 style={{ backgroundColor: '#86EFAC' }}></div>
+                 style={{ backgroundColor: colors.accent }}></div>
             <div className="absolute top-12 left-10 w-16 h-16 rounded-full opacity-30" 
-                 style={{ backgroundColor: '#4ADE80' }}></div>
+                 style={{ backgroundColor: colors.primary }}></div>
             <div className="absolute top-16 left-14 w-12 h-12 rounded-full opacity-20" 
-                 style={{ backgroundColor: '#22C55E' }}></div>
+                 style={{ backgroundColor: colors.secondary }}></div>
             
             {/* Profile Photo */}
             <div className="relative z-10 mb-8">
@@ -510,13 +524,13 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Contacts Section */}
             <div className="mb-8 relative z-10">
-              <div className="flex items-center mb-4" style={{ color: '#059669' }}>
+              <div className="flex items-center mb-4" style={{ color: colors.primary }}>
                 <Mail className="w-5 h-5 mr-3" />
                 <h3 className="font-bold text-base uppercase tracking-wide">CONTACTS</h3>
               </div>
               <div className="space-y-4 text-sm">
                 <div>
-                  <div className="flex items-center mb-1" style={{ color: '#059669' }}>
+                  <div className="flex items-center mb-1" style={{ color: colors.primary }}>
                     <Phone className="w-4 h-4 mr-2" />
                     <span className="font-medium">Phone</span>
                   </div>
@@ -524,7 +538,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 </div>
                 
                 <div>
-                  <div className="flex items-center mb-1" style={{ color: '#059669' }}>
+                  <div className="flex items-center mb-1" style={{ color: colors.primary }}>
                     <Mail className="w-4 h-4 mr-2" />
                     <span className="font-medium">Email</span>
                   </div>
@@ -532,7 +546,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 </div>
                 
                 <div>
-                  <div className="flex items-center mb-1" style={{ color: '#059669' }}>
+                  <div className="flex items-center mb-1" style={{ color: colors.primary }}>
                     <Linkedin className="w-4 h-4 mr-2" />
                     <span className="font-medium">LinkedIn/Portfolio</span>
                   </div>
@@ -540,7 +554,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 </div>
                 
                 <div>
-                  <div className="flex items-center mb-1" style={{ color: '#059669' }}>
+                  <div className="flex items-center mb-1" style={{ color: colors.primary }}>
                     <MapPin className="w-4 h-4 mr-2" />
                     <span className="font-medium">Location</span>
                   </div>
@@ -551,13 +565,13 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Key Achievements */}
             <div className="mb-8 relative z-10">
-              <div className="flex items-center mb-4" style={{ color: '#059669' }}>
+              <div className="flex items-center mb-4" style={{ color: colors.primary }}>
                 <Diamond className="w-5 h-5 mr-3" />
                 <h3 className="font-bold text-base uppercase tracking-wide">KEY ACHIEVEMENTS</h3>
               </div>
               <div className="space-y-3">
                 <div className="flex items-start">
-                  <div className="w-3 h-3 rounded-full mt-1 mr-3 flex-shrink-0" style={{ backgroundColor: '#34D399' }}></div>
+                  <div className="w-3 h-3 rounded-full mt-1 mr-3 flex-shrink-0" style={{ backgroundColor: colors.accent }}></div>
                   <div>
                     <div className="font-semibold text-sm text-gray-800">Your Achievement</div>
                     <div className="text-xs text-gray-600 leading-relaxed">Describe what you did and the impact it had.</div>
@@ -568,8 +582,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Skills */}
             <div className="mb-8 relative z-10">
-              <div className="flex items-center mb-4" style={{ color: '#059669' }}>
-                <div className="w-5 h-5 mr-3 rounded flex items-center justify-center" style={{ backgroundColor: '#059669' }}>
+              <div className="flex items-center mb-4" style={{ color: colors.primary }}>
+                <div className="w-5 h-5 mr-3 rounded flex items-center justify-center" style={{ backgroundColor: colors.primary }}>
                   <div className="w-2 h-2 bg-white rounded"></div>
                 </div>
                 <h3 className="font-bold text-base uppercase tracking-wide">SKILLS</h3>
@@ -583,7 +597,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Courses */}
             <div className="mb-8 relative z-10">
-              <div className="flex items-center mb-4" style={{ color: '#059669' }}>
+              <div className="flex items-center mb-4" style={{ color: colors.primary }}>
                 <GraduationCap className="w-5 h-5 mr-3" />
                 <h3 className="font-bold text-base uppercase tracking-wide">COURSES</h3>
               </div>
@@ -592,14 +606,14 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Interests */}
             <div className="relative z-10">
-              <div className="flex items-center mb-4" style={{ color: '#059669' }}>
-                <div className="w-5 h-5 mr-3 rounded-full flex items-center justify-center" style={{ backgroundColor: '#34D399' }}>
+              <div className="flex items-center mb-4" style={{ color: colors.primary }}>
+                <div className="w-5 h-5 mr-3 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.accent }}>
                   <div className="w-2 h-2 bg-white rounded-full"></div>
                 </div>
                 <h3 className="font-bold text-base uppercase tracking-wide">INTERESTS</h3>
               </div>
               <div className="flex items-start">
-                <div className="w-3 h-3 rounded-full mt-1 mr-3 flex-shrink-0" style={{ backgroundColor: '#34D399' }}></div>
+                <div className="w-3 h-3 rounded-full mt-1 mr-3 flex-shrink-0" style={{ backgroundColor: colors.accent }}></div>
                 <div className="text-sm text-gray-700">Career Interest / Passion</div>
               </div>
             </div>
@@ -613,14 +627,14 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 {resumeData.personalInfo.name || 'YOUR NAME'}
               </h1>
               <div className="inline-block px-6 py-2 rounded-full text-lg font-medium" 
-                   style={{ backgroundColor: '#DCFCE7', color: '#059669' }}>
+                   style={{ backgroundColor: colors.highlight || '#DCFCE7', color: colors.primary }}>
                 {resumeData.personalInfo.title || 'THE ROLE YOU ARE APPLYING FOR?'}
               </div>
             </div>
 
             {/* Summary */}
             <div className="mb-8">
-              <div className="flex items-center mb-4" style={{ color: '#059669' }}>
+              <div className="flex items-center mb-4" style={{ color: colors.primary }}>
                 <User className="w-5 h-5 mr-3" />
                 <h2 className="font-bold text-lg uppercase tracking-wide">SUMMARY</h2>
               </div>
@@ -631,8 +645,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Experience */}
             <div className="mb-8">
-              <div className="flex items-center mb-4" style={{ color: '#059669' }}>
-                <div className="w-5 h-5 mr-3 rounded flex items-center justify-center" style={{ backgroundColor: '#059669' }}>
+              <div className="flex items-center mb-4" style={{ color: colors.primary }}>
+                <div className="w-5 h-5 mr-3 rounded flex items-center justify-center" style={{ backgroundColor: colors.primary }}>
                   <div className="w-2 h-2 bg-white rounded"></div>
                 </div>
                 <h2 className="font-bold text-lg uppercase tracking-wide">EXPERIENCE</h2>
@@ -654,7 +668,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                     <ul className="text-sm space-y-1 text-gray-700">
                       {exp.description.map((desc, index) => (
                         <li key={index} className="flex items-start">
-                          <span className="mr-3 mt-1 text-green-500">•</span>
+                          <span className="mr-3 mt-1" style={{ color: colors.primary }}>•</span>
                           <span>{desc}</span>
                         </li>
                       ))}
@@ -666,13 +680,14 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Education */}
             <div className="mb-8">
-              <div className="flex items-center mb-4" style={{ color: '#059669' }}>
+              <div className="flex items-center mb-4" style={{ color: colors.primary }}>
                 <GraduationCap className="w-5 h-5 mr-3" />
                 <h2 className="font-bold text-lg uppercase tracking-wide">EDUCATION</h2>
               </div>
               <div className="space-y-4">
                 {resumeData.education.map((edu) => (
-                  <div key={edu.id} className="border rounded-lg p-4" style={{ borderColor: '#D1FAE5', backgroundColor: '#F0FDF4' }}>
+                  <div key={edu.id} className="border rounded-lg p-4" 
+                       style={{ borderColor: colors.highlight || '#D1FAE5', backgroundColor: colors.sidebar || '#F0FDF4' }}>
                     <div className="flex justify-between items-start">
                       <div>
                         <div className="font-bold text-base text-gray-800">{edu.school}</div>
@@ -688,7 +703,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             {/* Languages */}
             {resumeData.languages && resumeData.languages.length > 0 && (
               <div>
-                <div className="flex items-center mb-4" style={{ color: '#059669' }}>
+                <div className="flex items-center mb-4" style={{ color: colors.primary }}>
                   <Globe className="w-5 h-5 mr-3" />
                   <h2 className="font-bold text-lg uppercase tracking-wide">LANGUAGES</h2>
                 </div>
@@ -701,7 +716,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                         <div className="flex space-x-1">
                           {[1, 2, 3, 4, 5].map((dot) => (
                             <div key={dot} className="w-3 h-3 rounded-full" 
-                                 style={{ backgroundColor: dot <= 3 ? '#059669' : '#E5E7EB' }}></div>
+                                 style={{ backgroundColor: dot <= 3 ? colors.primary : '#E5E7EB' }}></div>
                           ))}
                         </div>
                       </div>
@@ -721,31 +736,31 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
     return (
       <div id="resume-preview" className="a4-page bg-white" style={{ fontFamily }}>
         {/* Navy Header */}
-        <div className="p-8" style={{ backgroundColor: '#1E293B' }}>
+        <div className="p-8" style={{ backgroundColor: colors.sidebar || '#1E293B' }}>
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-4xl font-bold mb-3" style={{ color: '#FFFFFF' }}>
+              <h1 className="text-4xl font-bold mb-3" style={{ color: colors.text || '#FFFFFF' }}>
                 {resumeData.personalInfo.name || 'YOUR NAME'}
               </h1>
-              <div className="text-xl mb-6" style={{ color: '#60A5FA' }}>
+              <div className="text-xl mb-6" style={{ color: colors.accent }}>
                 {resumeData.personalInfo.title || 'The role you are applying for?'}
               </div>
               <div className="flex items-center space-x-6 text-sm" style={{ color: '#E2E8F0' }}>
                 <div className="flex items-center">
                   <Phone className="w-4 h-4 mr-2" />
-                  <span>Phone</span>
+                  <span>{resumeData.personalInfo.phone || 'Phone'}</span>
                 </div>
                 <div className="flex items-center">
                   <Mail className="w-4 h-4 mr-2" />
-                  <span>Email</span>
+                  <span>{resumeData.personalInfo.email || 'Email'}</span>
                 </div>
                 <div className="flex items-center">
                   <Linkedin className="w-4 h-4 mr-2" />
-                  <span>LinkedIn/Portfolio</span>
+                  <span>{resumeData.personalInfo.linkedin || 'LinkedIn/Portfolio'}</span>
                 </div>
                 <div className="flex items-center">
                   <MapPin className="w-4 h-4 mr-2" />
-                  <span>Location</span>
+                  <span>{resumeData.personalInfo.location || 'Location'}</span>
                 </div>
               </div>
             </div>
@@ -765,7 +780,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           <div className="w-2/3 pr-8">
             {/* Summary */}
             <div className="mb-8">
-              <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" style={{ color: '#1E293B', borderColor: '#1E293B' }}>
+              <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" 
+                  style={{ color: colors.primary, borderColor: colors.primary }}>
                 SUMMARY
               </h2>
               <p className="text-sm leading-relaxed text-gray-700">
@@ -775,14 +791,15 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Experience */}
             <div className="mb-8">
-              <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" style={{ color: '#1E293B', borderColor: '#1E293B' }}>
+              <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" 
+                  style={{ color: colors.primary, borderColor: colors.primary }}>
                 EXPERIENCE
               </h2>
               <div className="space-y-6">
                 {resumeData.experience.map((exp) => (
                   <div key={exp.id}>
                     <div className="font-bold text-base text-gray-800">{exp.position}</div>
-                    <div className="text-sm mb-2" style={{ color: '#60A5FA' }}>{exp.company}</div>
+                    <div className="text-sm mb-2" style={{ color: colors.accent }}>{exp.company}</div>
                     <div className="flex items-center text-sm text-gray-500 mb-3">
                       <Calendar className="w-4 h-4 mr-2" />
                       <span>{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</span>
@@ -793,7 +810,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                     <ul className="text-sm space-y-1 text-gray-700">
                       {exp.description.map((desc, index) => (
                         <li key={index} className="flex items-start">
-                          <span className="mr-3 mt-1 text-blue-500">•</span>
+                          <span className="mr-3 mt-1" style={{ color: colors.accent }}>•</span>
                           <span>{desc}</span>
                         </li>
                       ))}
@@ -805,14 +822,15 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Education */}
             <div className="mb-8">
-              <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" style={{ color: '#1E293B', borderColor: '#1E293B' }}>
+              <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" 
+                  style={{ color: colors.primary, borderColor: colors.primary }}>
                 EDUCATION
               </h2>
               <div className="space-y-4">
                 {resumeData.education.map((edu) => (
                   <div key={edu.id}>
                     <div className="font-bold text-base text-gray-800">{edu.degree}</div>
-                    <div className="text-sm" style={{ color: '#60A5FA' }}>{edu.school}</div>
+                    <div className="text-sm" style={{ color: colors.accent }}>{edu.school}</div>
                     <div className="flex items-center text-sm text-gray-500">
                       <Calendar className="w-4 h-4 mr-2" />
                       <span>{edu.startDate} - {edu.endDate}</span>
@@ -825,7 +843,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             {/* Languages */}
             {resumeData.languages && resumeData.languages.length > 0 && (
               <div>
-                <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" style={{ color: '#1E293B', borderColor: '#1E293B' }}>
+                <h2 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" 
+                    style={{ color: colors.primary, borderColor: colors.primary }}>
                   LANGUAGES
                 </h2>
                 <div className="space-y-3">
@@ -837,7 +856,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                         <div className="flex space-x-1">
                           {[1, 2, 3, 4, 5].map((dot) => (
                             <div key={dot} className="w-3 h-3 rounded-full" 
-                                 style={{ backgroundColor: dot <= 3 ? '#1E293B' : '#E5E7EB' }}></div>
+                                 style={{ backgroundColor: dot <= 3 ? colors.primary : '#E5E7EB' }}></div>
                           ))}
                         </div>
                       </div>
@@ -852,11 +871,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           <div className="w-1/3">
             {/* Key Achievements */}
             <div className="mb-8">
-              <h3 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" style={{ color: '#1E293B', borderColor: '#1E293B' }}>
+              <h3 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" 
+                  style={{ color: colors.primary, borderColor: colors.primary }}>
                 KEY ACHIEVEMENTS
               </h3>
               <div className="flex items-start">
-                <Diamond className="w-4 h-4 mt-1 mr-3 flex-shrink-0" style={{ color: '#60A5FA' }} />
+                <Diamond className="w-4 h-4 mt-1 mr-3 flex-shrink-0" style={{ color: colors.accent }} />
                 <div>
                   <div className="font-semibold text-sm text-gray-800">Your Achievement</div>
                   <div className="text-xs text-gray-600 leading-relaxed">Describe what you did and the impact it had.</div>
@@ -866,7 +886,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Skills */}
             <div className="mb-8">
-              <h3 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" style={{ color: '#1E293B', borderColor: '#1E293B' }}>
+              <h3 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" 
+                  style={{ color: colors.primary, borderColor: colors.primary }}>
                 SKILLS
               </h3>
               <div className="space-y-2">
@@ -878,7 +899,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Courses */}
             <div className="mb-8">
-              <h3 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" style={{ color: '#1E293B', borderColor: '#1E293B' }}>
+              <h3 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" 
+                  style={{ color: colors.primary, borderColor: colors.primary }}>
                 COURSES
               </h3>
               <div className="text-sm text-gray-700">Course Title</div>
@@ -886,11 +908,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Interests */}
             <div>
-              <h3 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" style={{ color: '#1E293B', borderColor: '#1E293B' }}>
+              <h3 className="font-bold text-lg mb-4 pb-2 border-b-2 uppercase tracking-wide" 
+                  style={{ color: colors.primary, borderColor: colors.primary }}>
                 INTERESTS
               </h3>
               <div className="flex items-start">
-                <Diamond className="w-4 h-4 mt-1 mr-3 flex-shrink-0" style={{ color: '#60A5FA' }} />
+                <Diamond className="w-4 h-4 mt-1 mr-3 flex-shrink-0" style={{ color: colors.accent }} />
                 <div className="text-sm text-gray-700">Career Interest / Passion</div>
               </div>
             </div>

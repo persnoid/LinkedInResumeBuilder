@@ -98,7 +98,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     switch (layout.type) {
       case 'single-column':
         return (
-          <div className="template-single-column">
+          <div className="template-single-column p-8">
             {sortedSections.map(renderSection)}
           </div>
         );
@@ -108,7 +108,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         const rightSections = sortedSections.filter(s => s.columns === 2);
         
         return (
-          <div className="template-two-column grid grid-cols-3 gap-8">
+          <div className="template-two-column grid grid-cols-3 gap-8 p-8">
             <div className="col-span-2">
               {leftSections.map(renderSection)}
             </div>

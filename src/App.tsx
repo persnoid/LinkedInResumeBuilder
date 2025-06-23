@@ -19,11 +19,12 @@ const STEPS = [
 function App() {
   const [currentStep, setCurrentStep] = useState(0);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState('green-organic-sidebar');
+  const [selectedTemplate, setSelectedTemplate] = useState('azurill');
   const [customizations, setCustomizations] = useState({
-    colors: { primary: '#059669', secondary: '#047857', accent: '#34D399' },
-    font: 'Inter',
-    sectionOrder: ['summary', 'experience', 'education', 'skills', 'certifications']
+    colors: { primary: '#1f2937', secondary: '#6b7280', accent: '#3b82f6' },
+    typography: { fontFamily: 'Inter, sans-serif' },
+    spacing: {},
+    sections: {}
   });
   const [linkedinData, setLinkedinData] = useState(null);
   const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);

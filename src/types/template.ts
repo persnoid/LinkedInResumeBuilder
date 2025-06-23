@@ -10,6 +10,7 @@ export interface TemplateSection {
     spacing?: 'compact' | 'normal' | 'relaxed';
     alignment?: 'left' | 'center' | 'right';
     divider?: boolean;
+    display?: 'list' | 'tags' | 'grid';
   };
 }
 

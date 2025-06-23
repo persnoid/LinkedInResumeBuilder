@@ -333,5 +333,338 @@ export const reactiveTemplates: TemplateConfig[] = [
         }
       }
     }
+  },
+  {
+    id: 'ditto',
+    name: 'Ditto',
+    description: 'Flexible two-column template with customizable sections',
+    category: 'modern',
+    preview: '/templates/ditto.jpg',
+    customizable: {
+      colors: true,
+      fonts: true,
+      spacing: true,
+      sections: true,
+    },
+    layout: {
+      id: 'ditto-layout',
+      name: 'Ditto Layout',
+      type: 'two-column',
+      sections: [
+        {
+          id: 'personalInfo',
+          name: 'Personal Information',
+          component: 'PersonalInfo',
+          visible: true,
+          order: 1,
+          columns: 1,
+          styles: { alignment: 'left' }
+        },
+        {
+          id: 'summary',
+          name: 'Summary',
+          component: 'Summary',
+          visible: true,
+          order: 2,
+          columns: 1,
+          styles: { alignment: 'left', divider: true }
+        },
+        {
+          id: 'experience',
+          name: 'Experience',
+          component: 'Experience',
+          visible: true,
+          order: 3,
+          columns: 1,
+          styles: { alignment: 'left', divider: true }
+        },
+        {
+          id: 'education',
+          name: 'Education',
+          component: 'Education',
+          visible: true,
+          order: 4,
+          columns: 1,
+          styles: { alignment: 'left', divider: true }
+        },
+        {
+          id: 'skills',
+          name: 'Skills',
+          component: 'Skills',
+          visible: true,
+          order: 5,
+          columns: 2,
+          styles: { alignment: 'left', display: 'grid' }
+        },
+        {
+          id: 'languages',
+          name: 'Languages',
+          component: 'Languages',
+          visible: true,
+          order: 6,
+          columns: 2,
+          styles: { alignment: 'left' }
+        },
+        {
+          id: 'certifications',
+          name: 'Certifications',
+          component: 'Certifications',
+          visible: true,
+          order: 7,
+          columns: 2,
+          styles: { alignment: 'left' }
+        }
+      ],
+      styles: {
+        page: {
+          margin: '0',
+          padding: '32px',
+          background: '#ffffff'
+        },
+        typography: {
+          fontFamily: 'Inter, sans-serif',
+          fontSize: {
+            base: '10px',
+            heading1: '26px',
+            heading2: '19px',
+            heading3: '14px',
+            small: '9px'
+          },
+          lineHeight: {
+            tight: '1.2',
+            normal: '1.4',
+            relaxed: '1.6'
+          }
+        },
+        colors: {
+          primary: '#2563eb',
+          secondary: '#64748b',
+          accent: '#0ea5e9',
+          text: '#1e293b',
+          background: '#ffffff',
+          muted: '#f8fafc',
+          border: '#e2e8f0'
+        },
+        spacing: {
+          section: '26px',
+          item: '13px',
+          compact: '9px'
+        }
+      }
+    }
+  },
+  {
+    id: 'gengar',
+    name: 'Gengar',
+    description: 'Dark theme template with modern styling and bold typography',
+    category: 'creative',
+    preview: '/templates/gengar.jpg',
+    customizable: {
+      colors: true,
+      fonts: true,
+      spacing: true,
+      sections: true,
+    },
+    layout: {
+      id: 'gengar-layout',
+      name: 'Gengar Layout',
+      type: 'sidebar',
+      sections: [
+        {
+          id: 'personalInfo',
+          name: 'Personal Information',
+          component: 'PersonalInfo',
+          visible: true,
+          order: 1,
+          columns: 2,
+          styles: { alignment: 'left' }
+        },
+        {
+          id: 'summary',
+          name: 'About Me',
+          component: 'Summary',
+          visible: true,
+          order: 2,
+          columns: 1,
+          styles: { alignment: 'left', divider: true }
+        },
+        {
+          id: 'experience',
+          name: 'Work Experience',
+          component: 'Experience',
+          visible: true,
+          order: 3,
+          columns: 1,
+          styles: { alignment: 'left', divider: true }
+        },
+        {
+          id: 'education',
+          name: 'Education',
+          component: 'Education',
+          visible: true,
+          order: 4,
+          columns: 1,
+          styles: { alignment: 'left', divider: true }
+        },
+        {
+          id: 'skills',
+          name: 'Technical Skills',
+          component: 'Skills',
+          visible: true,
+          order: 5,
+          columns: 2,
+          styles: { alignment: 'left', display: 'list' }
+        },
+        {
+          id: 'languages',
+          name: 'Languages',
+          component: 'Languages',
+          visible: true,
+          order: 6,
+          columns: 2,
+          styles: { alignment: 'left' }
+        }
+      ],
+      styles: {
+        page: {
+          margin: '0',
+          padding: '0',
+          background: '#1a1a1a'
+        },
+        typography: {
+          fontFamily: 'Inter, sans-serif',
+          fontSize: {
+            base: '10px',
+            heading1: '28px',
+            heading2: '20px',
+            heading3: '15px',
+            small: '9px'
+          },
+          lineHeight: {
+            tight: '1.2',
+            normal: '1.4',
+            relaxed: '1.6'
+          }
+        },
+        colors: {
+          primary: '#ffffff',
+          secondary: '#a1a1aa',
+          accent: '#8b5cf6',
+          text: '#e4e4e7',
+          background: '#1a1a1a',
+          muted: '#27272a',
+          border: '#3f3f46'
+        },
+        spacing: {
+          section: '28px',
+          item: '14px',
+          compact: '10px'
+        }
+      }
+    }
+  },
+  {
+    id: 'kakuna',
+    name: 'Kakuna',
+    description: 'Professional template with clean lines and structured layout',
+    category: 'professional',
+    preview: '/templates/kakuna.jpg',
+    customizable: {
+      colors: true,
+      fonts: true,
+      spacing: true,
+      sections: true,
+    },
+    layout: {
+      id: 'kakuna-layout',
+      name: 'Kakuna Layout',
+      type: 'single-column',
+      sections: [
+        {
+          id: 'personalInfo',
+          name: 'Contact Information',
+          component: 'PersonalInfo',
+          visible: true,
+          order: 1,
+          styles: { alignment: 'left' }
+        },
+        {
+          id: 'summary',
+          name: 'Professional Summary',
+          component: 'Summary',
+          visible: true,
+          order: 2,
+          styles: { alignment: 'left', divider: true }
+        },
+        {
+          id: 'experience',
+          name: 'Professional Experience',
+          component: 'Experience',
+          visible: true,
+          order: 3,
+          styles: { alignment: 'left', divider: true }
+        },
+        {
+          id: 'education',
+          name: 'Education & Training',
+          component: 'Education',
+          visible: true,
+          order: 4,
+          styles: { alignment: 'left', divider: true }
+        },
+        {
+          id: 'skills',
+          name: 'Core Competencies',
+          component: 'Skills',
+          visible: true,
+          order: 5,
+          styles: { alignment: 'left', display: 'tags' }
+        },
+        {
+          id: 'certifications',
+          name: 'Certifications',
+          component: 'Certifications',
+          visible: true,
+          order: 6,
+          styles: { alignment: 'left' }
+        }
+      ],
+      styles: {
+        page: {
+          margin: '0 auto',
+          padding: '36px',
+          background: '#ffffff'
+        },
+        typography: {
+          fontFamily: 'Inter, sans-serif',
+          fontSize: {
+            base: '10px',
+            heading1: '30px',
+            heading2: '21px',
+            heading3: '15px',
+            small: '9px'
+          },
+          lineHeight: {
+            tight: '1.2',
+            normal: '1.5',
+            relaxed: '1.7'
+          }
+        },
+        colors: {
+          primary: '#0f172a',
+          secondary: '#475569',
+          accent: '#dc2626',
+          text: '#334155',
+          background: '#ffffff',
+          muted: '#f1f5f9',
+          border: '#cbd5e1'
+        },
+        spacing: {
+          section: '30px',
+          item: '15px',
+          compact: '11px'
+        }
+      }
+    }
   }
 ];

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { CheckCircle, Eye, Layout, Grid, Save, Palette, FileText, Zap, Sparkles, User } from 'lucide-react';
-import { resumeTemplates } from '../data/templates';
-import { ResumeTemplate, ResumeData } from '../types/resume';
-import { ResumePreview } from './ResumePreview';
+import { reactiveTemplates } from '../data/reactive-templates';
+import { TemplateConfig, ResumeData } from '../types/resume';
+import { TemplateRenderer } from './template-engine/TemplateRenderer';
 
 interface TemplateSelectorProps {
   resumeData: ResumeData;
@@ -23,27 +23,26 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   onSaveDraft,
   currentDraftId
 }) => {
-  const [filter, setFilter] = useState<'all' | 'modern' | 'classic' | 'creative' | 'minimal'>('all');
+  const [filter, setFilter] = useState<'all' | 'modern' | 'classic' | 'creative' | 'minimal' | 'professional'>('all');
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
 
   const filteredTemplates = filter === 'all' 
-    ? resumeTemplates 
-    : resumeTemplates.filter(template => template.category === filter);
+    ? reactiveTemplates 
+    : reactiveTemplates.filter(template => template.category === filter);
 
   // Layout icons mapping
   const getLayoutIcon = (layout: string) => {
     switch (layout) {
-      case 'double-column': return Grid;
-      case 'ivy-league': return Layout;
-      case 'header-style': return FileText;
-      case 'timeline-style': return Zap;
-      case 'organic-sidebar': return Sparkles;
+      case 'two-column': return Grid;
+      case 'single-column': return Layout;
+      case 'header-footer': return FileText;
+      case 'sidebar': return Sparkles;
       default: return Layout;
     }
   };
 
-  const TemplatePreview: React.FC<{ template: ResumeTemplate }> = ({ template }) => {
-    const LayoutIcon = getLayoutIcon(template.layout);
+  const TemplatePreview: React.FC<{ template: TemplateConfig }> = ({ template }) => {
+    const LayoutIcon = getLayoutIcon(template.layout.type);
     
     return (
       <div className="w-full h-64 bg-white border rounded-lg overflow-hidden shadow-sm relative">
@@ -51,311 +50,21 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         <div className="absolute top-2 right-2 z-10">
           <div className="bg-black bg-opacity-70 text-white p-1 rounded flex items-center">
             <LayoutIcon className="w-3 h-3 mr-1" />
-            <span className="text-xs">{template.layout.replace('-', ' ')}</span>
+            <span className="text-xs">{template.layout.type.replace('-', ' ')}</span>
           </div>
         </div>
 
-        {/* Beige Professional Clean Template Preview */}
-        {template.id === 'beige-professional-clean' && (
-          <div className="h-full p-3" style={{ backgroundColor: template.colors.background }}>
-            <div className="bg-white rounded p-3 h-full">
-              {/* Header with photo and name */}
-              <div className="flex items-center mb-3">
-                <div className="w-6 h-6 rounded-full bg-gray-300 mr-2"></div>
-                <div>
-                  <div className="text-xs font-bold">{resumeData.personalInfo.name || 'Ed Walter'}</div>
-                </div>
-                <div className="ml-auto text-xs text-gray-500">Contact</div>
-              </div>
-              
-              {/* About Me section */}
-              <div className="mb-3">
-                <div className="text-xs font-bold mb-1" style={{ color: template.colors.accent }}>About Me</div>
-                <div className="space-y-1">
-                  <div className="h-1 bg-gray-200 rounded w-full"></div>
-                  <div className="h-1 bg-gray-200 rounded w-3/4"></div>
-                </div>
-              </div>
-              
-              {/* Two column layout */}
-              <div className="grid grid-cols-3 gap-2">
-                <div className="col-span-2 space-y-2">
-                  <div className="text-xs font-bold" style={{ color: template.colors.accent }}>Work Experience</div>
-                  <div className="space-y-1">
-                    <div className="text-xs font-medium">
-                      {resumeData.experience[0]?.position || 'Pharmacy Technician'}
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      {resumeData.experience[0]?.company || 'Boots Pharmacy'}
-                    </div>
-                    <div className="h-1 bg-gray-200 rounded w-2/3"></div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-xs font-bold" style={{ color: template.colors.accent }}>Skills</div>
-                  <div className="space-y-1">
-                    <div className="h-1 bg-gray-200 rounded w-full"></div>
-                    <div className="h-1 bg-gray-200 rounded w-3/4"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Soft Blue Elegant Template Preview - EXACT MATCH to your image */}
-        {template.id === 'soft-blue-elegant' && (
-          <div className="h-full p-3 relative">
-            {/* Decorative elements */}
-            <div className="absolute top-2 right-2 w-8 h-8 rounded-full opacity-20" 
-                 style={{ backgroundColor: template.colors.accent }}></div>
-            
-            {/* Header with name and photo */}
-            <div className="flex justify-between items-start mb-3">
-              <div className="flex-1">
-                <div className="text-sm font-bold text-gray-400 uppercase">
-                  {resumeData.personalInfo.name || 'YOUR NAME'}
-                </div>
-                <div className="text-xs" style={{ color: template.colors.accent }}>
-                  {resumeData.personalInfo.title || 'Role Title'}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">Phone • Email • LinkedIn • Location</div>
-              </div>
-              <div className="w-6 h-6 rounded-full bg-gray-300 ml-2">
-                {resumeData.personalInfo.photo && (
-                  <img src={resumeData.personalInfo.photo} alt="Profile" className="w-full h-full object-cover rounded-full" />
-                )}
-              </div>
-            </div>
-            
-            {/* Three column grid */}
-            <div className="grid grid-cols-12 gap-1 mt-2">
-              {/* Left column - Summary and Experience */}
-              <div className="col-span-7 space-y-2">
-                <div className="font-bold text-xs pb-1 border-b" style={{ color: template.colors.primary, borderColor: template.colors.primary }}>
-                  SUMMARY
-                </div>
-                <div className="space-y-1">
-                  <div className="h-1 bg-gray-200 rounded"></div>
-                  <div className="h-1 bg-gray-200 rounded w-3/4"></div>
-                </div>
-                
-                <div className="font-bold text-xs pb-1 border-b mt-2" style={{ color: template.colors.primary, borderColor: template.colors.primary }}>
-                  EXPERIENCE
-                </div>
-                <div className="space-y-1">
-                  <div className="text-xs font-medium">
-                    {resumeData.experience[0]?.position || 'Title'}
-                  </div>
-                  <div className="text-xs" style={{ color: template.colors.accent }}>
-                    {resumeData.experience[0]?.company || 'Company Name'}
-                  </div>
-                  <div className="h-1 bg-gray-200 rounded w-2/3"></div>
-                </div>
-              </div>
-              
-              {/* Right column - Key Achievements, Skills */}
-              <div className="col-span-5 space-y-2">
-                <div className="font-bold text-xs pb-1 border-b" style={{ color: template.colors.primary, borderColor: template.colors.primary }}>
-                  KEY ACHIEVEMENTS
-                </div>
-                <div className="h-1 bg-gray-200 rounded w-full"></div>
-                
-                <div className="font-bold text-xs pb-1 border-b mt-2" style={{ color: template.colors.primary, borderColor: template.colors.primary }}>
-                  SKILLS
-                </div>
-                <div className="space-y-1">
-                  <div className="h-1 bg-gray-200 rounded w-full"></div>
-                  <div className="h-1 bg-gray-200 rounded w-3/4"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Ivy League Classic Template Preview - EXACT MATCH */}
-        {template.id === 'ivy-league-classic' && (
-          <div className="h-full p-3 text-center">
-            <div className="w-8 h-8 rounded-full bg-gray-300 mx-auto mb-2">
-              {resumeData.personalInfo.photo && (
-                <img src={resumeData.personalInfo.photo} alt="Profile" className="w-full h-full object-cover rounded-full" />
-              )}
-            </div>
-            <div className="text-sm font-bold mb-1" style={{ color: template.colors.primary }}>
-              {resumeData.personalInfo.name || 'YOUR NAME'}
-            </div>
-            <div className="text-xs mb-2" style={{ color: template.colors.secondary }}>
-              {resumeData.personalInfo.title || 'Role Title'}
-            </div>
-            <div className="text-xs mb-3 text-gray-500">Phone • Email • LinkedIn • Location</div>
-            
-            <div className="space-y-2 text-xs">
-              <div className="font-semibold pb-1 border-b border-gray-800" style={{ color: template.colors.primary }}>Summary</div>
-              <div className="space-y-1">
-                <div className="h-1 bg-gray-200 rounded"></div>
-                <div className="h-1 bg-gray-200 rounded w-3/4 mx-auto"></div>
-              </div>
-              
-              <div className="font-semibold pb-1 border-b border-gray-800 mt-3" style={{ color: template.colors.primary }}>Experience</div>
-              <div className="space-y-1">
-                <div className="text-xs font-medium">
-                  {resumeData.experience[0]?.company || 'Company Name'}
-                </div>
-                <div className="text-xs" style={{ color: template.colors.secondary }}>
-                  {resumeData.experience[0]?.position || 'Title'}
-                </div>
-                <div className="h-1 bg-gray-200 rounded w-2/3 mx-auto"></div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Template preview based on layout and specific template */}
-        {template.id === 'green-organic-sidebar' && (
-          <div className="h-full flex">
-            {/* Left sidebar with organic shapes */}
-            <div className="w-1/3 p-3 relative" style={{ backgroundColor: template.colors.sidebar }}>
-              <div className="absolute top-2 left-2 w-8 h-8 rounded-full opacity-30" 
-                   style={{ backgroundColor: template.colors.accent }}></div>
-              <div className="absolute top-4 left-4 w-6 h-6 rounded-full opacity-20" 
-                   style={{ backgroundColor: template.colors.primary }}></div>
-              <div className="w-8 h-8 rounded-full bg-gray-300 mx-auto mb-2 relative z-10">
-                {resumeData.personalInfo.photo && (
-                  <img src={resumeData.personalInfo.photo} alt="Profile" className="w-full h-full object-cover rounded-full" />
-                )}
-              </div>
-              <div className="text-center text-xs space-y-2 relative z-10">
-                <div className="font-bold" style={{ color: template.colors.primary }}>CONTACTS</div>
-                <div className="space-y-1">
-                  <div className="text-xs">Phone</div>
-                  <div className="text-xs">Email</div>
-                  <div className="text-xs">LinkedIn</div>
-                </div>
-                <div className="font-bold mt-3" style={{ color: template.colors.primary }}>SKILLS</div>
-                <div className="space-y-1">
-                  <div className="h-1 bg-gray-300 rounded w-full"></div>
-                  <div className="h-1 bg-gray-300 rounded w-3/4"></div>
-                </div>
-              </div>
-            </div>
-            <div className="flex-1 p-3">
-              <div className="space-y-2">
-                <div className="text-lg font-bold" style={{ color: template.colors.text }}>
-                  {resumeData.personalInfo.name || 'YOUR NAME'}
-                </div>
-                <div className="inline-block px-2 py-1 rounded-full text-xs" 
-                     style={{ backgroundColor: template.colors.highlight, color: template.colors.primary }}>
-                  {resumeData.personalInfo.title || 'Role Title'}
-                </div>
-                <div className="space-y-2 mt-3">
-                  <div className="font-bold text-xs" style={{ color: template.colors.primary }}>SUMMARY</div>
-                  <div className="space-y-1">
-                    <div className="h-1 bg-gray-200 rounded"></div>
-                    <div className="h-1 bg-gray-200 rounded w-4/5"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {template.id === 'navy-header-professional' && (
-          <div className="h-full">
-            {/* Navy header */}
-            <div className="p-3" style={{ backgroundColor: template.colors.sidebar }}>
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="text-sm font-bold" style={{ color: template.colors.text }}>
-                    {resumeData.personalInfo.name || 'YOUR NAME'}
-                  </div>
-                  <div className="text-xs" style={{ color: template.colors.accent }}>
-                    {resumeData.personalInfo.title || 'Role Title'}
-                  </div>
-                  <div className="text-xs mt-1" style={{ color: template.colors.text }}>Contact Info</div>
-                </div>
-                <div className="w-6 h-6 rounded-full bg-gray-300">
-                  {resumeData.personalInfo.photo && (
-                    <img src={resumeData.personalInfo.photo} alt="Profile" className="w-full h-full object-cover rounded-full" />
-                  )}
-                </div>
-              </div>
-            </div>
-            {/* Content area */}
-            <div className="p-3">
-              <div className="space-y-2">
-                <div className="font-bold text-xs pb-1 border-b" style={{ color: template.colors.primary, borderColor: template.colors.primary }}>
-                  SUMMARY
-                </div>
-                <div className="space-y-1">
-                  <div className="h-1 bg-gray-200 rounded"></div>
-                  <div className="h-1 bg-gray-200 rounded w-3/4"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Default preview for other templates */}
-        {!['ivy-league-classic', 'green-organic-sidebar', 'navy-header-professional', 'orange-timeline-modern', 'blue-sidebar-clean', 'soft-blue-elegant', 'beige-professional-clean'].includes(template.id) && (
-          <div className="h-full flex">
-            {template.layout === 'double-column' ? (
-              <>
-                <div className="flex-1 p-3">
-                  <div className="space-y-2">
-                    <div className="text-lg font-bold" style={{ color: template.colors.primary }}>
-                      {resumeData.personalInfo.name || 'YOUR NAME'}
-                    </div>
-                    <div className="text-sm" style={{ color: template.colors.accent }}>
-                      {resumeData.personalInfo.title || 'Role Title'}
-                    </div>
-                    <div className="space-y-2 mt-3">
-                      <div className="font-bold text-xs" style={{ color: template.colors.text }}>SUMMARY</div>
-                      <div className="space-y-1">
-                        <div className="h-1 bg-gray-200 rounded"></div>
-                        <div className="h-1 bg-gray-200 rounded w-4/5"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="w-1/3 p-3" style={{ backgroundColor: template.colors.sidebar }}>
-                  <div className="w-8 h-8 rounded-full bg-gray-300 mx-auto mb-2">
-                    {resumeData.personalInfo.photo && (
-                      <img src={resumeData.personalInfo.photo} alt="Profile" className="w-full h-full object-cover rounded-full" />
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <div className="font-bold text-xs" style={{ color: template.colors.text }}>SKILLS</div>
-                    <div className="space-y-1">
-                      <div className="h-1 bg-gray-300 rounded w-full"></div>
-                      <div className="h-1 bg-gray-300 rounded w-3/4"></div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="w-full p-3 text-center">
-                <div className="w-8 h-8 rounded-full bg-gray-300 mx-auto mb-2">
-                  {resumeData.personalInfo.photo && (
-                    <img src={resumeData.personalInfo.photo} alt="Profile" className="w-full h-full object-cover rounded-full" />
-                  )}
-                </div>
-                <div className="text-sm font-bold mb-1" style={{ color: template.colors.primary }}>
-                  {resumeData.personalInfo.name || 'YOUR NAME'}
-                </div>
-                <div className="text-xs mb-3" style={{ color: template.colors.secondary }}>
-                  {resumeData.personalInfo.title || 'Role Title'}
-                </div>
-                <div className="space-y-2 text-xs">
-                  <div className="font-semibold" style={{ color: template.colors.primary }}>Summary</div>
-                  <div className="space-y-1">
-                    <div className="h-1 bg-gray-200 rounded"></div>
-                    <div className="h-1 bg-gray-200 rounded w-3/4 mx-auto"></div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Template Preview using TemplateRenderer */}
+        <div className="h-full transform scale-[0.3] origin-top-left w-[333%] overflow-hidden">
+          <TemplateRenderer
+            context={{
+              data: resumeData,
+              config: template,
+              customizations: {}
+            }}
+            className="template-preview"
+          />
+        </div>
       </div>
     );
   };
@@ -407,7 +116,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           {[
             { key: 'all', label: 'All Templates' },
             { key: 'modern', label: 'Modern' },
-            { key: 'classic', label: 'Classic' },
+            { key: 'professional', label: 'Professional' },
             { key: 'creative', label: 'Creative' },
             { key: 'minimal', label: 'Minimal' }
           ].map((tab) => (
@@ -428,7 +137,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         {/* Templates Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {filteredTemplates.map((template) => {
-            const LayoutIcon = getLayoutIcon(template.layout);
+            const LayoutIcon = getLayoutIcon(template.layout.type);
             
             return (
               <div
@@ -475,22 +184,22 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center text-xs text-gray-400">
                       <LayoutIcon className="w-3 h-3 mr-1" />
-                      <span>{template.layout.replace('-', ' ')}</span>
+                      <span>{template.layout.type.replace('-', ' ')}</span>
                     </div>
                     
                     {/* Color Palette */}
                     <div className="flex space-x-1">
                       <div 
                         className="w-4 h-4 rounded-full border border-gray-200"
-                        style={{ backgroundColor: template.colors.primary }}
+                        style={{ backgroundColor: template.layout.styles.colors.primary }}
                       />
                       <div 
                         className="w-4 h-4 rounded-full border border-gray-200"
-                        style={{ backgroundColor: template.colors.secondary }}
+                        style={{ backgroundColor: template.layout.styles.colors.secondary }}
                       />
                       <div 
                         className="w-4 h-4 rounded-full border border-gray-200"
-                        style={{ backgroundColor: template.colors.accent }}
+                        style={{ backgroundColor: template.layout.styles.colors.accent }}
                       />
                     </div>
                   </div>
@@ -523,7 +232,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
               <div className="p-6 border-b border-gray-200 flex items-center justify-between">
                 <h3 className="text-lg font-semibold">
-                  {resumeTemplates.find(t => t.id === previewTemplate)?.name} Preview
+                  {reactiveTemplates.find(t => t.id === previewTemplate)?.name} Preview
                 </h3>
                 <button
                   onClick={() => setPreviewTemplate(null)}
@@ -534,13 +243,15 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               </div>
               <div className="p-6 overflow-y-auto max-h-[70vh]">
                 <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                  <ResumePreview
-                    resumeData={resumeData}
-                    template={previewTemplate}
-                    customColors={resumeTemplates.find(t => t.id === previewTemplate)?.colors}
-                    font="Inter"
-                    sectionOrder={['summary', 'experience', 'education', 'skills', 'certifications']}
-                  />
+                  {reactiveTemplates.find(t => t.id === previewTemplate) && (
+                    <TemplateRenderer
+                      context={{
+                        data: resumeData,
+                        config: reactiveTemplates.find(t => t.id === previewTemplate)!,
+                        customizations: {}
+                      }}
+                    />
+                  )}
                 </div>
               </div>
             </div>

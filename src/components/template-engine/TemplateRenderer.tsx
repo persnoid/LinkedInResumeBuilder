@@ -51,7 +51,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
       return null;
     }
 
-    const sectionData = data[section.id] || {};
+    const sectionData = data;
     const sectionStyles = {
       ...section.styles,
       ...customizations.sections?.[section.id]?.styles,

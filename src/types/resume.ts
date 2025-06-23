@@ -61,24 +61,8 @@ export interface ResumeData {
   languages?: Language[];
 }
 
-export interface ResumeTemplate {
-  id: string;
-  name: string;
-  description: string;
-  category: 'modern' | 'classic' | 'creative' | 'minimal';
-  layout: 'double-column' | 'ivy-league' | 'header-style' | 'timeline-style' | 'organic-sidebar';
-  colors: {
-    primary: string;
-    secondary: string;
-    accent: string;
-    text: string;
-    background: string;
-    sidebar?: string;
-    highlight?: string;
-    subtle?: string;
-  };
-  preview: string;
-}
+// Re-export template types
+export * from './template';
 
 export interface DraftResume {
   id: string;
@@ -86,13 +70,16 @@ export interface DraftResume {
   resumeData: ResumeData;
   selectedTemplate: string;
   customizations: {
-    colors: {
-      primary: string;
-      secondary: string;
-      accent: string;
+    colors?: {
+      primary?: string;
+      secondary?: string;
+      accent?: string;
     };
-    font: string;
-    sectionOrder: string[];
+    typography?: {
+      fontFamily?: string;
+    };
+    spacing?: any;
+    sections?: any;
   };
   createdAt: string;
   updatedAt: string;
@@ -104,12 +91,15 @@ export interface AppState {
   resumeData: ResumeData;
   selectedTemplate: string;
   customizations: {
-    colors: {
-      primary: string;
-      secondary: string;
-      accent: string;
+    colors?: {
+      primary?: string;
+      secondary?: string;
+      accent?: string;
     };
-    font: string;
-    sectionOrder: string[];
+    typography?: {
+      fontFamily?: string;
+    };
+    spacing?: any;
+    sections?: any;
   };
 }

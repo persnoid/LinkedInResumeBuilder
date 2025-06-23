@@ -309,11 +309,6 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Live Preview</h3>
             <p className="text-gray-600">See how your resume looks with your customizations</p>
-            
-            {/* Debug info */}
-            <div className="mt-2 text-xs text-gray-500">
-              Template: {selectedTemplate} | Colors: {JSON.stringify(currentColors)}
-            </div>
           </div>
           
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">

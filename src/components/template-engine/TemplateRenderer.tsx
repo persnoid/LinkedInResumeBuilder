@@ -185,12 +185,15 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         lineHeight: styles.typography.lineHeight.normal,
         color: styles.colors.text,
         backgroundColor: styles.colors.background,
-        width: '794px',
-        minHeight: isPreview ? '1123px' : '297mm',
-        maxWidth: isPreview ? 'none' : '794px',
+        width: isPreview ? '100%' : '794px',
+        height: isPreview ? '100%' : 'auto',
+        minHeight: isPreview ? '100%' : '297mm',
+        maxWidth: isPreview ? '100%' : '794px',
         margin: isPreview ? '0' : '0 auto',
         boxShadow: isPreview ? 'none' : '0 0 10px rgba(0, 0, 0, 0.1)',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        transform: isPreview ? 'scale(1)' : 'scale(1)',
+        transformOrigin: 'top left'
       }}
     >
       {renderLayout()}

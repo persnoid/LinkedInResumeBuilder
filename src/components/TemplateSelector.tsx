@@ -56,14 +56,14 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
         {/* Template Preview Container */}
         <div className="w-full h-full relative overflow-hidden bg-gray-50">
-          {/* Scaled down template preview */}
+          {/* Properly scaled template preview */}
           <div 
-            className="absolute top-0 left-0 origin-top-left bg-white shadow-sm"
+            className="absolute top-0 left-0 bg-white shadow-sm"
             style={{
-              transform: 'scale(0.25)',
+              transform: 'scale(0.3)',
+              transformOrigin: 'top left',
               width: '794px',
               height: '1123px',
-              transformOrigin: 'top left'
             }}
           >
             <TemplateRenderer

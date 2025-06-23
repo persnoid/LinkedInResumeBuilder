@@ -91,11 +91,11 @@ export const reactiveTemplates: TemplateConfig[] = [
         typography: {
           fontFamily: 'Inter, sans-serif',
           fontSize: {
-            base: '10px',
-            heading1: '24px',
-            heading2: '18px',
-            heading3: '14px',
-            small: '9px'
+            base: '12px',
+            heading1: '28px',
+            heading2: '20px',
+            heading3: '16px',
+            small: '11px'
           },
           lineHeight: {
             tight: '1.2',
@@ -201,11 +201,11 @@ export const reactiveTemplates: TemplateConfig[] = [
         typography: {
           fontFamily: 'Inter, sans-serif',
           fontSize: {
-            base: '10px',
-            heading1: '28px',
-            heading2: '20px',
-            heading3: '14px',
-            small: '9px'
+            base: '12px',
+            heading1: '32px',
+            heading2: '22px',
+            heading3: '16px',
+            small: '11px'
           },
           lineHeight: {
             tight: '1.2',
@@ -311,11 +311,11 @@ export const reactiveTemplates: TemplateConfig[] = [
         typography: {
           fontFamily: 'Inter, sans-serif',
           fontSize: {
-            base: '10px',
-            heading1: '32px',
-            heading2: '22px',
-            heading3: '16px',
-            small: '9px'
+            base: '12px',
+            heading1: '36px',
+            heading2: '24px',
+            heading3: '18px',
+            small: '11px'
           },
           lineHeight: {
             tight: '1.2',
@@ -430,11 +430,11 @@ export const reactiveTemplates: TemplateConfig[] = [
         typography: {
           fontFamily: 'Inter, sans-serif',
           fontSize: {
-            base: '10px',
-            heading1: '26px',
-            heading2: '19px',
-            heading3: '14px',
-            small: '9px'
+            base: '12px',
+            heading1: '30px',
+            heading2: '21px',
+            heading3: '16px',
+            small: '11px'
           },
           lineHeight: {
             tight: '1.2',
@@ -534,11 +534,11 @@ export const reactiveTemplates: TemplateConfig[] = [
         typography: {
           fontFamily: 'Inter, sans-serif',
           fontSize: {
-            base: '10px',
-            heading1: '30px',
-            heading2: '21px',
-            heading3: '15px',
-            small: '9px'
+            base: '12px',
+            heading1: '34px',
+            heading2: '23px',
+            heading3: '17px',
+            small: '11px'
           },
           lineHeight: {
             tight: '1.2',
@@ -638,11 +638,11 @@ export const reactiveTemplates: TemplateConfig[] = [
         typography: {
           fontFamily: 'Inter, sans-serif',
           fontSize: {
-            base: '10px',
-            heading1: '32px',
-            heading2: '22px',
-            heading3: '16px',
-            small: '9px'
+            base: '12px',
+            heading1: '36px',
+            heading2: '24px',
+            heading3: '18px',
+            small: '11px'
           },
           lineHeight: {
             tight: '1.2',
@@ -742,11 +742,11 @@ export const reactiveTemplates: TemplateConfig[] = [
         typography: {
           fontFamily: 'Inter, sans-serif',
           fontSize: {
-            base: '10px',
-            heading1: '28px',
-            heading2: '20px',
-            heading3: '15px',
-            small: '9px'
+            base: '12px',
+            heading1: '32px',
+            heading2: '22px',
+            heading3: '17px',
+            small: '11px'
           },
           lineHeight: {
             tight: '1.2',
@@ -852,11 +852,11 @@ export const reactiveTemplates: TemplateConfig[] = [
         typography: {
           fontFamily: 'Inter, sans-serif',
           fontSize: {
-            base: '10px',
-            heading1: '28px',
-            heading2: '20px',
-            heading3: '14px',
-            small: '9px'
+            base: '12px',
+            heading1: '32px',
+            heading2: '22px',
+            heading3: '16px',
+            small: '11px'
           },
           lineHeight: {
             tight: '1.2',
@@ -956,11 +956,11 @@ export const reactiveTemplates: TemplateConfig[] = [
         typography: {
           fontFamily: 'Inter, sans-serif',
           fontSize: {
-            base: '10px',
-            heading1: '30px',
-            heading2: '21px',
-            heading3: '15px',
-            small: '9px'
+            base: '12px',
+            heading1: '34px',
+            heading2: '23px',
+            heading3: '17px',
+            small: '11px'
           },
           lineHeight: {
             tight: '1.2',

@@ -30,6 +30,15 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
   const { config, data, customizations } = context;
   const { layout } = config;
 
+  // Add error boundary and fallback
+  if (!data || !config) {
+    return (
+      <div className="p-8 text-center text-gray-500">
+        <p>Loading resume preview...</p>
+      </div>
+    );
+  }
+
   // Merge default styles with customizations
   const styles = {
     ...layout.styles,
@@ -114,13 +123,12 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         const sidebarSections = sortedSections.filter(s => s.columns === 2);
         
         return (
-          <div className="template-sidebar flex">
-            <div className="template-sidebar-content flex-1" style={{ paddingRight: styles.spacing.section }}>
+          <div className="template-sidebar flex h-full">
+            <div className="template-sidebar-content flex-1 p-8">
               {mainSections.map(renderSection)}
             </div>
-            <div className="template-sidebar-aside w-1/3" style={{ 
+            <div className="template-sidebar-aside w-1/3 p-6" style={{ 
               backgroundColor: styles.colors.muted,
-              padding: styles.spacing.section,
             }}>
               {sidebarSections.map(renderSection)}
             </div>
@@ -135,22 +143,18 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         return (
           <div className="template-header-footer">
             {headerSections.length > 0 && (
-              <div className="template-header" style={{ 
+              <div className="template-header p-8" style={{ 
                 backgroundColor: styles.colors.primary,
                 color: styles.colors.background,
-                padding: styles.spacing.section,
-                marginBottom: styles.spacing.section,
               }}>
                 {headerSections.map(renderSection)}
               </div>
             )}
-            <div className="template-body">
+            <div className="template-body p-8">
               {bodySections.map(renderSection)}
             </div>
             {footerSections.length > 0 && (
-              <div className="template-footer" style={{ 
-                marginTop: styles.spacing.section,
-                padding: styles.spacing.section,
+              <div className="template-footer p-8" style={{ 
                 borderTop: `1px solid ${styles.colors.border}`,
               }}>
                 {footerSections.map(renderSection)}
@@ -161,21 +165,12 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
 
       default:
         return (
-          <div className="template-default">
+          <div className="template-default p-8">
             {sortedSections.map(renderSection)}
           </div>
         );
     }
   };
-
-  // Add error boundary and fallback
-  if (!data || !config) {
-    return (
-      <div className="p-8 text-center text-gray-500">
-        <p>Loading resume preview...</p>
-      </div>
-    );
-  }
 
   return (
     <div
@@ -187,11 +182,11 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         lineHeight: styles.typography.lineHeight.normal,
         color: styles.colors.text,
         backgroundColor: styles.colors.background,
-        padding: styles.page.padding,
-        margin: styles.page.margin,
         minHeight: '297mm',
         width: '210mm',
         maxWidth: '794px',
+        margin: '0 auto',
+        boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
       }}
     >
       {renderLayout()}

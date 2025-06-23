@@ -45,7 +45,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     const LayoutIcon = getLayoutIcon(template.layout.type);
     
     return (
-      <div className="w-full h-64 bg-white border rounded-lg overflow-hidden shadow-sm relative">
+      <div className="w-full h-80 bg-white border rounded-lg overflow-hidden shadow-sm relative">
         {/* Layout indicator */}
         <div className="absolute top-2 right-2 z-10">
           <div className="bg-black bg-opacity-70 text-white p-1 rounded flex items-center">
@@ -55,7 +55,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         </div>
 
         {/* Template Preview using TemplateRenderer */}
-        <div className="h-full transform scale-[0.3] origin-top-left w-[333%] overflow-hidden">
+        <div className="h-full transform scale-[0.25] origin-top-left w-[400%] overflow-hidden">
           <TemplateRenderer
             context={{
               data: resumeData,

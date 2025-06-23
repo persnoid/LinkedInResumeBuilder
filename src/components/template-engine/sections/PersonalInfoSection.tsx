@@ -27,7 +27,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   ].filter(item => item.value);
 
   const renderCompact = () => (
-    <div className="personal-info-compact text-center">
+    <div className="personal-info-compact text-center mb-6">
       {personalInfo.photo && (
         <div className="photo-container mb-4 flex justify-center">
           <img
@@ -46,7 +46,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
           lineHeight: styles.typography.lineHeight.tight,
         }}
       >
-        {personalInfo.name}
+        {personalInfo.name || 'John Doe'}
       </h1>
       <h2 
         className="title mb-4"
@@ -55,7 +55,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
           color: styles.colors.secondary,
         }}
       >
-        {personalInfo.title}
+        {personalInfo.title || 'Professional Title'}
       </h2>
       <div className="contact-info flex flex-wrap justify-center gap-4 text-sm">
         {contactItems.map((item, index) => (
@@ -69,35 +69,35 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   );
 
   const renderSidebar = () => (
-    <div className="personal-info-sidebar">
+    <div className="personal-info-sidebar mb-6">
       {personalInfo.photo && (
-        <div className="photo-container mb-4">
+        <div className="photo-container mb-4 flex justify-center">
           <img
             src={personalInfo.photo}
             alt="Profile"
-            className="w-full max-w-32 rounded-full object-cover border-2 mx-auto"
+            className="w-24 h-24 rounded-full object-cover border-2"
             style={{ borderColor: styles.colors.primary }}
           />
         </div>
       )}
       <h1 
-        className="name font-bold mb-2"
+        className="name font-bold mb-2 text-center"
         style={{ 
           fontSize: styles.typography.fontSize.heading1,
           color: styles.colors.primary,
           lineHeight: styles.typography.lineHeight.tight,
         }}
       >
-        {personalInfo.name}
+        {personalInfo.name || 'John Doe'}
       </h1>
       <h2 
-        className="title mb-4"
+        className="title mb-4 text-center"
         style={{ 
           fontSize: styles.typography.fontSize.heading2,
           color: styles.colors.secondary,
         }}
       >
-        {personalInfo.title}
+        {personalInfo.title || 'Professional Title'}
       </h2>
       <div className="contact-info space-y-2">
         {contactItems.map((item, index) => (
@@ -111,7 +111,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   );
 
   const renderHeader = () => (
-    <div className="personal-info-header flex items-center justify-between">
+    <div className="personal-info-header flex items-center justify-between mb-6">
       <div className="info-content">
         <h1 
           className="name font-bold mb-2"
@@ -121,7 +121,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
             lineHeight: styles.typography.lineHeight.tight,
           }}
         >
-          {personalInfo.name}
+          {personalInfo.name || 'John Doe'}
         </h1>
         <h2 
           className="title mb-4"
@@ -130,7 +130,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
             color: styles.colors.accent,
           }}
         >
-          {personalInfo.title}
+          {personalInfo.title || 'Professional Title'}
         </h2>
         <div className="contact-info flex flex-wrap gap-6 text-sm">
           {contactItems.map((item, index) => (

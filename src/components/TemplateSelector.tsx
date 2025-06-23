@@ -42,18 +42,8 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   };
 
   const TemplatePreview: React.FC<{ template: TemplateConfig }> = ({ template }) => {
-    const LayoutIcon = getLayoutIcon(template.layout.type);
-    
     return (
-      <div className="w-full h-80 bg-white border rounded-xl overflow-hidden shadow-sm relative group hover:shadow-lg transition-all duration-300">
-        {/* Layout indicator */}
-        <div className="absolute top-3 right-3 z-20">
-          <div className="bg-black bg-opacity-70 text-white px-2 py-1 rounded-md flex items-center text-xs font-medium">
-            <LayoutIcon className="w-3 h-3 mr-1" />
-            <span>{template.layout.type.replace('-', ' ')}</span>
-          </div>
-        </div>
-
+      <div className="w-full h-80 bg-white border rounded-xl overflow-hidden shadow-sm relative">
         {/* Template Preview Container - Exact fit with no extra space */}
         <div 
           className="w-full h-full bg-gray-50 overflow-hidden"

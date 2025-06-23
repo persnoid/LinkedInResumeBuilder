@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ProgressIndicator } from './components/ProgressIndicator';
 import { LinkedInInput } from './components/LinkedInInput';
-import { DataReview } from './components/DataReview';
 import { TemplateSelector } from './components/TemplateSelector';
 import { ResumeCustomizer } from './components/ResumeCustomizer';
 import { DraftManagerComponent } from './components/DraftManager';
@@ -13,7 +12,6 @@ import { ResumeData, DraftResume } from './types/resume';
 
 const STEPS = [
   'LinkedIn Input',
-  'Review Data',
   'Choose Template',
   'Customize & Export'
 ];
@@ -86,13 +84,13 @@ function App() {
       // Determine the next step based on draft progress
       let nextStep = draft.step;
       
-      // If we're on step 0 (LinkedIn Input) and have data, move to step 1 (Review Data)
+      // If we're on step 0 (LinkedIn Input) and have data, move to step 1 (Template Selection)
       if (nextStep === 0 && draft.resumeData) {
         nextStep = 1;
       }
       
       // Ensure step is within valid range
-      nextStep = Math.max(0, Math.min(3, nextStep));
+      nextStep = Math.max(0, Math.min(2, nextStep));
       
       console.log('Transitioning to step:', nextStep);
       
@@ -126,10 +124,9 @@ function App() {
     setResumeData(data);
     setCurrentDraftId(null); // Clear current draft when new data is loaded
     DraftManager.clearCurrentDraft();
-  };
-
-  const handleDataUpdate = (data: ResumeData) => {
-    setResumeData(data);
+    
+    // Automatically move to template selection after data is parsed
+    setCurrentStep(1);
   };
 
   const handleTemplateSelect = (templateId: string) => {
@@ -180,7 +177,7 @@ function App() {
 
   const nextStep = () => {
     if (currentStep < STEPS.length - 1) {
-      // Show save prompt when moving from data review step
+      // Show save prompt when moving from template selection step
       if (currentStep === 1 && resumeData && !currentDraftId) {
         setShowSavePrompt(true);
         return;
@@ -264,9 +261,10 @@ function App() {
         );
       case 1:
         return resumeData ? (
-          <DataReview
+          <TemplateSelector
             resumeData={resumeData}
-            onDataUpdate={handleDataUpdate}
+            selectedTemplate={selectedTemplate}
+            onTemplateSelect={handleTemplateSelect}
             onNext={nextStep}
             onBack={prevStep}
             onSaveDraft={() => setShowSavePrompt(true)}
@@ -281,17 +279,6 @@ function App() {
           </div>
         );
       case 2:
-        return resumeData ? (
-          <TemplateSelector
-            selectedTemplate={selectedTemplate}
-            onTemplateSelect={handleTemplateSelect}
-            onNext={nextStep}
-            onBack={prevStep}
-            onSaveDraft={() => setShowSavePrompt(true)}
-            currentDraftId={currentDraftId}
-          />
-        ) : null;
-      case 3:
         return resumeData ? (
           <ResumeCustomizer
             resumeData={resumeData}

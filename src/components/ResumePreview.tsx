@@ -35,6 +35,435 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                     font === 'Playfair Display' ? 'Playfair Display, serif' :
                     font === 'Merriweather' ? 'Merriweather, serif' : 'Inter, sans-serif';
 
+  // Skill Focus Template - EXACT MATCH to image
+  if (template === 'skill-focus') {
+    return (
+      <div id="resume-preview" className="a4-page bg-white p-8" style={{ fontFamily }}>
+        <div className="flex">
+          {/* Left Column */}
+          <div className="w-1/3 pr-6">
+            {/* Profile Photo */}
+            <div className="mb-6">
+              <div className="w-20 h-20 rounded-lg bg-gray-300 flex items-center justify-center overflow-hidden">
+                {resumeData.personalInfo.photo ? (
+                  <img src={resumeData.personalInfo.photo} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-10 h-10 text-gray-400" />
+                )}
+              </div>
+            </div>
+
+            {/* Contact Information */}
+            <div className="mb-8">
+              <div className="flex items-center mb-3">
+                <div className="w-3 h-3 rounded-full mr-3" style={{ backgroundColor: colors.primary }}></div>
+                <h3 className="font-bold text-sm" style={{ color: colors.primary }}>Contact Information</h3>
+              </div>
+              <div className="space-y-2 text-xs">
+                <div>
+                  <div className="font-medium text-gray-800">Email</div>
+                  <div className="text-gray-600">{resumeData.personalInfo.email}</div>
+                </div>
+                <div>
+                  <div className="font-medium text-gray-800">Phone</div>
+                  <div className="text-gray-600">{resumeData.personalInfo.phone}</div>
+                </div>
+                <div>
+                  <div className="font-medium text-gray-800">Location</div>
+                  <div className="text-gray-600">{resumeData.personalInfo.location}</div>
+                </div>
+                <div>
+                  <div className="font-medium text-gray-800">LinkedIn</div>
+                  <div className="text-gray-600 break-all">{resumeData.personalInfo.linkedin}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Languages */}
+            <div className="mb-8">
+              <div className="flex items-center mb-3">
+                <div className="w-3 h-3 rounded-full mr-3" style={{ backgroundColor: colors.primary }}></div>
+                <h3 className="font-bold text-sm" style={{ color: colors.primary }}>Languages</h3>
+              </div>
+              <div className="space-y-2">
+                {resumeData.languages && resumeData.languages.length > 0 ? resumeData.languages.map((lang) => (
+                  <div key={lang.id} className="text-xs">
+                    <div className="font-medium text-gray-800">{lang.name}</div>
+                    <div className="text-gray-600">{lang.level}</div>
+                  </div>
+                )) : (
+                  <div className="text-xs">
+                    <div className="font-medium text-gray-800">English</div>
+                    <div className="text-gray-600">Native</div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Skills */}
+            <div>
+              <div className="flex items-center mb-3">
+                <div className="w-3 h-3 rounded-full mr-3" style={{ backgroundColor: colors.primary }}></div>
+                <h3 className="font-bold text-sm" style={{ color: colors.primary }}>Skills</h3>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <div className="font-medium text-xs text-gray-800 mb-1">Software Skills</div>
+                  <div className="space-y-1">
+                    {resumeData.skills.slice(0, 5).map((skill) => (
+                      <div key={skill.id} className="text-xs text-gray-600">• {skill.name}</div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="font-medium text-xs text-gray-800 mb-1">Technical Skills</div>
+                  <div className="space-y-1">
+                    {resumeData.skills.slice(5, 10).map((skill) => (
+                      <div key={skill.id} className="text-xs text-gray-600">• {skill.name}</div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="flex-1">
+            {/* Header */}
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold mb-2" style={{ color: colors.primary }}>
+                {resumeData.personalInfo.name || 'Daniel Clark'}
+              </h1>
+              <div className="text-sm text-gray-600 mb-1">{resumeData.personalInfo.title || 'Contact Number'}</div>
+              <div className="text-xs text-gray-500">Email | Residential Location | Nationality</div>
+            </div>
+
+            {/* About Me */}
+            <div className="mb-6">
+              <div className="flex items-center mb-3">
+                <div className="w-3 h-3 rounded-full mr-3" style={{ backgroundColor: colors.primary }}></div>
+                <h3 className="font-bold text-sm" style={{ color: colors.primary }}>About Me</h3>
+              </div>
+              <p className="text-xs leading-relaxed text-gray-700">
+                {resumeData.summary || 'I am a marketing specialist with 4 years of experience in developing strategic marketing campaigns and brand management. I have successfully led cross-functional teams to deliver impactful marketing initiatives that drive business growth. My expertise includes digital marketing, content creation, and data analysis to optimize campaign performance.'}
+              </p>
+            </div>
+
+            {/* Work Experience */}
+            <div className="mb-6">
+              <div className="flex items-center mb-3">
+                <div className="w-3 h-3 rounded-full mr-3" style={{ backgroundColor: colors.primary }}></div>
+                <h3 className="font-bold text-sm" style={{ color: colors.primary }}>Work Experience</h3>
+              </div>
+              <div className="space-y-4">
+                {resumeData.experience.length > 0 ? resumeData.experience.map((exp) => (
+                  <div key={exp.id}>
+                    <div className="font-bold text-xs text-gray-800">{exp.position}</div>
+                    <div className="text-xs text-gray-600 mb-1">{exp.company}</div>
+                    <div className="text-xs text-gray-500 mb-2">{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</div>
+                    <ul className="text-xs text-gray-700 space-y-1">
+                      {exp.description.map((desc, index) => (
+                        <li key={index}>• {desc}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )) : (
+                  <div>
+                    <div className="font-bold text-xs text-gray-800">Formulation Scientist</div>
+                    <div className="text-xs text-gray-600 mb-1">Supporting Operations</div>
+                    <div className="text-xs text-gray-500 mb-2">Jan 2019 - Present</div>
+                    <ul className="text-xs text-gray-700 space-y-1">
+                      <li>• Developed and optimized product formulations for commercial production</li>
+                      <li>• Collaborated with cross-functional teams to ensure product quality and compliance</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Education */}
+            <div>
+              <div className="flex items-center mb-3">
+                <div className="w-3 h-3 rounded-full mr-3" style={{ backgroundColor: colors.primary }}></div>
+                <h3 className="font-bold text-sm" style={{ color: colors.primary }}>Education</h3>
+              </div>
+              <div className="space-y-3">
+                {resumeData.education.length > 0 ? resumeData.education.map((edu) => (
+                  <div key={edu.id}>
+                    <div className="font-bold text-xs text-gray-800">{edu.school}</div>
+                    <div className="text-xs text-gray-600">{edu.degree}</div>
+                    <div className="text-xs text-gray-500">{edu.startDate} - {edu.endDate}</div>
+                  </div>
+                )) : (
+                  <div>
+                    <div className="font-bold text-xs text-gray-800">University of Massachusetts Boston, MA</div>
+                    <div className="text-xs text-gray-600">Ph.D. in Biochemical Sciences</div>
+                    <div className="text-xs text-gray-500">2015 - 2019</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Profile Plus Template - EXACT MATCH to image
+  if (template === 'profile-plus') {
+    return (
+      <div id="resume-preview" className="a4-page bg-white p-8" style={{ fontFamily }}>
+        {/* Header with Photo */}
+        <div className="text-center mb-8">
+          <div className="w-24 h-24 rounded-full bg-gray-300 mx-auto mb-4 flex items-center justify-center overflow-hidden border-4 border-gray-200">
+            {resumeData.personalInfo.photo ? (
+              <img src={resumeData.personalInfo.photo} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-12 h-12 text-gray-400" />
+            )}
+          </div>
+          <h1 className="text-2xl font-bold mb-2 text-gray-800">
+            {resumeData.personalInfo.name || 'Samantha Davis'}
+          </h1>
+          <div className="text-sm text-gray-600 mb-4">Contact Information</div>
+          
+          {/* Contact Grid */}
+          <div className="grid grid-cols-2 gap-4 text-xs text-gray-600 mb-6">
+            <div>
+              <div className="font-medium">Contact Number</div>
+              <div>{resumeData.personalInfo.phone || '(555) 123-4567'}</div>
+            </div>
+            <div>
+              <div className="font-medium">Email</div>
+              <div>{resumeData.personalInfo.email || 'samantha.davis@email.com'}</div>
+            </div>
+            <div>
+              <div className="font-medium">Residential Location</div>
+              <div>{resumeData.personalInfo.location || 'Boston, MA'}</div>
+            </div>
+            <div>
+              <div className="font-medium">Date of Birth</div>
+              <div>July 22 1995</div>
+            </div>
+          </div>
+        </div>
+
+        {/* About Me */}
+        <div className="mb-6">
+          <h2 className="text-lg font-bold mb-3 text-center" style={{ color: colors.primary }}>About Me</h2>
+          <p className="text-xs leading-relaxed text-gray-700 text-center">
+            {resumeData.summary || 'I am a skilled Business Analyst with 5 years of experience in leveraging analytical insights and data-driven solutions to drive business growth. I have a strong track record of collaborating with cross-functional teams to identify opportunities for process improvement and strategic initiatives. My expertise includes data analysis, project management, and stakeholder communication to deliver impactful business solutions.'}
+          </p>
+        </div>
+
+        {/* Work Experience */}
+        <div className="mb-6">
+          <h2 className="text-lg font-bold mb-3 text-center" style={{ color: colors.primary }}>Work Experience</h2>
+          <div className="space-y-4">
+            {resumeData.experience.length > 0 ? resumeData.experience.map((exp) => (
+              <div key={exp.id} className="text-center">
+                <div className="font-bold text-sm text-gray-800">{exp.position}</div>
+                <div className="text-xs text-gray-600 mb-1">{exp.company}</div>
+                <div className="text-xs text-gray-500 mb-2">{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</div>
+                <div className="text-xs text-gray-700">
+                  {exp.description.join('. ')}
+                </div>
+              </div>
+            )) : (
+              <div className="text-center">
+                <div className="font-bold text-sm text-gray-800">Business Analyst</div>
+                <div className="text-xs text-gray-600 mb-1">Tech Solutions Inc.</div>
+                <div className="text-xs text-gray-500 mb-2">Jan 2020 - Present</div>
+                <div className="text-xs text-gray-700">
+                  Conducted comprehensive data analysis to identify business opportunities and process improvements.
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Education */}
+        <div className="mb-6">
+          <h2 className="text-lg font-bold mb-3 text-center" style={{ color: colors.primary }}>Education</h2>
+          <div className="grid grid-cols-2 gap-4">
+            {resumeData.education.length > 0 ? resumeData.education.map((edu) => (
+              <div key={edu.id} className="text-center">
+                <div className="font-bold text-xs text-gray-800">{edu.school}</div>
+                <div className="text-xs text-gray-600">{edu.degree}</div>
+                <div className="text-xs text-gray-500">{edu.startDate} - {edu.endDate}</div>
+              </div>
+            )) : (
+              <>
+                <div className="text-center">
+                  <div className="font-bold text-xs text-gray-800">University of California, Los Angeles</div>
+                  <div className="text-xs text-gray-600">Bachelor of Business</div>
+                  <div className="text-xs text-gray-500">2013 - 2017</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-bold text-xs text-gray-800">Association of Certified Research Professionals (ACRP)</div>
+                  <div className="text-xs text-gray-600">Certificate in Research</div>
+                  <div className="text-xs text-gray-500">2018</div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Skills */}
+        <div>
+          <h2 className="text-lg font-bold mb-3 text-center" style={{ color: colors.primary }}>Skills</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="font-bold text-xs text-gray-800 mb-2">Software Skills</div>
+              <div className="space-y-1">
+                {resumeData.skills.slice(0, 4).map((skill) => (
+                  <div key={skill.id} className="text-xs text-gray-600">• {skill.name}</div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="font-bold text-xs text-gray-800 mb-2">Technical Skills</div>
+              <div className="space-y-1">
+                {resumeData.skills.slice(4, 8).map((skill) => (
+                  <div key={skill.id} className="text-xs text-gray-600">• {skill.name}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Compact Connection Template - EXACT MATCH to image
+  if (template === 'compact-connection') {
+    return (
+      <div id="resume-preview" className="a4-page bg-white" style={{ fontFamily }}>
+        <div className="flex h-full">
+          {/* Left Column - Orange Sidebar */}
+          <div className="w-1/3 p-6" style={{ backgroundColor: colors.sidebar }}>
+            {/* Profile Photo */}
+            <div className="mb-6">
+              <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2 border-white">
+                {resumeData.personalInfo.photo ? (
+                  <img src={resumeData.personalInfo.photo} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-8 h-8 text-gray-400" />
+                )}
+              </div>
+              <div className="mt-2">
+                <div className="font-bold text-sm text-gray-800">{resumeData.personalInfo.name || 'Laura Smith'}</div>
+                <div className="text-xs text-gray-600">{resumeData.personalInfo.title || 'Civil Engineer'}</div>
+              </div>
+            </div>
+
+            {/* About Me */}
+            <div className="mb-6">
+              <h3 className="font-bold text-sm mb-3" style={{ color: colors.primary }}>About Me</h3>
+              <p className="text-xs leading-relaxed text-gray-700">
+                {resumeData.summary || 'With over 8 years of experience in regulatory affairs, I have successfully led my organization through complex regulatory challenges while ensuring compliance with industry standards. My expertise spans across multiple therapeutic areas, and I have a proven track record of building strong relationships with regulatory agencies and cross-functional teams.'}
+              </p>
+            </div>
+
+            {/* Work Experience */}
+            <div className="mb-6">
+              <h3 className="font-bold text-sm mb-3" style={{ color: colors.primary }}>Work Experience</h3>
+              <div className="space-y-3">
+                {resumeData.experience.slice(0, 4).map((exp) => (
+                  <div key={exp.id}>
+                    <div className="font-bold text-xs text-gray-800">{exp.position}</div>
+                    <div className="text-xs text-gray-600">{exp.company}</div>
+                    <div className="text-xs text-gray-500">{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Education */}
+            <div className="mb-6">
+              <h3 className="font-bold text-sm mb-3" style={{ color: colors.primary }}>Education</h3>
+              <div className="space-y-2">
+                {resumeData.education.map((edu) => (
+                  <div key={edu.id}>
+                    <div className="font-bold text-xs text-gray-800">{edu.school}</div>
+                    <div className="text-xs text-gray-600">{edu.degree}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Languages */}
+            <div>
+              <h3 className="font-bold text-sm mb-3" style={{ color: colors.primary }}>Language(s)</h3>
+              <div className="space-y-1">
+                {resumeData.languages && resumeData.languages.length > 0 ? resumeData.languages.map((lang) => (
+                  <div key={lang.id} className="text-xs">
+                    <span className="font-medium text-gray-800">{lang.name}</span>
+                    <span className="text-gray-600"> ({lang.level})</span>
+                  </div>
+                )) : (
+                  <div className="text-xs">
+                    <span className="font-medium text-gray-800">English</span>
+                    <span className="text-gray-600"> (Fluent)</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="flex-1 p-6">
+            {/* Details about me */}
+            <div className="mb-6">
+              <h2 className="text-lg font-bold mb-3" style={{ color: colors.primary }}>Details about me</h2>
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <div className="font-medium text-gray-800">Contact Number</div>
+                  <div className="text-gray-600">{resumeData.personalInfo.phone || '(555) 123-4567'}</div>
+                </div>
+                <div>
+                  <div className="font-medium text-gray-800">Email</div>
+                  <div className="text-gray-600">{resumeData.personalInfo.email || 'laura@email.com'}</div>
+                </div>
+                <div>
+                  <div className="font-medium text-gray-800">Residential Location</div>
+                  <div className="text-gray-600">{resumeData.personalInfo.location || 'Germany'}</div>
+                </div>
+                <div>
+                  <div className="font-medium text-gray-800">Date of Birth</div>
+                  <div className="text-gray-600">July 22 1995</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Skills */}
+            <div>
+              <h2 className="text-lg font-bold mb-3" style={{ color: colors.primary }}>Skills</h2>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <div className="font-bold text-xs text-gray-800 mb-2">Software Skills</div>
+                  <div className="space-y-1">
+                    {resumeData.skills.slice(0, 6).map((skill) => (
+                      <div key={skill.id} className="text-xs text-gray-600">• {skill.name}</div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="font-bold text-xs text-gray-800 mb-2">Technical Skills</div>
+                  <div className="space-y-1">
+                    {resumeData.skills.slice(6, 12).map((skill) => (
+                      <div key={skill.id} className="text-xs text-gray-600">• {skill.name}</div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Soft Blue Elegant Template - EXACT MATCH to your image
   if (template === 'soft-blue-elegant') {
     return (

@@ -35,6 +35,262 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                     font === 'Playfair Display' ? 'Playfair Display, serif' :
                     font === 'Merriweather' ? 'Merriweather, serif' : 'Inter, sans-serif';
 
+  // NEW TEMPLATE - Beige Professional Clean - EXACT MATCH to provided image
+  if (template === 'beige-professional-clean') {
+    return (
+      <div id="resume-preview" className="min-h-screen p-8" style={{ backgroundColor: colors.background, fontFamily }}>
+        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+          {/* Header Section */}
+          <div className="p-8 bg-white">
+            <div className="flex items-start justify-between mb-6">
+              {/* Profile Photo and Name */}
+              <div className="flex items-center">
+                <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border-2 border-gray-300 mr-4">
+                  {resumeData.personalInfo.photo ? (
+                    <img src={resumeData.personalInfo.photo} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-8 h-8 text-gray-400" />
+                  )}
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                    {resumeData.personalInfo.name || 'Ed Walter'}
+                  </h1>
+                </div>
+              </div>
+              
+              {/* Contact Information */}
+              <div className="text-right text-sm text-gray-600">
+                <div className="mb-1">
+                  <span className="font-medium">CONTACT SECTION</span>
+                </div>
+                <div className="mb-1">+44(0)7654321</div>
+                <div className="mb-1">{resumeData.personalInfo.email || 'fred@example.com'}</div>
+              </div>
+            </div>
+
+            {/* About Me Section */}
+            <div className="mb-8">
+              <h2 className="text-lg font-bold mb-3" style={{ color: colors.accent }}>
+                About Me
+              </h2>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {resumeData.summary || "I am a dedicated Pharmacy Technician with over 4 years of experience in providing top-tier pharmacy operations, including accurate prescription and medication management. I have a proven track record of maintaining high standards of customer service and am skilled in managing inventory with outstanding attention to detail. I am also skilled in the preparation of medications and have excellent communication skills. I am looking for a new opportunity to utilize my skills and experience in a challenging and rewarding environment."}
+              </p>
+              <div className="mt-4 text-sm text-gray-600">
+                <div><span className="font-medium">Date of birth:</span> 01/01/1990</div>
+                <div><span className="font-medium">Nationality:</span> British</div>
+                <div><span className="font-medium">Preferred Location:</span> {resumeData.personalInfo.location || 'Anywhere'}</div>
+              </div>
+            </div>
+
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-3 gap-8">
+              {/* Left Column - Work Experience and Education */}
+              <div className="col-span-2 space-y-8">
+                {/* Work Experience */}
+                <div>
+                  <h2 className="text-lg font-bold mb-4" style={{ color: colors.accent }}>
+                    Work Experience
+                  </h2>
+                  <div className="space-y-6">
+                    {resumeData.experience.length > 0 ? resumeData.experience.map((exp) => (
+                      <div key={exp.id}>
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h3 className="font-bold text-gray-900">{exp.position || 'Pharmacy Technician'}</h3>
+                            <p className="text-sm text-gray-600">{exp.company || 'Boots Pharmacy'}</p>
+                            <p className="text-xs text-gray-500">{exp.location || 'Pharmacy'}</p>
+                          </div>
+                          <div className="text-right text-xs text-gray-500">
+                            <div>{exp.startDate || 'June 2019'} - {exp.current ? 'Present' : exp.endDate || 'Present'}</div>
+                          </div>
+                        </div>
+                        <ul className="text-sm text-gray-700 space-y-1">
+                          {exp.description && exp.description.length > 0 ? exp.description.map((desc, index) => (
+                            <li key={index} className="flex items-start">
+                              <span className="mr-2 mt-1">•</span>
+                              <span>{desc}</span>
+                            </li>
+                          )) : (
+                            <>
+                              <li className="flex items-start">
+                                <span className="mr-2 mt-1">•</span>
+                                <span>Accurately dispensed prescription and over-the-counter medications</span>
+                              </li>
+                              <li className="flex items-start">
+                                <span className="mr-2 mt-1">•</span>
+                                <span>Maintained detailed records of all transactions and prescriptions</span>
+                              </li>
+                              <li className="flex items-start">
+                                <span className="mr-2 mt-1">•</span>
+                                <span>Provided excellent customer service and advice to customers</span>
+                              </li>
+                            </>
+                          )}
+                        </ul>
+                      </div>
+                    )) : (
+                      <>
+                        <div>
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h3 className="font-bold text-gray-900">Pharmacy Technician</h3>
+                              <p className="text-sm text-gray-600">Boots Pharmacy</p>
+                              <p className="text-xs text-gray-500">Pharmacy</p>
+                            </div>
+                            <div className="text-right text-xs text-gray-500">
+                              <div>June 2019 - Present</div>
+                            </div>
+                          </div>
+                          <ul className="text-sm text-gray-700 space-y-1">
+                            <li className="flex items-start">
+                              <span className="mr-2 mt-1">•</span>
+                              <span>Accurately dispensed prescription and over-the-counter medications</span>
+                            </li>
+                            <li className="flex items-start">
+                              <span className="mr-2 mt-1">•</span>
+                              <span>Maintained detailed records of all transactions and prescriptions</span>
+                            </li>
+                            <li className="flex items-start">
+                              <span className="mr-2 mt-1">•</span>
+                              <span>Provided excellent customer service and advice to customers</span>
+                            </li>
+                          </ul>
+                        </div>
+                        
+                        <div>
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h3 className="font-bold text-gray-900">Pharmacy Technician Student</h3>
+                              <p className="text-sm text-gray-600">Boots Pharmacy</p>
+                              <p className="text-xs text-gray-500">Pharmacy</p>
+                            </div>
+                            <div className="text-right text-xs text-gray-500">
+                              <div>Sept 2018 - June 2019</div>
+                            </div>
+                          </div>
+                          <ul className="text-sm text-gray-700 space-y-1">
+                            <li className="flex items-start">
+                              <span className="mr-2 mt-1">•</span>
+                              <span>Completed comprehensive training in pharmacy operations</span>
+                            </li>
+                            <li className="flex items-start">
+                              <span className="mr-2 mt-1">•</span>
+                              <span>Assisted qualified pharmacists with prescription preparation</span>
+                            </li>
+                          </ul>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Education */}
+                <div>
+                  <h2 className="text-lg font-bold mb-4" style={{ color: colors.accent }}>
+                    Education
+                  </h2>
+                  <div className="space-y-4">
+                    {resumeData.education.length > 0 ? resumeData.education.map((edu) => (
+                      <div key={edu.id}>
+                        <h3 className="font-bold text-gray-900">{edu.school || 'Texas State Board of Pharmacy'}</h3>
+                        <p className="text-sm text-gray-600">{edu.degree || 'Pharmacy Technician Certification'}</p>
+                        <p className="text-xs text-gray-500">{edu.startDate || '2018'} - {edu.endDate || '2019'}</p>
+                      </div>
+                    )) : (
+                      <>
+                        <div>
+                          <h3 className="font-bold text-gray-900">Texas State Board of Pharmacy</h3>
+                          <p className="text-sm text-gray-600">Pharmacy Technician Certification</p>
+                          <p className="text-xs text-gray-500">2018 - 2019</p>
+                        </div>
+                        
+                        <div>
+                          <h3 className="font-bold text-gray-900">Houston Community College</h3>
+                          <p className="text-sm text-gray-600">A.S. in Health Sciences</p>
+                          <p className="text-xs text-gray-500">2016 - 2018</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column - Skills */}
+              <div className="space-y-8">
+                {/* Skills */}
+                <div>
+                  <h2 className="text-lg font-bold mb-4" style={{ color: colors.accent }}>
+                    Skills
+                  </h2>
+                  
+                  {/* Software Skills */}
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-gray-900 mb-3">Software Skills</h3>
+                    <div className="space-y-2 text-sm text-gray-700">
+                      {resumeData.skills.length > 0 ? resumeData.skills.slice(0, 6).map((skill) => (
+                        <div key={skill.id}>{skill.name}</div>
+                      )) : (
+                        <>
+                          <div>Microsoft Office</div>
+                          <div>Management Software</div>
+                          <div>POS (Point of Sale)</div>
+                          <div>Inventory Management</div>
+                          <div>Data Entry</div>
+                          <div>Spreadsheets</div>
+                          <div>Email and Writing</div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Technical Skills */}
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-gray-900 mb-3">Technical Skills</h3>
+                    <div className="space-y-2 text-sm text-gray-700">
+                      <div>Medication</div>
+                      <div>Dispensing</div>
+                      <div>Compounding and Drug Testing</div>
+                      <div>Pharmaceutical Calculations</div>
+                      <div>Inventory Management</div>
+                      <div>Customer Service</div>
+                    </div>
+                  </div>
+
+                  {/* Languages */}
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-3">Language(s)</h3>
+                    <div className="space-y-2 text-sm text-gray-700">
+                      {resumeData.languages && resumeData.languages.length > 0 ? resumeData.languages.map((lang) => (
+                        <div key={lang.id}>
+                          <span className="font-medium">{lang.name}</span> ({lang.level})
+                        </div>
+                      )) : (
+                        <>
+                          <div><span className="font-medium">English</span> (Native)</div>
+                          <div><span className="font-medium">French</span> (Native)</div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Section */}
+        <div className="max-w-4xl mx-auto mt-8 p-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Skill Focus</h2>
+          <p className="text-gray-600 text-lg leading-relaxed">
+            A dedicated format emphasizing your strengths, with a clear section for your personal story.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Soft Blue Elegant Template - EXACT MATCH to your image
   if (template === 'soft-blue-elegant') {
     return (

@@ -1,6 +1,24 @@
 import { ResumeTemplate } from '../types/resume';
 
 export const resumeTemplates: ResumeTemplate[] = [
+  // NEW TEMPLATE - Exact match from provided image
+  {
+    id: 'beige-professional-clean',
+    name: 'Beige Professional Clean',
+    description: 'Clean professional template with beige background and white content area, featuring orange section headers and organized layout',
+    category: 'modern',
+    layout: 'double-column',
+    colors: {
+      primary: '#2D3748', // Dark gray for text
+      secondary: '#4A5568', // Medium gray
+      accent: '#FF8C00', // Orange for headers
+      text: '#2D3748',
+      background: '#F7F3E9', // Beige background
+      sidebar: '#FFFFFF', // White content area
+      highlight: '#FFF5E6' // Light orange highlight
+    },
+    preview: '/templates/beige-professional-clean.jpg'
+  },
   // EXACT MATCH templates based on provided images
   {
     id: 'green-organic-sidebar',

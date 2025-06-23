@@ -52,6 +52,50 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </div>
         </div>
 
+        {/* NEW TEMPLATE - Beige Professional Clean Preview */}
+        {template.id === 'beige-professional-clean' && (
+          <div className="h-full p-3" style={{ backgroundColor: template.colors.background }}>
+            <div className="bg-white rounded p-3 h-full">
+              {/* Header with photo and name */}
+              <div className="flex items-center mb-3">
+                <div className="w-6 h-6 rounded-full bg-gray-300 mr-2"></div>
+                <div>
+                  <div className="text-xs font-bold">Ed Walter</div>
+                </div>
+                <div className="ml-auto text-xs text-gray-500">Contact</div>
+              </div>
+              
+              {/* About Me section */}
+              <div className="mb-3">
+                <div className="text-xs font-bold mb-1" style={{ color: template.colors.accent }}>About Me</div>
+                <div className="space-y-1">
+                  <div className="h-1 bg-gray-200 rounded w-full"></div>
+                  <div className="h-1 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              </div>
+              
+              {/* Two column layout */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="col-span-2 space-y-2">
+                  <div className="text-xs font-bold" style={{ color: template.colors.accent }}>Work Experience</div>
+                  <div className="space-y-1">
+                    <div className="text-xs font-medium">Pharmacy Technician</div>
+                    <div className="text-xs text-gray-600">Boots Pharmacy</div>
+                    <div className="h-1 bg-gray-200 rounded w-2/3"></div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-xs font-bold" style={{ color: template.colors.accent }}>Skills</div>
+                  <div className="space-y-1">
+                    <div className="h-1 bg-gray-200 rounded w-full"></div>
+                    <div className="h-1 bg-gray-200 rounded w-3/4"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Soft Blue Elegant Template Preview - EXACT MATCH to your image */}
         {template.id === 'soft-blue-elegant' && (
           <div className="h-full p-3 relative">
@@ -263,7 +307,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         )}
 
         {/* Default preview for existing templates */}
-        {!['ivy-league-classic', 'green-organic-sidebar', 'navy-header-professional', 'orange-timeline-modern', 'blue-sidebar-clean', 'soft-blue-elegant'].includes(template.id) && (
+        {!['ivy-league-classic', 'green-organic-sidebar', 'navy-header-professional', 'orange-timeline-modern', 'blue-sidebar-clean', 'soft-blue-elegant', 'beige-professional-clean'].includes(template.id) && (
           <div className="h-full flex">
             {template.layout === 'double-column' ? (
               <>

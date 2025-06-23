@@ -54,11 +54,18 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </div>
         </div>
 
-        {/* Template Preview Container - Perfect fit calculation */}
-        <div className="w-full h-full relative overflow-hidden bg-gray-50">
-          {/* Scaled template preview that perfectly fits container */}
+        {/* Template Preview Container - Exact fit with no extra space */}
+        <div 
+          className="w-full h-full bg-gray-50 overflow-hidden"
+          style={{
+            width: '226px', // Exact scaled width: 794 * 0.285
+            height: '320px', // Exact scaled height: 1123 * 0.285
+            margin: '0 auto'
+          }}
+        >
+          {/* Scaled template preview that fits exactly */}
           <div 
-            className="absolute top-0 left-0 bg-white"
+            className="bg-white"
             style={{
               transform: 'scale(0.285)',
               transformOrigin: 'top left',
@@ -75,20 +82,6 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               className="template-preview-scaled"
             />
           </div>
-        </div>
-
-        {/* Hover overlay with preview button */}
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 flex items-center justify-center">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setPreviewTemplate(template.id);
-            }}
-            className="opacity-0 group-hover:opacity-100 bg-white text-gray-800 px-4 py-2 rounded-lg shadow-lg flex items-center text-sm font-medium transition-all duration-300 transform translate-y-2 group-hover:translate-y-0"
-          >
-            <Eye className="w-4 h-4 mr-2" />
-            Full Preview
-          </button>
         </div>
       </div>
     );

@@ -162,7 +162,7 @@ body {
   flex-shrink: 0;
 }
 
-/* Template preview scaling fixes */
+/* Template preview scaling fixes - Remove empty space */
 .template-preview-container {
   width: 100%;
   height: 100%;
@@ -176,4 +176,14 @@ body {
   transform: scale(1);
   transform-origin: top left;
   overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure no extra spacing in previews */
+.template-preview-scaled {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
 }

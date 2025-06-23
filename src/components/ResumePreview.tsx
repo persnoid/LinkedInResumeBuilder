@@ -1,6 +1,9 @@
 import React from 'react';
 import { ResumeData } from '../types/resume';
 import { resumeTemplates } from '../data/templates';
+import { reactiveTemplates } from '../data/reactive-templates';
+import { TemplateRenderer } from './template-engine/TemplateRenderer';
+import { TemplateContext } from '../types/template';
 import { Mail, Phone, MapPin, Globe, Linkedin, User, Diamond, GraduationCap, Calendar, MapPin as Location } from 'lucide-react';
 
 interface ResumePreviewProps {
@@ -18,11 +21,40 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
   font = 'Inter',
   sectionOrder = ['summary', 'experience', 'education', 'skills', 'certifications']
 }) => {
+  // Check if this is a reactive template
+  const reactiveTemplate = reactiveTemplates.find(t => t.id === template);
+  
+  if (reactiveTemplate) {
+    // Use the new template engine for reactive templates
+    const context: TemplateContext = {
+      data: resumeData,
+      config: reactiveTemplate,
+      customizations: {
+        colors: customColors,
+        typography: font ? {
+          fontFamily: font === 'Inter' ? 'Inter, sans-serif' : 
+                      font === 'Roboto' ? 'Roboto, sans-serif' :
+                      font === 'Open Sans' ? 'Open Sans, sans-serif' :
+                      font === 'Lato' ? 'Lato, sans-serif' :
+                      font === 'Playfair Display' ? 'Playfair Display, serif' :
+                      font === 'Merriweather' ? 'Merriweather, serif' : 'Inter, sans-serif'
+        } : undefined,
+      }
+    };
+
+    return <TemplateRenderer context={context} />;
+  }
+
+  // Fallback to existing template system for legacy templates
   const templateConfig = resumeTemplates.find(t => t.id === template);
   if (!templateConfig) return null;
 
   // Merge template colors with custom colors - custom colors take precedence
   const colors = { ...templateConfig.colors, ...customColors };
+  
+  console.log('ResumePreview - Template colors:', templateConfig.colors);
+  console.log('ResumePreview - Custom colors:', customColors);
+  console.log('ResumePreview - Final colors:', colors);
   
   const fontFamily = font === 'Inter' ? 'Inter, sans-serif' : 
                     font === 'Roboto' ? 'Roboto, sans-serif' :
@@ -31,250 +63,252 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                     font === 'Playfair Display' ? 'Playfair Display, serif' :
                     font === 'Merriweather' ? 'Merriweather, serif' : 'Inter, sans-serif';
 
-  // NEW TEMPLATE - Beige Professional Clean - EXACT MATCH to provided image
+  // Beige Professional Clean Template - EXACT MATCH to your image
   if (template === 'beige-professional-clean') {
     return (
-      <div id="resume-preview" className="a4-page" style={{ fontFamily, backgroundColor: colors.background }}>
-        <div className="max-w-4xl mx-auto p-8">
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            {/* Header Section */}
-            <div className="flex items-start justify-between mb-8">
-              {/* Left side - Photo and Name */}
-              <div className="flex items-center">
-                <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden mr-4">
-                  {resumeData.personalInfo.photo ? (
-                    <img src={resumeData.personalInfo.photo} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="w-8 h-8 text-gray-500" />
-                  )}
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                    {resumeData.personalInfo.name || 'Ed Walter'}
-                  </h1>
-                </div>
+      <div id="resume-preview" className="a4-page" style={{ 
+        fontFamily,
+        backgroundColor: colors.background,
+        padding: '32px'
+      }}>
+        <div className="bg-white rounded-lg p-8 shadow-sm">
+          {/* Header with photo and contact */}
+          <div className="flex items-start justify-between mb-8">
+            <div className="flex items-center">
+              {/* Profile Photo */}
+              <div className="w-16 h-16 rounded-full bg-gray-300 mr-4 flex items-center justify-center overflow-hidden">
+                {resumeData.personalInfo.photo ? (
+                  <img src={resumeData.personalInfo.photo} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-8 h-8 text-gray-400" />
+                )}
               </div>
               
-              {/* Right side - Contact Info */}
-              <div className="text-right text-sm text-gray-600">
-                <div className="font-semibold text-gray-800 mb-2">CONTACT SECTION</div>
-                <div className="space-y-1">
-                  <div>📞 {resumeData.personalInfo.phone || '+44(0)7654 321'}</div>
-                  <div>✉️ {resumeData.personalInfo.email || 'Email'}</div>
-                  <div>🌐 {resumeData.personalInfo.linkedin || 'LinkedIn/Portfolio'}</div>
-                  <div>📍 {resumeData.personalInfo.location || 'Location'}</div>
+              {/* Name and Title */}
+              <div>
+                <h1 className="text-2xl font-bold mb-1" style={{ color: colors.primary }}>
+                  {resumeData.personalInfo.name || 'Ed Walter'}
+                </h1>
+                <div className="text-sm text-gray-600 mb-2">
+                  {resumeData.personalInfo.title || 'Professional Title'}
                 </div>
               </div>
             </div>
-
-            {/* About Me Section */}
-            <div className="mb-8">
-              <h2 className="text-lg font-bold mb-4" style={{ color: colors.accent }}>
-                About Me
-              </h2>
-              <div className="grid grid-cols-2 gap-8 text-sm text-gray-700">
-                <div>
-                  <p className="leading-relaxed">
-                    {resumeData.summary || 'I am a dedicated Pharmacy Technician with over 4 years of experience in providing exceptional customer service, managing inventory, and assisting pharmacists with daily operations. I am passionate about healthcare and committed to ensuring patients receive the best possible care.'}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div><strong>Date of Birth:</strong> 15/03/1995</div>
-                  <div><strong>Nationality:</strong> British</div>
-                  <div><strong>Preferred Location:</strong> {resumeData.personalInfo.location || 'Germany'}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Main Content - Two Column Layout */}
-            <div className="grid grid-cols-3 gap-8">
-              {/* Left Column - Work Experience and Education */}
-              <div className="col-span-2 space-y-8">
-                {/* Work Experience */}
-                <div>
-                  <h2 className="text-lg font-bold mb-4" style={{ color: colors.accent }}>
-                    Work Experience
-                  </h2>
-                  <div className="space-y-6">
-                    {resumeData.experience.length > 0 ? resumeData.experience.map((exp) => (
-                      <div key={exp.id} className="border-l-2 border-gray-200 pl-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h3 className="font-bold text-gray-900">{exp.position}</h3>
-                            <div className="text-blue-600 font-medium">{exp.company}</div>
-                            <div className="text-sm text-gray-500">{exp.location}</div>
-                          </div>
-                          <div className="text-sm text-gray-500 text-right">
-                            <div>{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</div>
-                          </div>
-                        </div>
-                        <div className="text-sm text-gray-600 mb-2">Company Description</div>
-                        <ul className="text-sm text-gray-700 space-y-1">
-                          {exp.description && exp.description.length > 0 ? exp.description.map((desc, index) => (
-                            <li key={index} className="flex items-start">
-                              <span className="mr-2 mt-1">•</span>
-                              <span>{desc}</span>
-                            </li>
-                          )) : (
-                            <>
-                              <li className="flex items-start">
-                                <span className="mr-2 mt-1">•</span>
-                                <span>Dispensed prescription medications accurately and efficiently</span>
-                              </li>
-                              <li className="flex items-start">
-                                <span className="mr-2 mt-1">•</span>
-                                <span>Provided excellent customer service and health advice</span>
-                              </li>
-                              <li className="flex items-start">
-                                <span className="mr-2 mt-1">•</span>
-                                <span>Managed inventory and maintained pharmacy records</span>
-                              </li>
-                            </>
-                          )}
-                        </ul>
-                      </div>
-                    )) : (
-                      <div className="border-l-2 border-gray-200 pl-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h3 className="font-bold text-gray-900">Pharmacy Technician</h3>
-                            <div className="text-blue-600 font-medium">Boots Pharmacy</div>
-                            <div className="text-sm text-gray-500">Birmingham, UK</div>
-                          </div>
-                          <div className="text-sm text-gray-500 text-right">
-                            <div>Jan 2020 - Present</div>
-                          </div>
-                        </div>
-                        <div className="text-sm text-gray-600 mb-2">Leading UK pharmacy chain</div>
-                        <ul className="text-sm text-gray-700 space-y-1">
-                          <li className="flex items-start">
-                            <span className="mr-2 mt-1">•</span>
-                            <span>Dispensed prescription medications accurately and efficiently</span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="mr-2 mt-1">•</span>
-                            <span>Provided excellent customer service and health advice</span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="mr-2 mt-1">•</span>
-                            <span>Managed inventory and maintained pharmacy records</span>
-                          </li>
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Education */}
-                <div>
-                  <h2 className="text-lg font-bold mb-4" style={{ color: colors.accent }}>
-                    Education
-                  </h2>
-                  <div className="space-y-4">
-                    {resumeData.education.length > 0 ? resumeData.education.map((edu) => (
-                      <div key={edu.id}>
-                        <h3 className="font-bold text-gray-900">{edu.degree}</h3>
-                        <div className="text-blue-600 font-medium">{edu.school}</div>
-                        <div className="text-sm text-gray-500">{edu.startDate} - {edu.endDate}</div>
-                      </div>
-                    )) : (
-                      <>
-                        <div>
-                          <h3 className="font-bold text-gray-900">Texas State Board of Pharmacy</h3>
-                          <div className="text-blue-600 font-medium">Pharmacy Technician Certification</div>
-                          <div className="text-sm text-gray-500">2019 - 2020</div>
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-gray-900">Houston Community College</h3>
-                          <div className="text-blue-600 font-medium">A.S. in Health Sciences</div>
-                          <div className="text-sm text-gray-500">2017 - 2019</div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column - Skills */}
-              <div className="space-y-8">
-                {/* Skills */}
-                <div>
-                  <h2 className="text-lg font-bold mb-4" style={{ color: colors.accent }}>
-                    Skills
-                  </h2>
-                  
-                  {/* Software Skills */}
-                  <div className="mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-3">Software Skills</h3>
-                    <div className="space-y-2 text-sm text-gray-700">
-                      {resumeData.skills.slice(0, 5).map((skill) => (
-                        <div key={skill.id}>{skill.name}</div>
-                      ))}
-                      {resumeData.skills.length === 0 && (
-                        <>
-                          <div>Microsoft Office Suite</div>
-                          <div>Pharmacy Management Software</div>
-                          <div>Electronic Health Records</div>
-                          <div>Inventory Management Systems</div>
-                          <div>Point of Sale Systems</div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Technical Skills */}
-                  <div className="mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-3">Technical Skills</h3>
-                    <div className="space-y-2 text-sm text-gray-700">
-                      {resumeData.skills.slice(5, 10).map((skill) => (
-                        <div key={skill.id}>{skill.name}</div>
-                      ))}
-                      {resumeData.skills.length < 6 && (
-                        <>
-                          <div>Prescription Processing</div>
-                          <div>Drug Interaction Checking</div>
-                          <div>Insurance Verification</div>
-                          <div>Compounding</div>
-                          <div>Quality Control</div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Languages */}
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-3">Language(s)</h3>
-                    <div className="space-y-2 text-sm text-gray-700">
-                      {resumeData.languages && resumeData.languages.length > 0 ? resumeData.languages.map((lang) => (
-                        <div key={lang.id} className="flex justify-between">
-                          <span>{lang.name}</span>
-                          <span>({lang.level})</span>
-                        </div>
-                      )) : (
-                        <>
-                          <div className="flex justify-between">
-                            <span>English</span>
-                            <span>(Native)</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>French</span>
-                            <span>(Native)</span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
+            
+            {/* Contact Information */}
+            <div className="text-right text-sm">
+              <div className="font-medium mb-1" style={{ color: colors.primary }}>CONTACT INFORMATION</div>
+              <div className="space-y-1 text-gray-600">
+                <div>Email</div>
+                <div>{resumeData.personalInfo.email || 'email@example.com'}</div>
+                <div>Phone</div>
+                <div>{resumeData.personalInfo.phone || 'Phone Number'}</div>
+                <div>Location</div>
+                <div>{resumeData.personalInfo.location || 'Location'}</div>
               </div>
             </div>
           </div>
 
-          {/* Bottom Section - Skill Focus */}
-          <div className="mt-8 p-6 rounded-lg" style={{ backgroundColor: colors.background }}>
-            <h2 className="text-xl font-bold text-gray-900 mb-3">Skill Focus</h2>
-            <p className="text-gray-700 leading-relaxed">
-              A dedicated format emphasizing your strengths, with a clear section for your personal story.
+          {/* About Me Section */}
+          <div className="mb-8">
+            <h2 className="font-bold text-lg mb-4 uppercase" style={{ color: colors.accent }}>
+              About Me
+            </h2>
+            <p className="text-sm leading-relaxed text-gray-700">
+              {resumeData.summary || 'I am a dedicated pharmacy technician with over 4 years of experience in providing exceptional customer service, managing inventory, and ensuring accurate medication dispensing. My strong attention to detail and commitment to patient safety make me a valuable asset to any pharmacy team.'}
             </p>
+          </div>
+
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-3 gap-8">
+            {/* Left Column - Work Experience and Education */}
+            <div className="col-span-2 space-y-8">
+              {/* Work Experience */}
+              <div>
+                <h2 className="font-bold text-lg mb-4 uppercase" style={{ color: colors.accent }}>
+                  Work Experience
+                </h2>
+                <div className="space-y-6">
+                  {resumeData.experience.length > 0 ? resumeData.experience.map((exp) => (
+                    <div key={exp.id}>
+                      <div className="font-bold text-base" style={{ color: colors.primary }}>
+                        {exp.position || 'Pharmacy Technician'}
+                      </div>
+                      <div className="text-sm font-medium mb-1" style={{ color: colors.secondary }}>
+                        {exp.company || 'Boots Pharmacy'}
+                      </div>
+                      <div className="text-sm text-gray-500 mb-2">
+                        {exp.startDate || 'Start Date'} - {exp.current ? 'Present' : exp.endDate || 'End Date'}
+                      </div>
+                      <div className="text-sm text-gray-600 mb-2">
+                        Responsible for dispensing medications, managing inventory, and providing excellent customer service in a fast-paced pharmacy environment.
+                      </div>
+                      <ul className="text-sm space-y-1 text-gray-700">
+                        {exp.description && exp.description.length > 0 ? exp.description.map((desc, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="mr-2 mt-1">•</span>
+                            <span>{desc}</span>
+                          </li>
+                        )) : (
+                          <>
+                            <li className="flex items-start">
+                              <span className="mr-2 mt-1">•</span>
+                              <span>Accurately dispensed prescription medications following strict protocols</span>
+                            </li>
+                            <li className="flex items-start">
+                              <span className="mr-2 mt-1">•</span>
+                              <span>Maintained detailed inventory records and managed stock levels</span>
+                            </li>
+                            <li className="flex items-start">
+                              <span className="mr-2 mt-1">•</span>
+                              <span>Provided exceptional customer service and medication counseling</span>
+                            </li>
+                          </>
+                        )}
+                      </ul>
+                    </div>
+                  )) : (
+                    <div>
+                      <div className="font-bold text-base" style={{ color: colors.primary }}>
+                        Pharmacy Technician
+                      </div>
+                      <div className="text-sm font-medium mb-1" style={{ color: colors.secondary }}>
+                        Boots Pharmacy
+                      </div>
+                      <div className="text-sm text-gray-500 mb-2">
+                        2020 - Present
+                      </div>
+                      <div className="text-sm text-gray-600 mb-2">
+                        Responsible for dispensing medications, managing inventory, and providing excellent customer service in a fast-paced pharmacy environment.
+                      </div>
+                      <ul className="text-sm space-y-1 text-gray-700">
+                        <li className="flex items-start">
+                          <span className="mr-2 mt-1">•</span>
+                          <span>Accurately dispensed prescription medications following strict protocols</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2 mt-1">•</span>
+                          <span>Maintained detailed inventory records and managed stock levels</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2 mt-1">•</span>
+                          <span>Provided exceptional customer service and medication counseling</span>
+                        </li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Education */}
+              <div>
+                <h2 className="font-bold text-lg mb-4 uppercase" style={{ color: colors.accent }}>
+                  Education
+                </h2>
+                <div className="space-y-4">
+                  {resumeData.education.length > 0 ? resumeData.education.map((edu) => (
+                    <div key={edu.id}>
+                      <div className="font-bold text-base" style={{ color: colors.primary }}>
+                        {edu.school || 'Texas State Board of Pharmacy'}
+                      </div>
+                      <div className="text-sm" style={{ color: colors.secondary }}>
+                        {edu.degree || 'Pharmacy Technician Certification'}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {edu.startDate || 'Start'} - {edu.endDate || 'End'}
+                      </div>
+                    </div>
+                  )) : (
+                    <>
+                      <div>
+                        <div className="font-bold text-base" style={{ color: colors.primary }}>
+                          Texas State Board of Pharmacy
+                        </div>
+                        <div className="text-sm" style={{ color: colors.secondary }}>
+                          Pharmacy Technician Certification
+                        </div>
+                        <div className="text-sm text-gray-500">2020</div>
+                      </div>
+                      <div>
+                        <div className="font-bold text-base" style={{ color: colors.primary }}>
+                          Houston Community College
+                        </div>
+                        <div className="text-sm" style={{ color: colors.secondary }}>
+                          A.S. in Health Sciences
+                        </div>
+                        <div className="text-sm text-gray-500">2018 - 2020</div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Skills, Technical Skills, Languages */}
+            <div className="space-y-8">
+              {/* Skills */}
+              <div>
+                <h2 className="font-bold text-lg mb-4 uppercase" style={{ color: colors.accent }}>
+                  Skills
+                </h2>
+                <div className="space-y-2">
+                  {resumeData.skills.length > 0 ? resumeData.skills.slice(0, 8).map((skill) => (
+                    <div key={skill.id} className="text-sm text-gray-700">{skill.name}</div>
+                  )) : (
+                    <>
+                      <div className="text-sm text-gray-700">Software Skills</div>
+                      <div className="text-sm text-gray-700">Prescription Processing</div>
+                      <div className="text-sm text-gray-700">Inventory Management</div>
+                      <div className="text-sm text-gray-700">Customer Service</div>
+                      <div className="text-sm text-gray-700">Attention to Detail</div>
+                      <div className="text-sm text-gray-700">Time Management</div>
+                      <div className="text-sm text-gray-700">Team Collaboration</div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Technical Skills */}
+              <div>
+                <h2 className="font-bold text-lg mb-4 uppercase" style={{ color: colors.accent }}>
+                  Technical Skills
+                </h2>
+                <div className="space-y-2 text-sm text-gray-700">
+                  <div>Medication Dispensing</div>
+                  <div>Prescription Verification</div>
+                  <div>Insurance Processing</div>
+                  <div>Inventory Control</div>
+                  <div>Patient Counseling</div>
+                  <div>Quality Assurance</div>
+                </div>
+              </div>
+
+              {/* Languages */}
+              <div>
+                <h2 className="font-bold text-lg mb-4 uppercase" style={{ color: colors.accent }}>
+                  Language(s)
+                </h2>
+                <div className="space-y-2">
+                  {resumeData.languages && resumeData.languages.length > 0 ? resumeData.languages.map((lang) => (
+                    <div key={lang.id} className="text-sm">
+                      <span className="font-medium text-gray-800">{lang.name}</span>
+                      <span className="text-gray-600"> ({lang.level})</span>
+                    </div>
+                  )) : (
+                    <>
+                      <div className="text-sm">
+                        <span className="font-medium text-gray-800">English</span>
+                        <span className="text-gray-600"> (Native)</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium text-gray-800">French</span>
+                        <span className="text-gray-600"> (Native)</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

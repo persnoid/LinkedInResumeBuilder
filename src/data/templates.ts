@@ -120,6 +120,58 @@ export const resumeTemplates: ResumeTemplate[] = [
     },
     preview: '/templates/ivy-league-classic.jpg'
   },
+  // Reactive Resume Templates
+  {
+    id: 'azurill',
+    name: 'Azurill (Reactive)',
+    description: 'Modern sidebar template with professional layout and customizable sections',
+    category: 'modern',
+    layout: 'double-column',
+    colors: {
+      primary: '#1f2937',
+      secondary: '#6b7280',
+      accent: '#3b82f6',
+      text: '#374151',
+      background: '#ffffff',
+      sidebar: '#f3f4f6',
+      highlight: '#eff6ff'
+    },
+    preview: '/templates/azurill.jpg'
+  },
+  {
+    id: 'bronzor',
+    name: 'Bronzor (Reactive)',
+    description: 'Professional header template with clean typography and structured layout',
+    category: 'professional',
+    layout: 'header-footer',
+    colors: {
+      primary: '#1e293b',
+      secondary: '#475569',
+      accent: '#0ea5e9',
+      text: '#334155',
+      background: '#ffffff',
+      sidebar: '#f1f5f9',
+      highlight: '#e0f2fe'
+    },
+    preview: '/templates/bronzor.jpg'
+  },
+  {
+    id: 'chikorita',
+    name: 'Chikorita (Reactive)',
+    description: 'Minimal single-column template with elegant typography and centered layout',
+    category: 'minimal',
+    layout: 'single-column',
+    colors: {
+      primary: '#111827',
+      secondary: '#4b5563',
+      accent: '#059669',
+      text: '#374151',
+      background: '#ffffff',
+      sidebar: '#f9fafb',
+      highlight: '#ecfdf5'
+    },
+    preview: '/templates/chikorita.jpg'
+  },
   // Existing templates
   {
     id: 'modern-two-column',

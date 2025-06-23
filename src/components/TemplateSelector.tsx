@@ -46,14 +46,6 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     
     return (
       <div className="w-full h-80 bg-white border rounded-xl overflow-hidden shadow-sm relative group hover:shadow-lg transition-all duration-300">
-        {/* Layout indicator */}
-        <div className="absolute top-3 right-3 z-20">
-          <div className="bg-black bg-opacity-70 text-white px-2 py-1 rounded-md flex items-center text-xs font-medium">
-            <LayoutIcon className="w-3 h-3 mr-1" />
-            <span>{template.layout.type.replace('-', ' ')}</span>
-          </div>
-        </div>
-
         {/* Template Preview Container - Fixed dimensions to eliminate empty space */}
         <div className="w-full h-full relative overflow-hidden bg-gray-50">
           {/* Properly scaled template preview with exact fit */}

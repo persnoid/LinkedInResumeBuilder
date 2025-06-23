@@ -15,7 +15,9 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
 }) => {
   const { summary } = data;
   
-  if (!summary) return null;
+  // Provide meaningful fallback content
+  const displaySummary = summary || 
+    'Experienced professional with a proven track record of delivering exceptional results. Skilled in leadership, problem-solving, and driving innovation. Passionate about continuous learning and contributing to organizational success through strategic thinking and collaborative teamwork.';
 
   return (
     <div className="summary-section">
@@ -38,7 +40,7 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
           color: styles.colors.text,
         }}
       >
-        {summary}
+        {displaySummary}
       </p>
     </div>
   );

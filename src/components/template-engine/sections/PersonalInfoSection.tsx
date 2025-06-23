@@ -18,12 +18,21 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   
   if (!personalInfo) return null;
 
+  // Use actual data or provide professional fallbacks
+  const displayName = personalInfo.name || 'John Doe';
+  const displayTitle = personalInfo.title || 'Professional Title';
+  const displayEmail = personalInfo.email || 'john.doe@email.com';
+  const displayPhone = personalInfo.phone || '+1 (555) 123-4567';
+  const displayLocation = personalInfo.location || 'New York, NY';
+  const displayLinkedin = personalInfo.linkedin || 'linkedin.com/in/johndoe';
+  const displayWebsite = personalInfo.website || 'johndoe.dev';
+
   const contactItems = [
-    { icon: Phone, value: personalInfo.phone, label: 'Phone' },
-    { icon: Mail, value: personalInfo.email, label: 'Email' },
-    { icon: Linkedin, value: personalInfo.linkedin, label: 'LinkedIn' },
-    { icon: Globe, value: personalInfo.website, label: 'Website' },
-    { icon: MapPin, value: personalInfo.location, label: 'Location' },
+    { icon: Phone, value: displayPhone, label: 'Phone' },
+    { icon: Mail, value: displayEmail, label: 'Email' },
+    { icon: Linkedin, value: displayLinkedin, label: 'LinkedIn' },
+    { icon: Globe, value: displayWebsite, label: 'Website' },
+    { icon: MapPin, value: displayLocation, label: 'Location' },
   ].filter(item => item.value);
 
   const renderCompact = () => (
@@ -46,7 +55,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
           lineHeight: styles.typography.lineHeight.tight,
         }}
       >
-        {personalInfo.name || 'John Doe'}
+        {displayName}
       </h1>
       <h2 
         className="title mb-4"
@@ -55,7 +64,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
           color: styles.colors.secondary,
         }}
       >
-        {personalInfo.title || 'Professional Title'}
+        {displayTitle}
       </h2>
       <div className="contact-info flex flex-wrap justify-center gap-4 text-sm">
         {contactItems.map((item, index) => (
@@ -88,7 +97,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
           lineHeight: styles.typography.lineHeight.tight,
         }}
       >
-        {personalInfo.name || 'John Doe'}
+        {displayName}
       </h1>
       <h2 
         className="title mb-4 text-center"
@@ -97,7 +106,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
           color: styles.colors.secondary,
         }}
       >
-        {personalInfo.title || 'Professional Title'}
+        {displayTitle}
       </h2>
       <div className="contact-info space-y-2">
         {contactItems.map((item, index) => (
@@ -121,7 +130,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
             lineHeight: styles.typography.lineHeight.tight,
           }}
         >
-          {personalInfo.name || 'John Doe'}
+          {displayName}
         </h1>
         <h2 
           className="title mb-4"
@@ -130,7 +139,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
             color: styles.colors.accent,
           }}
         >
-          {personalInfo.title || 'Professional Title'}
+          {displayTitle}
         </h2>
         <div className="contact-info flex flex-wrap gap-6 text-sm">
           {contactItems.map((item, index) => (

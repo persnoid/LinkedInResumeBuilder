@@ -54,13 +54,13 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </div>
         </div>
 
-        {/* Template Preview Container - Fixed to remove empty space */}
+        {/* Template Preview Container - Fixed dimensions to eliminate empty space */}
         <div className="w-full h-full relative overflow-hidden bg-gray-50">
-          {/* Properly scaled template preview with no empty space */}
+          {/* Properly scaled template preview with exact fit */}
           <div 
-            className="absolute top-0 left-0 bg-white shadow-sm"
+            className="absolute top-0 left-0 bg-white"
             style={{
-              transform: 'scale(0.238)',
+              transform: 'scale(0.284)',
               transformOrigin: 'top left',
               width: '794px',
               height: '1123px',

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle, Eye, Layout, Grid, Save, Palette, FileText, Zap, Sparkles, User } from 'lucide-react';
+import { CheckCircle, Eye, Layout, Grid, Save, Palette, FileText, Zap, Sparkles, User, X, ZoomIn } from 'lucide-react';
 import { reactiveTemplates } from '../data/reactive-templates';
 import { TemplateConfig, ResumeData } from '../types/resume';
 import { TemplateRenderer } from './template-engine/TemplateRenderer';
@@ -43,10 +43,10 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
   const TemplatePreview: React.FC<{ template: TemplateConfig }> = ({ template }) => {
     return (
-      <div className="w-full h-80 bg-white border rounded-xl overflow-hidden shadow-sm relative">
+      <div className="w-full h-80 bg-white border rounded-xl overflow-hidden shadow-sm relative group hover:shadow-lg transition-all duration-300">
         {/* Template Preview Container - Exact fit with no extra space */}
         <div 
-          className="w-full h-full bg-gray-50 overflow-hidden"
+          className="w-full h-full bg-gray-50 overflow-hidden relative"
           style={{
             width: '226px', // Exact scaled width: 794 * 0.285
             height: '320px', // Exact scaled height: 1123 * 0.285
@@ -72,6 +72,20 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               className="template-preview-scaled"
             />
           </div>
+
+          {/* Full Preview Button - Always visible */}
+          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setPreviewTemplate(template.id);
+              }}
+              className="opacity-0 group-hover:opacity-100 bg-white text-gray-800 px-4 py-2 rounded-lg shadow-lg flex items-center text-sm font-medium transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 hover:bg-gray-50"
+            >
+              <ZoomIn className="w-4 h-4 mr-2" />
+              Full Preview
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -83,7 +97,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-3">Choose Your Template</h2>
-            <p className="text-gray-600 text-lg">Select from our collection of professionally designed resume layouts. Your data will be automatically applied to the selected template.</p>
+            <p className="text-gray-600 text-lg">Select from our collection of professionally designed resume layouts. Click any template to see a full preview.</p>
           </div>
           
           {/* Save Draft Button */}
@@ -229,6 +243,18 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                       />
                     </div>
                   </div>
+
+                  {/* Full Preview Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPreviewTemplate(template.id);
+                    }}
+                    className="w-full mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    View Full Preview
+                  </button>
                 </div>
               </div>
             );
@@ -260,12 +286,13 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
         {/* Full Preview Modal */}
         {previewTemplate && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-hidden">
-              <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[95vh] overflow-hidden">
+              {/* Modal Header */}
+              <div className="p-6 border-b border-gray-200 flex items-center justify-between bg-gray-50">
                 <div>
                   <h3 className="text-xl font-bold text-gray-900">
-                    {reactiveTemplates.find(t => t.id === previewTemplate)?.name} Preview
+                    {reactiveTemplates.find(t => t.id === previewTemplate)?.name} - Full Preview
                   </h3>
                   <p className="text-gray-600 text-sm mt-1">
                     {reactiveTemplates.find(t => t.id === previewTemplate)?.description}
@@ -277,29 +304,60 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                       onTemplateSelect(previewTemplate);
                       setPreviewTemplate(null);
                     }}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
                   >
-                    Select Template
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Select This Template
                   </button>
                   <button
                     onClick={() => setPreviewTemplate(null)}
-                    className="text-gray-400 hover:text-gray-600 p-2"
+                    className="text-gray-400 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-100 transition-colors"
                   >
-                    ✕
+                    <X className="w-6 h-6" />
                   </button>
                 </div>
               </div>
-              <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(95vh - 120px)' }}>
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden mx-auto" style={{ width: '794px', maxWidth: '100%' }}>
-                  {reactiveTemplates.find(t => t.id === previewTemplate) && (
-                    <TemplateRenderer
-                      context={{
-                        data: resumeData,
-                        config: reactiveTemplates.find(t => t.id === previewTemplate)!,
-                        customizations: {}
-                      }}
-                    />
-                  )}
+
+              {/* Modal Content - Full Size Preview */}
+              <div className="p-6 overflow-y-auto bg-gray-100" style={{ maxHeight: 'calc(95vh - 120px)' }}>
+                <div className="flex justify-center">
+                  <div className="bg-white rounded-lg shadow-xl overflow-hidden" style={{ width: '794px', maxWidth: '100%' }}>
+                    {reactiveTemplates.find(t => t.id === previewTemplate) && (
+                      <TemplateRenderer
+                        context={{
+                          data: resumeData,
+                          config: reactiveTemplates.find(t => t.id === previewTemplate)!,
+                          customizations: {}
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-6 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  <span className="font-medium">Layout:</span> {reactiveTemplates.find(t => t.id === previewTemplate)?.layout.type.replace('-', ' ')} • 
+                  <span className="font-medium ml-2">Category:</span> {reactiveTemplates.find(t => t.id === previewTemplate)?.category}
+                </div>
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => setPreviewTemplate(null)}
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Close Preview
+                  </button>
+                  <button
+                    onClick={() => {
+                      onTemplateSelect(previewTemplate);
+                      setPreviewTemplate(null);
+                    }}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Select & Continue
+                  </button>
                 </div>
               </div>
             </div>

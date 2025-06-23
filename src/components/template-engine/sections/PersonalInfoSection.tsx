@@ -20,10 +20,10 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
 
   // Use actual data or provide professional fallbacks
   const displayName = personalInfo.name || 'John Doe';
-  const displayTitle = personalInfo.title || 'Professional Title';
+  const displayTitle = personalInfo.title || 'Senior Software Engineer';
   const displayEmail = personalInfo.email || 'john.doe@email.com';
   const displayPhone = personalInfo.phone || '+1 (555) 123-4567';
-  const displayLocation = personalInfo.location || 'New York, NY';
+  const displayLocation = personalInfo.location || 'San Francisco, CA';
   const displayLinkedin = personalInfo.linkedin || 'linkedin.com/in/johndoe';
   const displayWebsite = personalInfo.website || 'johndoe.dev';
 

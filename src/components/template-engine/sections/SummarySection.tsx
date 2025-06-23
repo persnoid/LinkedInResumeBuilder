@@ -17,7 +17,7 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
   
   // Provide meaningful fallback content
   const displaySummary = summary || 
-    'Experienced professional with a proven track record of delivering exceptional results. Skilled in leadership, problem-solving, and driving innovation. Passionate about continuous learning and contributing to organizational success through strategic thinking and collaborative teamwork.';
+    'Experienced software engineer with 8+ years of expertise in full-stack development, cloud architecture, and team leadership. Proven track record of delivering scalable solutions and mentoring junior developers.';
 
   return (
     <div className="summary-section">

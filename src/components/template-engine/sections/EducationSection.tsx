@@ -21,8 +21,8 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
     {
       id: '1',
       degree: 'Bachelor of Science in Computer Science',
-      school: 'University of Technology',
-      location: 'Boston, MA',
+      school: 'University of California, Berkeley',
+      location: 'Berkeley, CA',
       startDate: '2014-09',
       endDate: '2018-05',
       gpa: '3.8',

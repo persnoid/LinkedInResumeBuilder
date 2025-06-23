@@ -168,6 +168,15 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     }
   };
 
+  // Add error boundary and fallback
+  if (!data || !config) {
+    return (
+      <div className="p-8 text-center text-gray-500">
+        <p>Loading resume preview...</p>
+      </div>
+    );
+  }
+
   return (
     <div
       id="resume-preview"
@@ -180,6 +189,9 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         backgroundColor: styles.colors.background,
         padding: styles.page.padding,
         margin: styles.page.margin,
+        minHeight: '297mm',
+        width: '210mm',
+        maxWidth: '794px',
       }}
     >
       {renderLayout()}

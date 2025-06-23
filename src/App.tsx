@@ -135,6 +135,7 @@ function App() {
   };
 
   const handleCustomizationsUpdate = (newCustomizations: any) => {
+    console.log('Updating customizations:', newCustomizations);
     setCustomizations(newCustomizations);
   };
 
@@ -291,7 +292,14 @@ function App() {
             onSaveDraft={() => setShowSavePrompt(true)}
             currentDraftId={currentDraftId}
           />
-        ) : null;
+        ) : (
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading resume data...</p>
+            </div>
+          </div>
+        );
       default:
         return <div>Step not found</div>;
     }

@@ -3,6 +3,7 @@ import { Palette, Type, Move, Download, FileText, FileType, Save } from 'lucide-
 import { ResumeData } from '../types/resume';
 import { reactiveTemplates } from '../data/reactive-templates';
 import { TemplateRenderer } from './template-engine/TemplateRenderer';
+import { ResumePreview } from './ResumePreview';
 
 interface ResumeCustomizerProps {
   resumeData: ResumeData;
@@ -69,14 +70,11 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     onCustomizationsUpdate(newCustomizations);
   };
 
-  const template = reactiveTemplates.find(t => t.id === selectedTemplate);
-  if (!template) return null;
-
-  // Merge template colors with customizations
-  const currentColors = {
-    ...template.layout.styles.colors,
-    ...customizations.colors
-  };
+  // Check if we have a reactive template
+  const reactiveTemplate = reactiveTemplates.find(t => t.id === selectedTemplate);
+  
+  // Get current colors for display
+  const currentColors = customizations.colors || {};
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -174,7 +172,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                       <span className="text-sm text-gray-700">{color.label}</span>
                       <input
                         type="color"
-                        value={currentColors[color.key as keyof typeof currentColors] || '#3B82F6'}
+                        value={currentColors[color.key] || '#3B82F6'}
                         onChange={(e) => {
                           handleCustomizationChange(`colors.${color.key}`, e.target.value);
                         }}
@@ -212,23 +210,30 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
 
           {activeTab === 'layout' && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-900">Section Order</h3>
-              <p className="text-sm text-gray-600">Sections are automatically arranged based on the template layout</p>
-              <div className="space-y-2">
-                {template.layout.sections
-                  .sort((a, b) => a.order - b.order)
-                  .map((section) => (
-                    <div
-                      key={section.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg"
-                    >
-                      <span className="text-sm font-medium text-gray-900">
-                        {section.name}
-                      </span>
-                      <Move className="w-4 h-4 text-gray-400" />
-                    </div>
-                  ))}
-              </div>
+              <h3 className="text-sm font-semibold text-gray-900">Template Layout</h3>
+              <p className="text-sm text-gray-600">
+                {reactiveTemplate 
+                  ? `This template uses a ${reactiveTemplate.layout.type.replace('-', ' ')} layout with customizable sections.`
+                  : 'Layout options are automatically arranged based on the selected template.'
+                }
+              </p>
+              {reactiveTemplate && (
+                <div className="space-y-2">
+                  {reactiveTemplate.layout.sections
+                    .sort((a, b) => a.order - b.order)
+                    .map((section) => (
+                      <div
+                        key={section.id}
+                        className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg"
+                      >
+                        <span className="text-sm font-medium text-gray-900">
+                          {section.name}
+                        </span>
+                        <Move className="w-4 h-4 text-gray-400" />
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -277,13 +282,22 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           </div>
           
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <TemplateRenderer
-              context={{
-                data: resumeData,
-                config: template,
-                customizations: customizations
-              }}
-            />
+            {reactiveTemplate ? (
+              <TemplateRenderer
+                context={{
+                  data: resumeData,
+                  config: reactiveTemplate,
+                  customizations: customizations
+                }}
+              />
+            ) : (
+              <ResumePreview
+                resumeData={resumeData}
+                template={selectedTemplate}
+                customColors={customizations.colors}
+                font={customizations.typography?.fontFamily?.split(',')[0] || 'Inter'}
+              />
+            )}
           </div>
         </div>
       </div>

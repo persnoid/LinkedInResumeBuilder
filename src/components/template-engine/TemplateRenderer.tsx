@@ -123,7 +123,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         const sidebarSections = sortedSections.filter(s => s.columns === 2);
         
         return (
-          <div className="template-sidebar flex h-full">
+          <div className="template-sidebar flex h-full min-h-full">
             <div className="template-sidebar-content flex-1 p-8">
               {mainSections.map(renderSection)}
             </div>
@@ -172,21 +172,25 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     }
   };
 
+  // Determine if this is a preview (scaled down) or full size
+  const isPreview = className.includes('template-preview-scaled');
+
   return (
     <div
-      id="resume-preview"
-      className={`template-container a4-page ${className}`}
+      id={isPreview ? undefined : "resume-preview"}
+      className={`template-container ${isPreview ? '' : 'a4-page'} ${className}`}
       style={{
         fontFamily: styles.typography.fontFamily,
         fontSize: styles.typography.fontSize.base,
         lineHeight: styles.typography.lineHeight.normal,
         color: styles.colors.text,
         backgroundColor: styles.colors.background,
-        minHeight: '297mm',
-        width: '210mm',
-        maxWidth: '794px',
-        margin: '0 auto',
-        boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+        width: '794px',
+        minHeight: isPreview ? '1123px' : '297mm',
+        maxWidth: isPreview ? 'none' : '794px',
+        margin: isPreview ? '0' : '0 auto',
+        boxShadow: isPreview ? 'none' : '0 0 10px rgba(0, 0, 0, 0.1)',
+        overflow: 'hidden'
       }}
     >
       {renderLayout()}

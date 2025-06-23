@@ -45,30 +45,39 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     const LayoutIcon = getLayoutIcon(template.layout.type);
     
     return (
-      <div className="w-full h-96 bg-white border rounded-xl overflow-hidden shadow-sm relative group hover:shadow-lg transition-all duration-300">
+      <div className="w-full h-80 bg-white border rounded-xl overflow-hidden shadow-sm relative group hover:shadow-lg transition-all duration-300">
         {/* Layout indicator */}
-        <div className="absolute top-3 right-3 z-10">
+        <div className="absolute top-3 right-3 z-20">
           <div className="bg-black bg-opacity-70 text-white px-2 py-1 rounded-md flex items-center text-xs font-medium">
             <LayoutIcon className="w-3 h-3 mr-1" />
             <span>{template.layout.type.replace('-', ' ')}</span>
           </div>
         </div>
 
-        {/* Template Preview using TemplateRenderer */}
-        <div className="h-full transform scale-[0.22] origin-top-left w-[454%] overflow-hidden bg-white">
-          <div className="w-[794px] min-h-[1123px] bg-white">
+        {/* Template Preview Container */}
+        <div className="w-full h-full relative overflow-hidden bg-gray-50">
+          {/* Scaled down template preview */}
+          <div 
+            className="absolute top-0 left-0 origin-top-left bg-white shadow-sm"
+            style={{
+              transform: 'scale(0.25)',
+              width: '794px',
+              height: '1123px',
+              transformOrigin: 'top left'
+            }}
+          >
             <TemplateRenderer
               context={{
                 data: resumeData,
                 config: template,
                 customizations: {}
               }}
-              className="template-preview-item"
+              className="template-preview-scaled"
             />
           </div>
         </div>
 
-        {/* Hover overlay */}
+        {/* Hover overlay with preview button */}
         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 flex items-center justify-center">
           <button
             onClick={(e) => {
@@ -78,7 +87,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             className="opacity-0 group-hover:opacity-100 bg-white text-gray-800 px-4 py-2 rounded-lg shadow-lg flex items-center text-sm font-medium transition-all duration-300 transform translate-y-2 group-hover:translate-y-0"
           >
             <Eye className="w-4 h-4 mr-2" />
-            Preview
+            Full Preview
           </button>
         </div>
       </div>
@@ -182,7 +191,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               >
                 {/* Selection Indicator */}
                 {selectedTemplate === template.id && (
-                  <div className="absolute -top-3 -right-3 z-20">
+                  <div className="absolute -top-3 -right-3 z-30">
                     <div className="bg-blue-500 rounded-full p-2 shadow-lg">
                       <CheckCircle className="w-5 h-5 text-white" />
                     </div>
@@ -266,10 +275,10 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </div>
         </div>
 
-        {/* Preview Modal */}
+        {/* Full Preview Modal */}
         {previewTemplate && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-hidden">
               <div className="p-6 border-b border-gray-200 flex items-center justify-between">
                 <div>
                   <h3 className="text-xl font-bold text-gray-900">
@@ -293,12 +302,12 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                     onClick={() => setPreviewTemplate(null)}
                     className="text-gray-400 hover:text-gray-600 p-2"
                   >
-                    <CheckCircle className="w-6 h-6" />
+                    ✕
                   </button>
                 </div>
               </div>
-              <div className="p-6 overflow-y-auto max-h-[70vh]">
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-3xl mx-auto">
+              <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(95vh - 120px)' }}>
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden mx-auto" style={{ width: '794px', maxWidth: '100%' }}>
                   {reactiveTemplates.find(t => t.id === previewTemplate) && (
                     <TemplateRenderer
                       context={{

@@ -61,6 +61,14 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+/* Template preview specific styles */
+.template-preview-scaled {
+  width: 794px !important;
+  height: 1123px !important;
+  overflow: hidden;
+  background: white;
+}
+
 /* Ensure proper font rendering */
 body {
   font-feature-settings: "kern" 1, "liga" 1;
@@ -131,4 +139,24 @@ body {
 #resume-preview * {
   word-wrap: break-word;
   overflow-wrap: break-word;
+}
+
+/* Template preview container fixes */
+.template-container {
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Sidebar layout specific fixes */
+.template-sidebar {
+  min-height: 100%;
+  display: flex;
+}
+
+.template-sidebar-content {
+  flex: 1;
+}
+
+.template-sidebar-aside {
+  flex-shrink: 0;
 }

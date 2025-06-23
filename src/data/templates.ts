@@ -1,58 +1,6 @@
 import { ResumeTemplate } from '../types/resume';
 
 export const resumeTemplates: ResumeTemplate[] = [
-  // NEW TEMPLATES - Based on the provided image
-  {
-    id: 'skill-focus',
-    name: 'Skill Focus',
-    description: 'A dedicated format emphasizing your strengths, with a clear section for your personal story.',
-    category: 'modern',
-    layout: 'double-column',
-    colors: {
-      primary: '#2563EB',
-      secondary: '#1E40AF',
-      accent: '#3B82F6',
-      text: '#1F2937',
-      background: '#FFFFFF',
-      sidebar: '#F8FAFC',
-      highlight: '#EFF6FF'
-    },
-    preview: '/templates/skill-focus.jpg'
-  },
-  {
-    id: 'profile-plus',
-    name: 'Profile Plus',
-    description: 'A comprehensive resume featuring your photo, skills, and experiences.',
-    category: 'modern',
-    layout: 'ivy-league',
-    colors: {
-      primary: '#059669',
-      secondary: '#047857',
-      accent: '#10B981',
-      text: '#1F2937',
-      background: '#FFFFFF',
-      sidebar: '#F0FDF4',
-      highlight: '#DCFCE7'
-    },
-    preview: '/templates/profile-plus.jpg'
-  },
-  {
-    id: 'compact-connection',
-    name: 'Compact Connection',
-    description: 'A streamlined design that connects your credentials and certifications in a modern format.',
-    category: 'modern',
-    layout: 'double-column',
-    colors: {
-      primary: '#F59E0B',
-      secondary: '#D97706',
-      accent: '#FBBF24',
-      text: '#1F2937',
-      background: '#FFFFFF',
-      sidebar: '#FEF3C7',
-      highlight: '#FEF3C7'
-    },
-    preview: '/templates/compact-connection.jpg'
-  },
   // EXACT MATCH templates based on provided images
   {
     id: 'green-organic-sidebar',

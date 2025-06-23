@@ -52,92 +52,6 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </div>
         </div>
 
-        {/* Skill Focus Template Preview - EXACT MATCH to image */}
-        {template.id === 'skill-focus' && (
-          <div className="h-full flex">
-            <div className="w-1/3 p-3 bg-gray-50">
-              <div className="w-8 h-8 rounded bg-gray-300 mb-2"></div>
-              <div className="space-y-2">
-                <div className="font-bold text-xs" style={{ color: template.colors.primary }}>CONTACT</div>
-                <div className="space-y-1">
-                  <div className="h-1 bg-gray-300 rounded w-full"></div>
-                  <div className="h-1 bg-gray-300 rounded w-3/4"></div>
-                </div>
-                <div className="font-bold text-xs mt-3" style={{ color: template.colors.primary }}>SKILLS</div>
-                <div className="space-y-1">
-                  <div className="h-1 bg-gray-300 rounded w-full"></div>
-                  <div className="h-1 bg-gray-300 rounded w-4/5"></div>
-                </div>
-              </div>
-            </div>
-            <div className="flex-1 p-3">
-              <div className="text-sm font-bold mb-1" style={{ color: template.colors.primary }}>Daniel Clark</div>
-              <div className="text-xs text-gray-600 mb-3">Contact Number</div>
-              <div className="font-bold text-xs mb-2" style={{ color: template.colors.primary }}>About Me</div>
-              <div className="space-y-1">
-                <div className="h-1 bg-gray-200 rounded w-full"></div>
-                <div className="h-1 bg-gray-200 rounded w-4/5"></div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Profile Plus Template Preview - EXACT MATCH to image */}
-        {template.id === 'profile-plus' && (
-          <div className="h-full p-3 text-center">
-            <div className="w-8 h-8 rounded-full bg-gray-300 mx-auto mb-2"></div>
-            <div className="text-sm font-bold mb-1 text-gray-800">Samantha Davis</div>
-            <div className="text-xs text-gray-600 mb-3">Contact Information</div>
-            <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-              <div>Contact Number</div>
-              <div>Email</div>
-              <div>Location</div>
-              <div>Date of Birth</div>
-            </div>
-            <div className="font-bold text-xs mb-2" style={{ color: template.colors.primary }}>About Me</div>
-            <div className="space-y-1">
-              <div className="h-1 bg-gray-200 rounded w-full"></div>
-              <div className="h-1 bg-gray-200 rounded w-3/4 mx-auto"></div>
-            </div>
-          </div>
-        )}
-
-        {/* Compact Connection Template Preview - EXACT MATCH to image */}
-        {template.id === 'compact-connection' && (
-          <div className="h-full flex">
-            <div className="w-1/3 p-3" style={{ backgroundColor: template.colors.sidebar }}>
-              <div className="flex items-center mb-2">
-                <div className="w-6 h-6 rounded-full bg-gray-300 mr-2"></div>
-                <div>
-                  <div className="text-xs font-bold">Laura Smith</div>
-                  <div className="text-xs">Civil Engineer</div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="font-bold text-xs" style={{ color: template.colors.primary }}>About Me</div>
-                <div className="space-y-1">
-                  <div className="h-1 bg-gray-400 rounded w-full"></div>
-                  <div className="h-1 bg-gray-400 rounded w-3/4"></div>
-                </div>
-              </div>
-            </div>
-            <div className="flex-1 p-3">
-              <div className="font-bold text-xs mb-2" style={{ color: template.colors.primary }}>Details about me</div>
-              <div className="grid grid-cols-2 gap-1 text-xs mb-3">
-                <div>Contact Number</div>
-                <div>Email</div>
-                <div>Location</div>
-                <div>Date of Birth</div>
-              </div>
-              <div className="font-bold text-xs mb-2" style={{ color: template.colors.primary }}>Skills</div>
-              <div className="space-y-1">
-                <div className="h-1 bg-gray-200 rounded w-full"></div>
-                <div className="h-1 bg-gray-200 rounded w-4/5"></div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Soft Blue Elegant Template Preview - EXACT MATCH to your image */}
         {template.id === 'soft-blue-elegant' && (
           <div className="h-full p-3 relative">
@@ -349,7 +263,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         )}
 
         {/* Default preview for existing templates */}
-        {!['ivy-league-classic', 'green-organic-sidebar', 'navy-header-professional', 'orange-timeline-modern', 'blue-sidebar-clean', 'soft-blue-elegant', 'skill-focus', 'profile-plus', 'compact-connection'].includes(template.id) && (
+        {!['ivy-league-classic', 'green-organic-sidebar', 'navy-header-professional', 'orange-timeline-modern', 'blue-sidebar-clean', 'soft-blue-elegant'].includes(template.id) && (
           <div className="h-full flex">
             {template.layout === 'double-column' ? (
               <>

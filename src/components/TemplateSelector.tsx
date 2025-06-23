@@ -46,13 +46,13 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     
     return (
       <div className="w-full h-80 bg-white border rounded-xl overflow-hidden shadow-sm relative group hover:shadow-lg transition-all duration-300">
-        {/* Template Preview Container - Completely fill the space */}
+        {/* Template Preview Container - COMPLETELY FILL with no gaps */}
         <div className="w-full h-full relative overflow-hidden bg-gray-50">
-          {/* Scaled template preview that fills entire container width */}
+          {/* Scaled template preview that COMPLETELY fills container */}
           <div 
             className="absolute top-0 left-0 bg-white"
             style={{
-              transform: 'scale(0.4)',
+              transform: 'scale(0.48)',
               transformOrigin: 'top left',
               width: '794px',
               height: '1123px',

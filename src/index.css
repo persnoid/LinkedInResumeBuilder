@@ -61,7 +61,7 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Template preview specific styles - COMPLETELY FILL CONTAINER */
+/* Template preview specific styles - ZERO GAPS OR SPACES */
 .template-preview-scaled {
   width: 794px !important;
   height: 1123px !important;
@@ -73,6 +73,8 @@
   border: none !important;
   box-shadow: none !important;
   position: relative;
+  display: block;
+  flex-shrink: 0;
 }
 
 /* Ensure proper font rendering */

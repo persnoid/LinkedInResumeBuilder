@@ -28,6 +28,8 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'layout'>('colors');
   const [isExporting, setIsExporting] = useState(false);
+  const [editableResumeData, setEditableResumeData] = useState<ResumeData>(resumeData);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const fonts = [
     { name: 'Inter', value: 'Inter, sans-serif' },
@@ -70,6 +72,11 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     onCustomizationsUpdate(newCustomizations);
   };
 
+  // Handle resume data updates from editable components
+  const handleResumeDataUpdate = (updatedData: ResumeData) => {
+    setEditableResumeData(updatedData);
+  };
+
   // Check if we have a reactive template
   const reactiveTemplate = reactiveTemplates.find(t => t.id === selectedTemplate);
   
@@ -95,6 +102,28 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
             <Save className="w-3 h-3 mr-1" />
             {currentDraftId ? 'Update' : 'Save'}
           </button>
+        </div>
+
+        {/* Edit Mode Toggle */}
+        <div className="p-4 border-b border-gray-200 bg-blue-50">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">Edit Mode</span>
+            <button
+              onClick={() => setIsEditMode(!isEditMode)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                isEditMode ? 'bg-blue-600' : 'bg-gray-200'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  isEditMode ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+          <p className="text-xs text-gray-600 mt-1">
+            {isEditMode ? 'Click on text to edit directly' : 'Enable to edit text in preview'}
+          </p>
         </div>
 
         {/* Tabs */}
@@ -205,6 +234,40 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                   </button>
                 ))}
               </div>
+
+              <div className="space-y-4 pt-4 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-900">Font Sizes</h3>
+                {[
+                  { key: 'base', label: 'Base Text', min: 10, max: 16, default: 12 },
+                  { key: 'heading1', label: 'Main Heading', min: 24, max: 40, default: 28 },
+                  { key: 'heading2', label: 'Section Heading', min: 16, max: 28, default: 20 },
+                  { key: 'heading3', label: 'Sub Heading', min: 12, max: 20, default: 16 },
+                  { key: 'small', label: 'Small Text', min: 8, max: 12, default: 11 }
+                ].map((fontSize) => (
+                  <div key={fontSize.key} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-700">{fontSize.label}</span>
+                      <span className="text-xs text-gray-500">
+                        {customizations.typography?.fontSize?.[fontSize.key] || `${fontSize.default}px`}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={fontSize.min}
+                      max={fontSize.max}
+                      value={parseInt(customizations.typography?.fontSize?.[fontSize.key] || fontSize.default)}
+                      onChange={(e) => {
+                        const newFontSizes = {
+                          ...customizations.typography?.fontSize,
+                          [fontSize.key]: `${e.target.value}px`
+                        };
+                        handleCustomizationChange('typography.fontSize', newFontSizes);
+                      }}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -229,7 +292,14 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                         <span className="text-sm font-medium text-gray-900">
                           {section.name}
                         </span>
-                        <Move className="w-4 h-4 text-gray-400" />
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs text-gray-500">
+                            {section.columns === 0 ? 'Header' : 
+                             section.columns === 1 ? 'Main' : 
+                             section.columns === 2 ? 'Sidebar' : 'Footer'}
+                          </span>
+                          <Move className="w-4 h-4 text-gray-400" />
+                        </div>
                       </div>
                     ))}
                 </div>
@@ -278,21 +348,27 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Live Preview</h3>
-            <p className="text-gray-600">See how your resume looks with your customizations</p>
+            <p className="text-gray-600">
+              {isEditMode ? 'Click on any text to edit it directly' : 'Enable edit mode to modify content'}
+            </p>
           </div>
           
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
             {reactiveTemplate ? (
               <TemplateRenderer
                 context={{
-                  data: resumeData,
+                  data: editableResumeData,
                   config: reactiveTemplate,
-                  customizations: customizations
+                  customizations: {
+                    ...customizations,
+                    editMode: isEditMode,
+                    onDataUpdate: handleResumeDataUpdate
+                  }
                 }}
               />
             ) : (
               <ResumePreview
-                resumeData={resumeData}
+                resumeData={editableResumeData}
                 template={selectedTemplate}
                 customColors={customizations.colors}
                 font={customizations.typography?.fontFamily?.split(',')[0] || 'Inter'}

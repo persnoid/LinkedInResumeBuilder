@@ -24,7 +24,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'PersonalInfo',
           visible: true,
           order: 1,
-          columns: 2,
+          columns: 1, // Changed from 2 to 1 to move to main content area
           styles: { alignment: 'left' }
         },
         {
@@ -253,8 +253,8 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'PersonalInfo',
           visible: true,
           order: 1,
-          columns: 2,
-          styles: { alignment: 'center' }
+          columns: 1, // Changed from 2 to 1 to move to main content area
+          styles: { alignment: 'left' }
         },
         {
           id: 'summary',

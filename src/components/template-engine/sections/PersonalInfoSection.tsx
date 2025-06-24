@@ -35,44 +35,56 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     { icon: MapPin, value: displayLocation, label: 'Location' },
   ].filter(item => item.value);
 
-  const renderCompact = () => (
-    <div className="personal-info-compact text-center mb-6">
-      {personalInfo.photo && (
-        <div className="photo-container mb-4 flex justify-center">
+  const renderMainContentHeader = () => (
+    <div className="personal-info-main-content flex items-start mb-6">
+      {/* Profile Photo on the left */}
+      <div className="photo-container mr-6 flex-shrink-0">
+        {personalInfo.photo ? (
           <img
             src={personalInfo.photo}
             alt="Profile"
-            className="w-20 h-20 rounded-full object-cover border-2"
+            className="w-24 h-24 rounded-full object-cover border-2"
             style={{ borderColor: styles.colors.primary }}
           />
-        </div>
-      )}
-      <h1 
-        className="name font-bold mb-2"
-        style={{ 
-          fontSize: styles.typography.fontSize.heading1,
-          color: styles.colors.primary,
-          lineHeight: styles.typography.lineHeight.tight,
-        }}
-      >
-        {displayName}
-      </h1>
-      <h2 
-        className="title mb-4"
-        style={{ 
-          fontSize: styles.typography.fontSize.heading2,
-          color: styles.colors.secondary,
-        }}
-      >
-        {displayTitle}
-      </h2>
-      <div className="contact-info flex flex-wrap justify-center gap-4 text-sm">
-        {contactItems.map((item, index) => (
-          <div key={index} className="contact-item flex items-center">
-            <item.icon className="w-4 h-4 mr-1" style={{ color: styles.colors.accent }} />
-            <span>{item.value}</span>
+        ) : (
+          <div 
+            className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center border-2"
+            style={{ borderColor: styles.colors.primary }}
+          >
+            <User className="w-12 h-12 text-gray-400" />
           </div>
-        ))}
+        )}
+      </div>
+      
+      {/* Name, title, and contact info on the right */}
+      <div className="info-content flex-1">
+        <h1 
+          className="name font-bold mb-2"
+          style={{ 
+            fontSize: styles.typography.fontSize.heading1,
+            color: styles.colors.primary,
+            lineHeight: styles.typography.lineHeight.tight,
+          }}
+        >
+          {displayName}
+        </h1>
+        <h2 
+          className="title mb-4"
+          style={{ 
+            fontSize: styles.typography.fontSize.heading2,
+            color: styles.colors.secondary,
+          }}
+        >
+          {displayTitle}
+        </h2>
+        <div className="contact-info space-y-1">
+          {contactItems.map((item, index) => (
+            <div key={index} className="contact-item flex items-center text-sm">
+              <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
+              <span className="break-all" style={{ color: styles.colors.text }}>{item.value}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -168,6 +180,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   } else if (config.columns === 0) {
     return renderHeader();
   } else {
-    return renderCompact();
+    // For main content area (columns === 1), use the new layout
+    return renderMainContentHeader();
   }
 };

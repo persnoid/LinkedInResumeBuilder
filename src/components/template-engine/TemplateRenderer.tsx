@@ -136,12 +136,14 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         );
 
       case 'header-footer':
-        const headerSections = sortedSections.filter(s => s.columns === 0);
-        const bodySections = sortedSections.filter(s => s.columns === 1 || !s.columns);
-        const footerSections = sortedSections.filter(s => s.columns === 3);
+        // CRITICAL FIX: Separate sections by their column values
+        const headerSections = sortedSections.filter(s => s.columns === 0); // Header only
+        const bodySections = sortedSections.filter(s => s.columns === 1 || (!s.columns && s.columns !== 0)); // Main content only
+        const footerSections = sortedSections.filter(s => s.columns === 3); // Footer only
         
         return (
           <div className="template-header-footer">
+            {/* Header Section - Navy background */}
             {headerSections.length > 0 && (
               <div className="template-header p-8" style={{ 
                 backgroundColor: styles.colors.primary,
@@ -150,9 +152,13 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
                 {headerSections.map(renderSection)}
               </div>
             )}
+            
+            {/* Main Body Section - White background */}
             <div className="template-body p-8">
               {bodySections.map(renderSection)}
             </div>
+            
+            {/* Footer Section */}
             {footerSections.length > 0 && (
               <div className="template-footer p-8" style={{ 
                 borderTop: `1px solid ${styles.colors.border}`,

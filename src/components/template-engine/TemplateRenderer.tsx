@@ -104,27 +104,34 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         );
 
       case 'two-column':
-        const leftSections = sortedSections.filter(s => s.columns === 1 || !s.columns);
-        const rightSections = sortedSections.filter(s => s.columns === 2);
+        // FIXED: Use explicit filtering for two-column layout
+        const leftColumnSections = sortedSections.filter(s => s.columns === 1);
+        const rightColumnSections = sortedSections.filter(s => s.columns === 2);
+        
+        console.log('Two-column layout - Left sections:', leftColumnSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('Two-column layout - Right sections:', rightColumnSections.map(s => `${s.id} (columns: ${s.columns})`));
         
         return (
           <div className="template-two-column grid grid-cols-3 gap-8 p-8">
             <div className="col-span-2">
-              {leftSections.map(renderSection)}
+              {leftColumnSections.map(renderSection)}
             </div>
             <div className="col-span-1">
-              {rightSections.map(renderSection)}
+              {rightColumnSections.map(renderSection)}
             </div>
           </div>
         );
 
       case 'sidebar':
-        // CRITICAL FIX: Properly separate main content from sidebar content
-        const mainContentSections = sortedSections.filter(s => s.columns === 1 || (!s.columns && s.columns !== 2));
+        // CRITICAL FIX: Use ONLY explicit column values - NO fallbacks
+        const mainContentSections = sortedSections.filter(s => s.columns === 1);
         const sidebarSections = sortedSections.filter(s => s.columns === 2);
         
-        console.log('Sidebar layout - Main sections:', mainContentSections.map(s => `${s.id} (columns: ${s.columns})`));
-        console.log('Sidebar layout - Sidebar sections:', sidebarSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('=== SIDEBAR LAYOUT DEBUG ===');
+        console.log('All sorted sections:', sortedSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('Main content sections (columns === 1):', mainContentSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('Sidebar sections (columns === 2):', sidebarSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('=== END DEBUG ===');
         
         return (
           <div className="template-sidebar flex h-full min-h-full">
@@ -140,14 +147,17 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         );
 
       case 'header-footer':
-        // CRITICAL FIX: Separate sections by their column values
-        const headerSections = sortedSections.filter(s => s.columns === 0); // Header only
-        const bodySections = sortedSections.filter(s => s.columns === 1 || (!s.columns && s.columns !== 0)); // Main content only
-        const footerSections = sortedSections.filter(s => s.columns === 3); // Footer only
+        // CRITICAL FIX: Use ONLY explicit column values
+        const headerSections = sortedSections.filter(s => s.columns === 0);
+        const bodySections = sortedSections.filter(s => s.columns === 1);
+        const footerSections = sortedSections.filter(s => s.columns === 3);
         
-        console.log('Header-footer layout - Header sections:', headerSections.map(s => `${s.id} (columns: ${s.columns})`));
-        console.log('Header-footer layout - Body sections:', bodySections.map(s => `${s.id} (columns: ${s.columns})`));
-        console.log('Header-footer layout - Footer sections:', footerSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('=== HEADER-FOOTER LAYOUT DEBUG ===');
+        console.log('All sorted sections:', sortedSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('Header sections (columns === 0):', headerSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('Body sections (columns === 1):', bodySections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('Footer sections (columns === 3):', footerSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('=== END DEBUG ===');
         
         return (
           <div className="template-header-footer">

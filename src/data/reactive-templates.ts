@@ -19,12 +19,21 @@ export const reactiveTemplates: TemplateConfig[] = [
       type: 'sidebar',
       sections: [
         {
-          id: 'personalInfo',
+          id: 'personalInfoMain',
           name: 'Personal Information',
           component: 'PersonalInfo',
           visible: true,
           order: 1,
-          columns: 2, // SIDEBAR ONLY - will NOT appear in main content
+          columns: 1, // MAIN CONTENT - shows name, title, photo on the LEFT
+          styles: { alignment: 'left' }
+        },
+        {
+          id: 'personalInfoContact',
+          name: 'Contact Information',
+          component: 'PersonalInfo',
+          visible: true,
+          order: 1,
+          columns: 2, // SIDEBAR - shows ONLY contact details on the RIGHT
           styles: { alignment: 'left' }
         },
         {

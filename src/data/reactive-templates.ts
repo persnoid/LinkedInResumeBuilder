@@ -24,16 +24,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'PersonalInfo',
           visible: true,
           order: 1,
-          columns: 1, // MAIN CONTENT - shows name, title, photo on the LEFT
-          styles: { alignment: 'left' }
-        },
-        {
-          id: 'personalInfoContact',
-          name: 'Contact Information',
-          component: 'PersonalInfo',
-          visible: true,
-          order: 1,
-          columns: 2, // SIDEBAR - shows ONLY contact details on the RIGHT
+          columns: 1, // MAIN CONTENT - shows name, title, photo, and contact info
           styles: { alignment: 'left' }
         },
         {
@@ -262,16 +253,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'PersonalInfo',
           visible: true,
           order: 1,
-          columns: 1, // MAIN CONTENT - shows name, title, photo
-          styles: { alignment: 'left' }
-        },
-        {
-          id: 'personalInfoContact',
-          name: 'Contact Information',
-          component: 'PersonalInfo',
-          visible: true,
-          order: 1,
-          columns: 2, // SIDEBAR - shows ONLY contact details
+          columns: 1, // MAIN CONTENT - shows name, title, photo, and contact info
           styles: { alignment: 'left' }
         },
         {

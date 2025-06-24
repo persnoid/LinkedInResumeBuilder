@@ -221,58 +221,6 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     </div>
   );
 
-  // CRITICAL FIX: For sidebar templates, ONLY render contact info, NOT name/title
-  const renderSidebarContactOnly = () => (
-    <div className="personal-info-sidebar-contact mb-6">
-      <h3 
-        className="section-title font-bold mb-3 uppercase tracking-wide"
-        style={{ 
-          fontSize: styles.typography.fontSize.heading3,
-          color: styles.colors.primary,
-          borderBottom: `2px solid ${styles.colors.primary}`,
-          paddingBottom: '4px',
-        }}
-      >
-        CONTACT
-      </h3>
-      
-      {/* COMPACT CONTACT INFO - Maximum 2 rows */}
-      <div className="contact-info space-y-2">
-        {/* First row - Phone and Email */}
-        <div className="contact-row">
-          {contactItems.slice(0, 2).map((item, index) => (
-            <div key={index} className="contact-item flex items-center text-sm mb-2">
-              <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
-              <EditableText
-                value={item.value}
-                field={item.field}
-                className="break-all text-xs"
-                style={{ color: styles.colors.text }}
-                placeholder={`Your ${item.label}`}
-              />
-            </div>
-          ))}
-        </div>
-        
-        {/* Second row - LinkedIn, Website, Location */}
-        <div className="contact-row">
-          {contactItems.slice(2).map((item, index) => (
-            <div key={index + 2} className="contact-item flex items-center text-sm mb-2">
-              <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
-              <EditableText
-                value={item.value}
-                field={item.field}
-                className="break-all text-xs"
-                style={{ color: styles.colors.text }}
-                placeholder={`Your ${item.label}`}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
   const renderHeader = () => (
     <div className="personal-info-header flex items-center justify-between mb-6">
       <div className="info-content">
@@ -322,8 +270,8 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   console.log(`PersonalInfoSection rendering with columns: ${config.columns}`);
   
   if (config.columns === 2) {
-    // For sidebar (columns === 2), ONLY show contact info, NOT name/title
-    return renderSidebarContactOnly();
+    // REMOVED: For sidebar (columns === 2), return null to hide contact info completely
+    return null;
   } else if (config.columns === 0) {
     // For header (columns === 0), show full header with name/title
     return renderHeader();

@@ -47,7 +47,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     spacing: { ...layout.styles.spacing, ...customizations.spacing },
   };
 
-  // Sort sections by order
+  // Sort sections by order and filter visible ones
   const sortedSections = layout.sections
     .filter(section => section.visible)
     .sort((a, b) => a.order - b.order);

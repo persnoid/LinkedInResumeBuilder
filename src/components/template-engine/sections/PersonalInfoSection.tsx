@@ -25,20 +25,20 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   if (!personalInfo) return null;
 
   // Use actual data or provide professional fallbacks
-  const displayName = personalInfo.name || 'John Doe';
+  const displayName = personalInfo.name || 'Jessica Miller';
   const displayTitle = personalInfo.title || 'Senior Software Engineer';
-  const displayEmail = personalInfo.email || 'john.doe@email.com';
+  const displayEmail = personalInfo.email || 'jessica.miller@email.com';
   const displayPhone = personalInfo.phone || '+1 (555) 123-4567';
   const displayLocation = personalInfo.location || 'San Francisco, CA';
-  const displayLinkedin = personalInfo.linkedin || 'linkedin.com/in/johndoe';
-  const displayWebsite = personalInfo.website || 'johndoe.dev';
+  const displayLinkedin = personalInfo.linkedin || 'linkedin.com/in/jessicamiller';
+  const displayWebsite = personalInfo.website || 'jessicamiller.dev';
 
   const contactItems = [
-    { icon: Phone, value: displayPhone, label: 'Phone', field: 'phone' },
     { icon: Mail, value: displayEmail, label: 'Email', field: 'email' },
+    { icon: Phone, value: displayPhone, label: 'Phone', field: 'phone' },
+    { icon: MapPin, value: displayLocation, label: 'Location', field: 'location' },
     { icon: Linkedin, value: displayLinkedin, label: 'LinkedIn', field: 'linkedin' },
     { icon: Globe, value: displayWebsite, label: 'Website', field: 'website' },
-    { icon: MapPin, value: displayLocation, label: 'Location', field: 'location' },
   ].filter(item => item.value);
 
   const handleTextEdit = (field: string, value: string) => {
@@ -171,6 +171,77 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     </div>
   );
 
+  const renderSidebar = () => (
+    <div className="personal-info-sidebar mb-6">
+      {/* Profile Photo */}
+      <div className="photo-container mb-6 flex justify-center">
+        <PhotoUpload className="w-24 h-24" />
+      </div>
+      
+      {/* Name and Title */}
+      <div className="text-center mb-6">
+        <EditableText
+          value={displayName}
+          field="name"
+          className="name font-bold mb-2 block"
+          style={{ 
+            fontSize: styles.typography.fontSize.heading1,
+            color: styles.colors.primary,
+            lineHeight: styles.typography.lineHeight.tight,
+          }}
+          placeholder="Your Name"
+        />
+        <EditableText
+          value={displayTitle}
+          field="title"
+          className="title block"
+          style={{ 
+            fontSize: styles.typography.fontSize.heading2,
+            color: styles.colors.secondary,
+          }}
+          placeholder="Your Professional Title"
+        />
+      </div>
+      
+      {/* Contact Information Section */}
+      <div className="contact-section">
+        <h4 
+          className="contact-header font-bold mb-4 text-center uppercase tracking-wide"
+          style={{ 
+            fontSize: styles.typography.fontSize.heading3,
+            color: styles.colors.primary,
+            borderBottom: `2px solid ${styles.colors.primary}`,
+            paddingBottom: '4px',
+          }}
+        >
+          Contact Information
+        </h4>
+        
+        <div className="contact-info space-y-3">
+          {contactItems.map((item, index) => (
+            <div key={index} className="contact-item">
+              <div className="flex items-center mb-1">
+                <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
+                <span className="text-sm font-medium" style={{ color: styles.colors.primary }}>
+                  {item.label}
+                </span>
+              </div>
+              <div className="ml-6">
+                <EditableText
+                  value={item.value}
+                  field={item.field}
+                  className="text-sm break-all"
+                  style={{ color: styles.colors.text }}
+                  placeholder={`Your ${item.label}`}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   const renderMainContentHeader = () => (
     <div className="personal-info-main-content flex items-start mb-6">
       {/* Profile Photo on the left */}
@@ -267,11 +338,11 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   );
 
   // CRITICAL: Determine layout based on section configuration
-  console.log(`PersonalInfoSection rendering with columns: ${config.columns}`);
+  console.log(`PersonalInfoSection rendering with columns: ${config.columns}, id: ${config.id}`);
   
   if (config.columns === 2) {
-    // REMOVED: For sidebar (columns === 2), return null to hide contact info completely
-    return null;
+    // For sidebar (columns === 2), show full contact info section like in the image
+    return renderSidebar();
   } else if (config.columns === 0) {
     // For header (columns === 0), show full header with name/title
     return renderHeader();

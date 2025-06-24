@@ -18,31 +18,52 @@ export const reactiveTemplates: TemplateConfig[] = [
       name: 'Azurill Layout',
       type: 'sidebar',
       sections: [
+        // SIDEBAR SECTIONS (LEFT COLUMN) - columns: 2
         {
-          id: 'personalInfoMain',
-          name: 'Personal Information',
+          id: 'personalInfoSidebar',
+          name: 'Contact Information',
           component: 'PersonalInfo',
           visible: true,
           order: 1,
-          columns: 1, // MAIN CONTENT - shows name, title, photo, and contact info
+          columns: 2, // SIDEBAR - shows photo, name, title, and contact details
           styles: { alignment: 'left' }
         },
         {
-          id: 'summary',
-          name: 'Summary',
-          component: 'Summary',
+          id: 'languages',
+          name: 'Languages',
+          component: 'Languages',
           visible: true,
           order: 2,
-          columns: 1, // MAIN CONTENT ONLY
+          columns: 2, // SIDEBAR
+          styles: { alignment: 'left' }
+        },
+        {
+          id: 'skills',
+          name: 'Skills',
+          component: 'Skills',
+          visible: true,
+          order: 3,
+          columns: 2, // SIDEBAR
+          styles: { alignment: 'left', display: 'list' }
+        },
+        
+        // MAIN CONTENT SECTIONS (RIGHT COLUMN) - columns: 1
+        {
+          id: 'summary',
+          name: 'About me',
+          component: 'Summary',
+          visible: true,
+          order: 4,
+          columns: 1, // MAIN CONTENT
           styles: { alignment: 'left', divider: true }
         },
         {
           id: 'experience',
-          name: 'Experience',
+          name: 'Work Experience',
           component: 'Experience',
           visible: true,
-          order: 3,
-          columns: 1, // MAIN CONTENT ONLY
+          order: 5,
+          columns: 1, // MAIN CONTENT
           styles: { alignment: 'left', divider: true }
         },
         {
@@ -50,27 +71,9 @@ export const reactiveTemplates: TemplateConfig[] = [
           name: 'Education',
           component: 'Education',
           visible: true,
-          order: 4,
-          columns: 1, // MAIN CONTENT ONLY
-          styles: { alignment: 'left', divider: true }
-        },
-        {
-          id: 'skills',
-          name: 'Skills',
-          component: 'Skills',
-          visible: true,
-          order: 5,
-          columns: 2, // SIDEBAR ONLY
-          styles: { alignment: 'left', display: 'list' }
-        },
-        {
-          id: 'languages',
-          name: 'Languages',
-          component: 'Languages',
-          visible: true,
           order: 6,
-          columns: 2, // SIDEBAR ONLY
-          styles: { alignment: 'left' }
+          columns: 1, // MAIN CONTENT
+          styles: { alignment: 'left', divider: true }
         },
         {
           id: 'certifications',
@@ -78,7 +81,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Certifications',
           visible: true,
           order: 7,
-          columns: 2, // SIDEBAR ONLY
+          columns: 1, // MAIN CONTENT
           styles: { alignment: 'left' }
         }
       ],

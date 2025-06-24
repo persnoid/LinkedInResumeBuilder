@@ -17,8 +17,6 @@ export const reactiveTemplates: TemplateConfig[] = [
       id: 'azurill-layout',
       name: 'Azurill Layout',
       type: 'sidebar',
-      mainContentOffsetTop: '0px', // Remove offset from main content
-      sidebarOffsetTop: '280px', // Add offset to sidebar instead
       sections: [
         // SIDEBAR SECTIONS (LEFT COLUMN) - columns: 2
         {

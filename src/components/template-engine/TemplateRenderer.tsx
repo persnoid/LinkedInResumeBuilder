@@ -160,14 +160,23 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         return (
           <div className="template-sidebar flex h-full min-h-full">
             {/* SIDEBAR ON LEFT - First in flex order */}
-            <div className="template-sidebar-aside w-1/3 p-6" style={{ 
-              backgroundColor: styles.colors.muted,
-            }}>
+            <div 
+              className="template-sidebar-aside w-1/3 p-6" 
+              style={{ 
+                backgroundColor: styles.colors.muted,
+                paddingTop: layout.sidebarOffsetTop || styles.spacing.section,
+              }}
+            >
               {sidebarSections.map(renderSection)}
             </div>
             
             {/* MAIN CONTENT ON RIGHT - Second in flex order */}
-            <div className="template-sidebar-content flex-1 p-8">
+            <div 
+              className="template-sidebar-content flex-1 p-8"
+              style={{
+                paddingTop: layout.mainContentOffsetTop || styles.spacing.section,
+              }}
+            >
               {mainContentSections.map(renderSection)}
             </div>
           </div>

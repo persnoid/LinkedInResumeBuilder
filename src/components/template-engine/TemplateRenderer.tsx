@@ -147,7 +147,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         );
 
       case 'sidebar':
-        // CRITICAL FIX: Use ONLY explicit column values - NO fallbacks
+        // CRITICAL FIX: SIDEBAR ON LEFT - Swap the order
         const mainContentSections = sortedSections.filter(s => s.columns === 1);
         const sidebarSections = sortedSections.filter(s => s.columns === 2);
         
@@ -159,13 +159,16 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         
         return (
           <div className="template-sidebar flex h-full min-h-full">
-            <div className="template-sidebar-content flex-1 p-8">
-              {mainContentSections.map(renderSection)}
-            </div>
+            {/* SIDEBAR ON LEFT - First in flex order */}
             <div className="template-sidebar-aside w-1/3 p-6" style={{ 
               backgroundColor: styles.colors.muted,
             }}>
               {sidebarSections.map(renderSection)}
+            </div>
+            
+            {/* MAIN CONTENT ON RIGHT - Second in flex order */}
+            <div className="template-sidebar-content flex-1 p-8">
+              {mainContentSections.map(renderSection)}
             </div>
           </div>
         );

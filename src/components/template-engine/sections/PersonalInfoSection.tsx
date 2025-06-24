@@ -201,14 +201,16 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
           }}
           placeholder="Your Professional Title"
         />
-        <div className="contact-info space-y-1">
+        
+        {/* COMPACT CONTACT INFO - 2 rows maximum */}
+        <div className="contact-info grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1 text-sm">
           {contactItems.map((item, index) => (
-            <div key={index} className="contact-item flex items-center text-sm">
+            <div key={index} className="contact-item flex items-center">
               <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
               <EditableText
                 value={item.value}
                 field={item.field}
-                className="break-all"
+                className="break-all truncate"
                 style={{ color: styles.colors.text }}
                 placeholder={`Your ${item.label}`}
               />
@@ -233,19 +235,40 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
       >
         CONTACT
       </h3>
+      
+      {/* COMPACT CONTACT INFO - Maximum 2 rows */}
       <div className="contact-info space-y-2">
-        {contactItems.map((item, index) => (
-          <div key={index} className="contact-item flex items-center text-sm">
-            <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
-            <EditableText
-              value={item.value}
-              field={item.field}
-              className="break-all"
-              style={{ color: styles.colors.text }}
-              placeholder={`Your ${item.label}`}
-            />
-          </div>
-        ))}
+        {/* First row - Phone and Email */}
+        <div className="contact-row">
+          {contactItems.slice(0, 2).map((item, index) => (
+            <div key={index} className="contact-item flex items-center text-sm mb-2">
+              <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
+              <EditableText
+                value={item.value}
+                field={item.field}
+                className="break-all text-xs"
+                style={{ color: styles.colors.text }}
+                placeholder={`Your ${item.label}`}
+              />
+            </div>
+          ))}
+        </div>
+        
+        {/* Second row - LinkedIn, Website, Location */}
+        <div className="contact-row">
+          {contactItems.slice(2).map((item, index) => (
+            <div key={index + 2} className="contact-item flex items-center text-sm mb-2">
+              <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
+              <EditableText
+                value={item.value}
+                field={item.field}
+                className="break-all text-xs"
+                style={{ color: styles.colors.text }}
+                placeholder={`Your ${item.label}`}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -274,7 +297,9 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
           }}
           placeholder="Your Professional Title"
         />
-        <div className="contact-info flex flex-wrap gap-6 text-sm">
+        
+        {/* COMPACT CONTACT INFO - Single row with flex wrap */}
+        <div className="contact-info flex flex-wrap gap-x-6 gap-y-2 text-sm">
           {contactItems.map((item, index) => (
             <div key={index} className="contact-item flex items-center">
               <item.icon className="w-4 h-4 mr-1" />

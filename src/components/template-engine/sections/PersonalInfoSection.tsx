@@ -89,42 +89,25 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     </div>
   );
 
-  const renderSidebar = () => (
-    <div className="personal-info-sidebar mb-6">
-      {personalInfo.photo && (
-        <div className="photo-container mb-4 flex justify-center">
-          <img
-            src={personalInfo.photo}
-            alt="Profile"
-            className="w-24 h-24 rounded-full object-cover border-2"
-            style={{ borderColor: styles.colors.primary }}
-          />
-        </div>
-      )}
-      <h1 
-        className="name font-bold mb-2 text-center"
+  // CRITICAL FIX: For sidebar templates, ONLY render contact info, NOT name/title
+  const renderSidebarContactOnly = () => (
+    <div className="personal-info-sidebar-contact mb-6">
+      <h3 
+        className="section-title font-bold mb-3 uppercase tracking-wide"
         style={{ 
-          fontSize: styles.typography.fontSize.heading1,
+          fontSize: styles.typography.fontSize.heading3,
           color: styles.colors.primary,
-          lineHeight: styles.typography.lineHeight.tight,
+          borderBottom: `2px solid ${styles.colors.primary}`,
+          paddingBottom: '4px',
         }}
       >
-        {displayName}
-      </h1>
-      <h2 
-        className="title mb-4 text-center"
-        style={{ 
-          fontSize: styles.typography.fontSize.heading2,
-          color: styles.colors.secondary,
-        }}
-      >
-        {displayTitle}
-      </h2>
+        CONTACT
+      </h3>
       <div className="contact-info space-y-2">
         {contactItems.map((item, index) => (
           <div key={index} className="contact-item flex items-center text-sm">
             <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
-            <span className="break-all">{item.value}</span>
+            <span className="break-all" style={{ color: styles.colors.text }}>{item.value}</span>
           </div>
         ))}
       </div>
@@ -174,13 +157,17 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     </div>
   );
 
-  // Determine layout based on section configuration
+  // CRITICAL: Determine layout based on section configuration
+  console.log(`PersonalInfoSection rendering with columns: ${config.columns}`);
+  
   if (config.columns === 2) {
-    return renderSidebar();
+    // For sidebar (columns === 2), ONLY show contact info, NOT name/title
+    return renderSidebarContactOnly();
   } else if (config.columns === 0) {
+    // For header (columns === 0), show full header with name/title
     return renderHeader();
   } else {
-    // For main content area (columns === 1), use the new layout
+    // For main content area (columns === 1), show name/title with contact
     return renderMainContentHeader();
   }
 };

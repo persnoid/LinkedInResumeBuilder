@@ -143,7 +143,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'PersonalInfo',
           visible: true,
           order: 1,
-          columns: 0,
+          columns: 0, // Header section only - no duplicate in main content
           styles: { alignment: 'left' }
         },
         {

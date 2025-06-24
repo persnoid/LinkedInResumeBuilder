@@ -18,6 +18,8 @@ export interface TemplateLayout {
   id: string;
   name: string;
   type: 'single-column' | 'two-column' | 'three-column' | 'sidebar' | 'header-footer';
+  mainContentOffsetTop?: string; // Optional offset for main content
+  sidebarOffsetTop?: string; // Optional offset for sidebar content
   sections: TemplateSection[];
   styles: {
     page: {

@@ -47,6 +47,28 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     spacing: { ...layout.styles.spacing, ...customizations.spacing },
   };
 
+  // Extract edit mode and data update handler from customizations
+  const editMode = customizations.editMode || false;
+  const onDataUpdate = customizations.onDataUpdate;
+
+  // Handle data updates from sections
+  const handleSectionDataUpdate = (field: string, value: any) => {
+    if (onDataUpdate) {
+      // Create updated data object
+      const updatedData = { ...data };
+      
+      // Handle nested field updates (e.g., "personalInfo.name")
+      if (field.includes('.')) {
+        const [parent, child] = field.split('.');
+        updatedData[parent] = { ...updatedData[parent], [child]: value };
+      } else {
+        updatedData[field] = value;
+      }
+      
+      onDataUpdate(updatedData);
+    }
+  };
+
   // Sort sections by order and filter visible ones
   const sortedSections = layout.sections
     .filter(section => section.visible)
@@ -80,6 +102,8 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
           styles={styles}
           sectionStyles={sectionStyles}
           config={section}
+          editMode={editMode}
+          onDataUpdate={handleSectionDataUpdate}
         />
         {sectionStyles?.divider && (
           <div

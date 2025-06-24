@@ -24,7 +24,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'PersonalInfo',
           visible: true,
           order: 1,
-          columns: 2, // Sidebar only
+          columns: 2, // SIDEBAR ONLY - will NOT appear in main content
           styles: { alignment: 'left' }
         },
         {
@@ -33,7 +33,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Summary',
           visible: true,
           order: 2,
-          columns: 1,
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left', divider: true }
         },
         {
@@ -42,7 +42,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Experience',
           visible: true,
           order: 3,
-          columns: 1,
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left', divider: true }
         },
         {
@@ -51,7 +51,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Education',
           visible: true,
           order: 4,
-          columns: 1,
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left', divider: true }
         },
         {
@@ -60,7 +60,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Skills',
           visible: true,
           order: 5,
-          columns: 2,
+          columns: 2, // SIDEBAR ONLY
           styles: { alignment: 'left', display: 'list' }
         },
         {
@@ -69,7 +69,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Languages',
           visible: true,
           order: 6,
-          columns: 2,
+          columns: 2, // SIDEBAR ONLY
           styles: { alignment: 'left' }
         },
         {
@@ -78,7 +78,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Certifications',
           visible: true,
           order: 7,
-          columns: 2,
+          columns: 2, // SIDEBAR ONLY
           styles: { alignment: 'left' }
         }
       ],
@@ -143,7 +143,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'PersonalInfo',
           visible: true,
           order: 1,
-          columns: 0, // Header section ONLY - no duplicate in main content
+          columns: 0, // HEADER SECTION ONLY - will NOT appear in main content
           styles: { alignment: 'left' }
         },
         {
@@ -152,7 +152,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Summary',
           visible: true,
           order: 2,
-          columns: 1, // Main content only
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left', divider: true }
         },
         {
@@ -161,7 +161,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Experience',
           visible: true,
           order: 3,
-          columns: 1, // Main content only
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left', divider: true }
         },
         {
@@ -170,7 +170,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Education',
           visible: true,
           order: 4,
-          columns: 1, // Main content only
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left', divider: true }
         },
         {
@@ -179,7 +179,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Skills',
           visible: true,
           order: 5,
-          columns: 1, // Main content only
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left', display: 'tags' }
         },
         {
@@ -188,7 +188,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Languages',
           visible: true,
           order: 6,
-          columns: 1, // Main content only
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left' }
         }
       ],
@@ -253,7 +253,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'PersonalInfo',
           visible: true,
           order: 1,
-          columns: 2, // Sidebar only
+          columns: 2, // SIDEBAR ONLY
           styles: { alignment: 'center' }
         },
         {
@@ -262,7 +262,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Summary',
           visible: true,
           order: 2,
-          columns: 1,
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left', divider: true }
         },
         {
@@ -271,7 +271,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Experience',
           visible: true,
           order: 3,
-          columns: 1,
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left', divider: true }
         },
         {
@@ -280,7 +280,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Education',
           visible: true,
           order: 4,
-          columns: 1,
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left', divider: true }
         },
         {
@@ -289,7 +289,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Skills',
           visible: true,
           order: 5,
-          columns: 2,
+          columns: 2, // SIDEBAR ONLY
           styles: { alignment: 'left', display: 'list' }
         },
         {
@@ -298,7 +298,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Languages',
           visible: true,
           order: 6,
-          columns: 2,
+          columns: 2, // SIDEBAR ONLY
           styles: { alignment: 'left' }
         }
       ],
@@ -794,7 +794,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'PersonalInfo',
           visible: true,
           order: 1,
-          columns: 0, // Header section ONLY - no duplicate in main content
+          columns: 0, // HEADER SECTION ONLY - will NOT appear in main content
           styles: { alignment: 'left' }
         },
         {
@@ -803,7 +803,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Summary',
           visible: true,
           order: 2,
-          columns: 1, // Main content only
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left', divider: true }
         },
         {
@@ -812,7 +812,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Experience',
           visible: true,
           order: 3,
-          columns: 1, // Main content only
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left', divider: true }
         },
         {
@@ -821,7 +821,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Education',
           visible: true,
           order: 4,
-          columns: 1, // Main content only
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left', divider: true }
         },
         {
@@ -830,7 +830,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Skills',
           visible: true,
           order: 5,
-          columns: 1, // Main content only
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left', display: 'tags' }
         },
         {
@@ -839,7 +839,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'Languages',
           visible: true,
           order: 6,
-          columns: 1, // Main content only
+          columns: 1, // MAIN CONTENT ONLY
           styles: { alignment: 'left' }
         }
       ],

@@ -119,13 +119,17 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         );
 
       case 'sidebar':
-        const mainSections = sortedSections.filter(s => s.columns !== 2);
+        // CRITICAL FIX: Properly separate main content from sidebar content
+        const mainContentSections = sortedSections.filter(s => s.columns === 1 || (!s.columns && s.columns !== 2));
         const sidebarSections = sortedSections.filter(s => s.columns === 2);
+        
+        console.log('Sidebar layout - Main sections:', mainContentSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('Sidebar layout - Sidebar sections:', sidebarSections.map(s => `${s.id} (columns: ${s.columns})`));
         
         return (
           <div className="template-sidebar flex h-full min-h-full">
             <div className="template-sidebar-content flex-1 p-8">
-              {mainSections.map(renderSection)}
+              {mainContentSections.map(renderSection)}
             </div>
             <div className="template-sidebar-aside w-1/3 p-6" style={{ 
               backgroundColor: styles.colors.muted,
@@ -140,6 +144,10 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         const headerSections = sortedSections.filter(s => s.columns === 0); // Header only
         const bodySections = sortedSections.filter(s => s.columns === 1 || (!s.columns && s.columns !== 0)); // Main content only
         const footerSections = sortedSections.filter(s => s.columns === 3); // Footer only
+        
+        console.log('Header-footer layout - Header sections:', headerSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('Header-footer layout - Body sections:', bodySections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('Header-footer layout - Footer sections:', footerSections.map(s => `${s.id} (columns: ${s.columns})`));
         
         return (
           <div className="template-header-footer">

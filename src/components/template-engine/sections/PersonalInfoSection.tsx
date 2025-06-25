@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Mail, Phone, MapPin, Globe, Linkedin, User, Camera, Upload } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, Linkedin, User, Camera, Upload, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface PersonalInfoSectionProps {
   data: any;
@@ -21,6 +21,8 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   const { personalInfo } = data;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isHovering, setIsHovering] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [uploadMessage, setUploadMessage] = useState('');
   
   if (!personalInfo) return null;
 
@@ -47,13 +49,77 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     }
   };
 
+  const validateImageFile = (file: File): { isValid: boolean; message: string } => {
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      return {
+        isValid: false,
+        message: 'Please upload a JPG or PNG image file.'
+      };
+    }
+
+    // Check file size (5MB = 5 * 1024 * 1024 bytes)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      return {
+        isValid: false,
+        message: 'File size must be less than 5MB. Please choose a smaller image.'
+      };
+    }
+
+    return {
+      isValid: true,
+      message: 'Image uploaded successfully!'
+    };
+  };
+
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && onDataUpdate) {
+    if (!file) return;
+
+    setUploadStatus('uploading');
+    setUploadMessage('Validating image...');
+
+    // Validate the file
+    const validation = validateImageFile(file);
+    
+    if (!validation.isValid) {
+      setUploadStatus('error');
+      setUploadMessage(validation.message);
+      // Clear the input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      // Reset status after 3 seconds
+      setTimeout(() => {
+        setUploadStatus('idle');
+        setUploadMessage('');
+      }, 3000);
+      return;
+    }
+
+    if (onDataUpdate) {
       const reader = new FileReader();
       reader.onload = (e) => {
         const photoUrl = e.target?.result as string;
         onDataUpdate('personalInfo.photo', photoUrl);
+        setUploadStatus('success');
+        setUploadMessage(validation.message);
+        
+        // Reset status after 2 seconds
+        setTimeout(() => {
+          setUploadStatus('idle');
+          setUploadMessage('');
+        }, 2000);
+      };
+      reader.onerror = () => {
+        setUploadStatus('error');
+        setUploadMessage('Failed to read the image file. Please try again.');
+        setTimeout(() => {
+          setUploadStatus('idle');
+          setUploadMessage('');
+        }, 3000);
       };
       reader.readAsDataURL(file);
     }
@@ -164,10 +230,26 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/jpg,image/png"
         onChange={handlePhotoUpload}
         className="hidden"
       />
+      
+      {/* Upload Status Indicator */}
+      {uploadStatus !== 'idle' && (
+        <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+          <div className={`flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+            uploadStatus === 'uploading' ? 'bg-blue-100 text-blue-800' :
+            uploadStatus === 'success' ? 'bg-green-100 text-green-800' :
+            'bg-red-100 text-red-800'
+          }`}>
+            {uploadStatus === 'uploading' && <div className="animate-spin rounded-full h-3 w-3 border border-blue-600 border-t-transparent mr-2"></div>}
+            {uploadStatus === 'success' && <CheckCircle className="w-3 h-3 mr-1" />}
+            {uploadStatus === 'error' && <AlertCircle className="w-3 h-3 mr-1" />}
+            {uploadMessage}
+          </div>
+        </div>
+      )}
     </div>
   );
 

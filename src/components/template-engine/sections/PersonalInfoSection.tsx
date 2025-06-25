@@ -301,22 +301,18 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         
         <div className="contact-info space-y-3">
           {contactItems.map((item, index) => (
-            <div key={index} className="contact-item">
-              <div className="flex items-center mb-1">
-                <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
-                <span className="text-sm font-medium" style={{ color: styles.colors.primary }}>
-                  {item.label}
-                </span>
-              </div>
-              <div className="ml-6">
-                <EditableText
-                  value={item.value}
-                  field={item.field}
-                  className="text-sm break-all"
-                  style={{ color: styles.colors.text }}
-                  placeholder={`Your ${item.label}`}
-                />
-              </div>
+            <div key={index} className="contact-item flex items-center">
+              <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
+              <EditableText
+                value={item.value}
+                field={item.field}
+                className="break-all"
+                style={{
+                  fontSize: styles.typography.fontSize.contactInfo || styles.typography.fontSize.small,
+                  color: styles.colors.text
+                }}
+                placeholder={`Your ${item.label}`}
+              />
             </div>
           ))}
         </div>
@@ -356,7 +352,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         />
         
         {/* COMPACT CONTACT INFO - 2 rows maximum */}
-        <div className="contact-info grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1 text-sm">
+        <div className="contact-info grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
           {contactItems.map((item, index) => (
             <div key={index} className="contact-item flex items-center">
               <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
@@ -364,7 +360,10 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                 value={item.value}
                 field={item.field}
                 className="break-all truncate"
-                style={{ color: styles.colors.text }}
+                style={{
+                  fontSize: styles.typography.fontSize.contactInfo || styles.typography.fontSize.small,
+                  color: styles.colors.text
+                }}
                 placeholder={`Your ${item.label}`}
               />
             </div>
@@ -400,13 +399,14 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         />
         
         {/* COMPACT CONTACT INFO - Single row with flex wrap */}
-        <div className="contact-info flex flex-wrap gap-x-6 gap-y-2 text-sm">
+        <div className="contact-info flex flex-wrap gap-x-6 gap-y-2">
           {contactItems.map((item, index) => (
             <div key={index} className="contact-item flex items-center">
               <item.icon className="w-4 h-4 mr-1" />
               <EditableText
                 value={item.value}
                 field={item.field}
+                style={{ fontSize: styles.typography.fontSize.contactInfo || styles.typography.fontSize.small }}
                 placeholder={`Your ${item.label}`}
               />
             </div>

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Palette, Type, Move, Download, FileText, FileType, Save } from 'lucide-react';
+import { Palette, Type, Move, Download, FileText, FileType, Save, Eye, EyeOff, GripVertical, Settings, Layers, Sparkles } from 'lucide-react';
 import { ResumeData } from '../types/resume';
 import { reactiveTemplates } from '../data/reactive-templates';
 import { TemplateRenderer } from './template-engine/TemplateRenderer';
 import { ResumePreview } from './ResumePreview';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 interface ResumeCustomizerProps {
   resumeData: ResumeData;
@@ -26,30 +27,44 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   onSaveDraft,
   currentDraftId
 }) => {
-  const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'layout'>('colors');
+  const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'layout' | 'sections' | 'effects'>('colors');
   const [isExporting, setIsExporting] = useState(false);
   const [editableResumeData, setEditableResumeData] = useState<ResumeData>(resumeData);
   const [isEditMode, setIsEditMode] = useState(false);
 
   const fonts = [
-    { name: 'Inter', value: 'Inter, sans-serif' },
-    { name: 'Roboto', value: 'Roboto, sans-serif' },
-    { name: 'Open Sans', value: 'Open Sans, sans-serif' },
-    { name: 'Lato', value: 'Lato, sans-serif' },
-    { name: 'Playfair Display', value: 'Playfair Display, serif' },
-    { name: 'Merriweather', value: 'Merriweather, serif' }
+    { name: 'Inter', value: 'Inter, sans-serif', category: 'Modern' },
+    { name: 'Roboto', value: 'Roboto, sans-serif', category: 'Modern' },
+    { name: 'Open Sans', value: 'Open Sans, sans-serif', category: 'Clean' },
+    { name: 'Lato', value: 'Lato, sans-serif', category: 'Clean' },
+    { name: 'Playfair Display', value: 'Playfair Display, serif', category: 'Elegant' },
+    { name: 'Merriweather', value: 'Merriweather, serif', category: 'Traditional' },
+    { name: 'Montserrat', value: 'Montserrat, sans-serif', category: 'Modern' },
+    { name: 'Source Sans Pro', value: 'Source Sans Pro, sans-serif', category: 'Professional' }
   ];
 
   const colorPresets = [
-    { name: 'Professional Blue', primary: '#3B82F6', secondary: '#1E40AF', accent: '#10B981' },
-    { name: 'Corporate Navy', primary: '#1E293B', secondary: '#475569', accent: '#0EA5E9' },
-    { name: 'Creative Purple', primary: '#8B5CF6', secondary: '#7C3AED', accent: '#F59E0B' },
-    { name: 'Modern Teal', primary: '#14B8A6', secondary: '#0F766E', accent: '#F97316' },
-    { name: 'Classic Black', primary: '#1F2937', secondary: '#4B5563', accent: '#EF4444' },
-    { name: 'Tech Green', primary: '#059669', secondary: '#047857', accent: '#F59E0B' },
-    { name: 'Orange Modern', primary: '#F97316', secondary: '#EA580C', accent: '#3B82F6' },
-    { name: 'Soft Blue', primary: '#1E40AF', secondary: '#6B7280', accent: '#93C5FD' }
+    { name: 'Professional Blue', primary: '#3B82F6', secondary: '#1E40AF', accent: '#10B981', surface: '#F8FAFC' },
+    { name: 'Corporate Navy', primary: '#1E293B', secondary: '#475569', accent: '#0EA5E9', surface: '#F1F5F9' },
+    { name: 'Creative Purple', primary: '#8B5CF6', secondary: '#7C3AED', accent: '#F59E0B', surface: '#FAF5FF' },
+    { name: 'Modern Teal', primary: '#14B8A6', secondary: '#0F766E', accent: '#F97316', surface: '#F0FDFA' },
+    { name: 'Classic Black', primary: '#1F2937', secondary: '#4B5563', accent: '#EF4444', surface: '#F9FAFB' },
+    { name: 'Tech Green', primary: '#059669', secondary: '#047857', accent: '#F59E0B', surface: '#ECFDF5' },
+    { name: 'Warm Orange', primary: '#F97316', secondary: '#EA580C', accent: '#3B82F6', surface: '#FFF7ED' },
+    { name: 'Elegant Rose', primary: '#E11D48', secondary: '#BE185D', accent: '#8B5CF6', surface: '#FFF1F2' }
   ];
+
+  const effectPresets = [
+    { name: 'Minimal', borderRadius: 'sm', shadow: 'none' },
+    { name: 'Soft', borderRadius: 'md', shadow: 'sm' },
+    { name: 'Modern', borderRadius: 'lg', shadow: 'md' },
+    { name: 'Bold', borderRadius: 'xl', shadow: 'lg' },
+    { name: 'Dramatic', borderRadius: 'xl', shadow: 'xl' }
+  ];
+
+  // Get current template config
+  const reactiveTemplate = reactiveTemplates.find(t => t.id === selectedTemplate);
+  const currentSections = reactiveTemplate?.layout.sections || [];
 
   const handleExport = async (format: 'pdf' | 'docx') => {
     setIsExporting(true);
@@ -63,8 +78,13 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   const handleCustomizationChange = (field: string, value: any) => {
     const newCustomizations = { ...customizations };
     if (field.includes('.')) {
-      const [parent, child] = field.split('.');
-      newCustomizations[parent] = { ...newCustomizations[parent], [child]: value };
+      const parts = field.split('.');
+      let current = newCustomizations;
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (!current[parts[i]]) current[parts[i]] = {};
+        current = current[parts[i]];
+      }
+      current[parts[parts.length - 1]] = value;
     } else {
       newCustomizations[field] = value;
     }
@@ -72,26 +92,53 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     onCustomizationsUpdate(newCustomizations);
   };
 
+  const handleSectionVisibilityToggle = (sectionId: string) => {
+    const currentSections = customizations.visibleSections || currentSections.map(s => s.id);
+    const newVisibleSections = currentSections.includes(sectionId)
+      ? currentSections.filter((id: string) => id !== sectionId)
+      : [...currentSections, sectionId];
+    
+    handleCustomizationChange('visibleSections', newVisibleSections);
+  };
+
+  const handleSectionReorder = (result: any) => {
+    if (!result.destination) return;
+
+    const currentOrder = customizations.sectionOrder || currentSections.map(s => s.id);
+    const newOrder = Array.from(currentOrder);
+    const [reorderedItem] = newOrder.splice(result.source.index, 1);
+    newOrder.splice(result.destination.index, 0, reorderedItem);
+
+    handleCustomizationChange('sectionOrder', newOrder);
+  };
+
+  const handleSectionStyleChange = (sectionId: string, styleKey: string, value: any) => {
+    const currentSectionStyles = customizations.sections || {};
+    const sectionStyles = currentSectionStyles[sectionId] || {};
+    
+    handleCustomizationChange(`sections.${sectionId}.${styleKey}`, value);
+  };
+
   // Handle resume data updates from editable components
   const handleResumeDataUpdate = (updatedData: ResumeData) => {
     setEditableResumeData(updatedData);
   };
 
-  // Check if we have a reactive template
-  const reactiveTemplate = reactiveTemplates.find(t => t.id === selectedTemplate);
-  
   // Get current colors for display
   const currentColors = customizations.colors || {};
+  const currentEffects = customizations.effects || {};
+  const visibleSections = customizations.visibleSections || currentSections.map(s => s.id);
+  const sectionOrder = customizations.sectionOrder || currentSections.map(s => s.id);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+      {/* Enhanced Sidebar */}
+      <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">Customize Resume</h2>
-            <p className="text-sm text-gray-600">Personalize your resume design</p>
+            <p className="text-sm text-gray-600">Personalize every aspect of your design</p>
           </div>
           
           {/* Save Draft Button */}
@@ -126,18 +173,20 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           </p>
         </div>
 
-        {/* Tabs */}
+        {/* Enhanced Tabs */}
         <div className="border-b border-gray-200">
           <nav className="flex">
             {[
               { key: 'colors', label: 'Colors', icon: Palette },
               { key: 'fonts', label: 'Fonts', icon: Type },
-              { key: 'layout', label: 'Layout', icon: Move }
+              { key: 'layout', label: 'Layout', icon: Move },
+              { key: 'sections', label: 'Sections', icon: Layers },
+              { key: 'effects', label: 'Effects', icon: Sparkles }
             ].map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key as any)}
-                className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`flex-1 px-3 py-3 text-xs font-medium border-b-2 transition-colors ${
                   activeTab === tab.key
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -150,7 +199,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           </nav>
         </div>
 
-        {/* Tab Content */}
+        {/* Enhanced Tab Content */}
         <div className="flex-1 overflow-y-auto p-6">
           {activeTab === 'colors' && (
             <div className="space-y-6">
@@ -164,7 +213,8 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                         handleCustomizationChange('colors', {
                           primary: preset.primary,
                           secondary: preset.secondary,
-                          accent: preset.accent
+                          accent: preset.accent,
+                          surface: preset.surface
                         });
                       }}
                       className="p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors text-left"
@@ -182,6 +232,10 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                           className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: preset.accent }}
                         />
+                        <div 
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: preset.surface }}
+                        />
                       </div>
                       <div className="text-xs font-medium text-gray-900">{preset.name}</div>
                     </button>
@@ -195,7 +249,8 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                   {[
                     { key: 'primary', label: 'Primary Color' },
                     { key: 'secondary', label: 'Secondary Color' },
-                    { key: 'accent', label: 'Accent Color' }
+                    { key: 'accent', label: 'Accent Color' },
+                    { key: 'surface', label: 'Surface Color' }
                   ].map((color) => (
                     <div key={color.key} className="flex items-center justify-between">
                       <span className="text-sm text-gray-700">{color.label}</span>
@@ -215,24 +270,31 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           )}
 
           {activeTab === 'fonts' && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-900">Font Family</h3>
-              <div className="space-y-2">
-                {fonts.map((font) => (
-                  <button
-                    key={font.name}
-                    onClick={() => handleCustomizationChange('typography.fontFamily', font.value)}
-                    className={`w-full p-3 text-left border border-gray-200 rounded-lg transition-colors ${
-                      customizations.typography?.fontFamily === font.value
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'hover:border-gray-300'
-                    }`}
-                    style={{ fontFamily: font.value }}
-                  >
-                    <div className="font-medium text-gray-900">{font.name}</div>
-                    <div className="text-sm text-gray-500">The quick brown fox jumps</div>
-                  </button>
-                ))}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Font Family</h3>
+                <div className="space-y-2">
+                  {fonts.map((font) => (
+                    <button
+                      key={font.name}
+                      onClick={() => handleCustomizationChange('typography.fontFamily', font.value)}
+                      className={`w-full p-3 text-left border border-gray-200 rounded-lg transition-colors ${
+                        customizations.typography?.fontFamily === font.value
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'hover:border-gray-300'
+                      }`}
+                      style={{ fontFamily: font.value }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-gray-900">{font.name}</div>
+                          <div className="text-sm text-gray-500">{font.category}</div>
+                        </div>
+                        <div className="text-sm text-gray-400">Aa</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-4 pt-4 border-t border-gray-200">
@@ -304,6 +366,136 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                     ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'sections' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Section Visibility</h3>
+                <div className="space-y-2">
+                  {currentSections.map((section) => (
+                    <div key={section.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm font-medium text-gray-900">{section.name}</span>
+                      <button
+                        onClick={() => handleSectionVisibilityToggle(section.id)}
+                        className={`p-1 rounded ${
+                          visibleSections.includes(section.id)
+                            ? 'text-blue-600 hover:text-blue-700'
+                            : 'text-gray-400 hover:text-gray-600'
+                        }`}
+                      >
+                        {visibleSections.includes(section.id) ? (
+                          <Eye className="w-4 h-4" />
+                        ) : (
+                          <EyeOff className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Section Order</h3>
+                <DragDropContext onDragEnd={handleSectionReorder}>
+                  <Droppable droppableId="sections">
+                    {(provided) => (
+                      <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                        {sectionOrder.map((sectionId, index) => {
+                          const section = currentSections.find(s => s.id === sectionId);
+                          if (!section) return null;
+                          
+                          return (
+                            <Draggable key={section.id} draggableId={section.id} index={index}>
+                              {(provided) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className="flex items-center p-3 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow"
+                                >
+                                  <GripVertical className="w-4 h-4 text-gray-400 mr-3" />
+                                  <span className="text-sm font-medium text-gray-900 flex-1">
+                                    {section.name}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {index + 1}
+                                  </span>
+                                </div>
+                              )}
+                            </Draggable>
+                          );
+                        })}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'effects' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Effect Presets</h3>
+                <div className="grid grid-cols-1 gap-3">
+                  {effectPresets.map((preset) => (
+                    <button
+                      key={preset.name}
+                      onClick={() => {
+                        handleCustomizationChange('effects', {
+                          borderRadius: preset.borderRadius,
+                          shadow: preset.shadow
+                        });
+                      }}
+                      className="p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors text-left"
+                    >
+                      <div className="text-sm font-medium text-gray-900">{preset.name}</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Radius: {preset.borderRadius} • Shadow: {preset.shadow}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Custom Effects</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-2">Border Radius</label>
+                    <select
+                      value={currentEffects.borderRadius || 'md'}
+                      onChange={(e) => handleCustomizationChange('effects.borderRadius', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="none">None</option>
+                      <option value="sm">Small</option>
+                      <option value="md">Medium</option>
+                      <option value="lg">Large</option>
+                      <option value="xl">Extra Large</option>
+                      <option value="full">Full</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-2">Shadow</label>
+                    <select
+                      value={currentEffects.shadow || 'sm'}
+                      onChange={(e) => handleCustomizationChange('effects.shadow', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="none">None</option>
+                      <option value="sm">Small</option>
+                      <option value="md">Medium</option>
+                      <option value="lg">Large</option>
+                      <option value="xl">Extra Large</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

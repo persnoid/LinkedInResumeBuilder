@@ -33,6 +33,7 @@ export interface TemplateLayout {
         heading2: string;
         heading3: string;
         small: string;
+        contactInfo: string; // Add this line
       };
       lineHeight: {
         tight: string;

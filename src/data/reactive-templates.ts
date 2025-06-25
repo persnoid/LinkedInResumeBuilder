@@ -98,7 +98,8 @@ export const reactiveTemplates: TemplateConfig[] = [
             heading1: '24px',        // REDUCED: Main name/header
             heading2: '16px',        // REDUCED: Sub-header/title (much smaller than heading1)
             heading3: '14px',        // Section headers
-            small: '11px'
+            small: '11px',
+            contactInfo: '10px'      // Add this line
           },
           lineHeight: {
             tight: '1.2',
@@ -211,7 +212,8 @@ export const reactiveTemplates: TemplateConfig[] = [
             heading1: '28px',        // REDUCED: Main name/header
             heading2: '18px',        // REDUCED: Sub-header/title (much smaller than heading1)
             heading3: '16px',        // Section headers
-            small: '11px'
+            small: '11px',
+            contactInfo: '10px'      // Add this line
           },
           lineHeight: {
             tight: '1.2',
@@ -322,7 +324,8 @@ export const reactiveTemplates: TemplateConfig[] = [
             heading1: '30px',        // REDUCED: Main name/header
             heading2: '20px',        // REDUCED: Sub-header/title (much smaller than heading1)
             heading3: '18px',        // Section headers
-            small: '11px'
+            small: '11px',
+            contactInfo: '10px'      // Add this line
           },
           lineHeight: {
             tight: '1.2',
@@ -444,7 +447,8 @@ export const reactiveTemplates: TemplateConfig[] = [
             heading1: '26px',        // REDUCED: Main name/header
             heading2: '17px',        // REDUCED: Sub-header/title (much smaller than heading1)
             heading3: '16px',        // Section headers
-            small: '11px'
+            small: '11px',
+            contactInfo: '10px'      // Add this line
           },
           lineHeight: {
             tight: '1.2',
@@ -549,7 +553,8 @@ export const reactiveTemplates: TemplateConfig[] = [
             heading1: '30px',        // REDUCED: Main name/header
             heading2: '19px',        // REDUCED: Sub-header/title (much smaller than heading1)
             heading3: '17px',        // Section headers
-            small: '11px'
+            small: '11px',
+            contactInfo: '10px'      // Add this line
           },
           lineHeight: {
             tight: '1.2',
@@ -654,7 +659,8 @@ export const reactiveTemplates: TemplateConfig[] = [
             heading1: '32px',        // REDUCED: Main name/header
             heading2: '20px',        // REDUCED: Sub-header/title (much smaller than heading1)
             heading3: '18px',        // Section headers
-            small: '11px'
+            small: '11px',
+            contactInfo: '10px'      // Add this line
           },
           lineHeight: {
             tight: '1.2',
@@ -759,7 +765,8 @@ export const reactiveTemplates: TemplateConfig[] = [
             heading1: '28px',        // REDUCED: Main name/header
             heading2: '18px',        // REDUCED: Sub-header/title (much smaller than heading1)
             heading3: '17px',        // Section headers
-            small: '11px'
+            small: '11px',
+            contactInfo: '10px'      // Add this line
           },
           lineHeight: {
             tight: '1.2',
@@ -870,7 +877,8 @@ export const reactiveTemplates: TemplateConfig[] = [
             heading1: '28px',        // REDUCED: Main name/header
             heading2: '18px',        // REDUCED: Sub-header/title (much smaller than heading1)
             heading3: '16px',        // Section headers
-            small: '11px'
+            small: '11px',
+            contactInfo: '10px'      // Add this line
           },
           lineHeight: {
             tight: '1.2',
@@ -975,7 +983,8 @@ export const reactiveTemplates: TemplateConfig[] = [
             heading1: '30px',        // REDUCED: Main name/header
             heading2: '19px',        // REDUCED: Sub-header/title (much smaller than heading1)
             heading3: '17px',        // Section headers
-            small: '11px'
+            small: '11px',
+            contactInfo: '10px'      // Add this line
           },
           lineHeight: {
             tight: '1.2',

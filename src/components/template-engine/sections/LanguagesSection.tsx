@@ -55,15 +55,28 @@ export const LanguagesSection: React.FC<LanguagesSectionProps> = ({
   };
 
   const getLevelDots = (level: string) => {
+    const normalizedLevel = level.toLowerCase().trim();
+    
+    // Enhanced mapping to handle more proficiency levels
     const levels = {
       'beginner': 1,
+      'basic': 1,
       'elementary': 2,
       'intermediate': 3,
+      'upper intermediate': 3,
       'advanced': 4,
-      'fluent': 5,
-      'native': 5
+      'upper advanced': 4,
+      'fluent': 4,
+      'full professional': 4,  // Added mapping for "Full Professional"
+      'proficient': 4,
+      'expert': 5,
+      'native': 5,
+      'native or bilingual': 5,  // Added mapping for "Native or Bilingual"
+      'bilingual': 5,
+      'mother tongue': 5
     };
-    return levels[level.toLowerCase()] || 3;
+    
+    return levels[normalizedLevel] || 3; // Default to 3 dots if level not found
   };
 
   const EditableText: React.FC<{
@@ -172,11 +185,11 @@ export const LanguagesSection: React.FC<LanguagesSectionProps> = ({
                 placeholder="Proficiency level"
               />
               
-              <div className="level-dots flex space-x-1">
+              <div className="level-dots flex space-x-0.5">
                 {[1, 2, 3, 4, 5].map((dot) => (
                   <div
                     key={dot}
-                    className="w-3 h-3 rounded-full"
+                    className="w-1.5 h-1.5 rounded-full"
                     style={{
                       backgroundColor: dot <= getLevelDots(language.level) 
                         ? styles.colors.primary 

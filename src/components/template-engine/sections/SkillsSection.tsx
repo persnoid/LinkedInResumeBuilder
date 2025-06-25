@@ -163,11 +163,12 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
       {displaySkills.map((skill: any) => (
         <div key={skill.id} className="skill-tag-container relative group">
           <span
-            className="skill-tag px-3 py-1 rounded-full text-sm font-medium inline-block"
+            className="skill-tag px-3 py-1 rounded-full font-medium inline-block"
             style={{
               backgroundColor: `${styles.colors.accent}20`,
               color: styles.colors.accent,
               border: `1px solid ${styles.colors.accent}40`,
+              fontSize: styles.typography.fontSize.small,
             }}
           >
             <EditableText
@@ -197,8 +198,10 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
           <EditableText
             value={skill.name}
             onSave={(value) => handleSkillEdit(skill.id, 'name', value)}
-            className="text-sm"
-            style={{ color: styles.colors.text }}
+            style={{ 
+              fontSize: styles.typography.fontSize.small,
+              color: styles.colors.text 
+            }}
             placeholder="Skill name"
           />
           {editMode && (
@@ -232,7 +235,8 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
         {editMode && (
           <button
             onClick={addSkill}
-            className="text-green-600 hover:text-green-700 flex items-center text-sm"
+            className="text-green-600 hover:text-green-700 flex items-center"
+            style={{ fontSize: styles.typography.fontSize.small }}
             title="Add new skill"
           >
             <Plus className="w-4 h-4 mr-1" />

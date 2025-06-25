@@ -136,7 +136,8 @@ export const LanguagesSection: React.FC<LanguagesSectionProps> = ({
         {editMode && (
           <button
             onClick={addLanguage}
-            className="text-green-600 hover:text-green-700 flex items-center text-sm"
+            className="text-green-600 hover:text-green-700 flex items-center"
+            style={{ fontSize: styles.typography.fontSize.small }}
             title="Add new language"
           >
             <Plus className="w-4 h-4 mr-1" />
@@ -163,8 +164,11 @@ export const LanguagesSection: React.FC<LanguagesSectionProps> = ({
               <EditableText
                 value={language.level}
                 onSave={(value) => handleLanguageEdit(language.id, 'level', value)}
-                className="level-text mr-3 text-sm"
-                style={{ color: styles.colors.secondary }}
+                className="level-text mr-3"
+                style={{ 
+                  fontSize: styles.typography.fontSize.small,
+                  color: styles.colors.secondary 
+                }}
                 placeholder="Proficiency level"
               />
               

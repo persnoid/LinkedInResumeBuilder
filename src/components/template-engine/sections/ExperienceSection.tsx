@@ -19,8 +19,6 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
   onDataUpdate
 }) => {
   const { experience } = data;
-  const [editingField, setEditingField] = useState<string | null>(null);
-  const [editValues, setEditValues] = useState<{[key: string]: any}>({});
   
   // Provide meaningful fallback experience data
   const displayExperience = experience && experience.length > 0 ? experience : [
@@ -71,6 +69,30 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
           description: exp.description.map((desc: string, idx: number) => 
             idx === descIndex ? value : desc
           )
+        } : exp
+      );
+      onDataUpdate('experience', updatedExperience);
+    }
+  };
+
+  const addDescriptionItem = (expId: string) => {
+    if (onDataUpdate) {
+      const updatedExperience = displayExperience.map((exp: any) => 
+        exp.id === expId ? {
+          ...exp,
+          description: [...exp.description, '']
+        } : exp
+      );
+      onDataUpdate('experience', updatedExperience);
+    }
+  };
+
+  const removeDescriptionItem = (expId: string, descIndex: number) => {
+    if (onDataUpdate) {
+      const updatedExperience = displayExperience.map((exp: any) => 
+        exp.id === expId ? {
+          ...exp,
+          description: exp.description.filter((_: string, idx: number) => idx !== descIndex)
         } : exp
       );
       onDataUpdate('experience', updatedExperience);
@@ -271,37 +293,60 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
             </div>
             
             {exp.description && exp.description.length > 0 && (
-              <ul className="experience-description space-y-1 mt-3">
-                {exp.description.map((desc: string, index: number) => (
-                  <li 
-                    key={index} 
-                    className="flex items-start"
-                    style={{ 
-                      fontSize: styles.typography.fontSize.base,
-                      lineHeight: styles.typography.lineHeight.normal,
-                      color: styles.colors.text,
-                    }}
-                  >
-                    <span 
-                      className="bullet mr-3 mt-1 flex-shrink-0"
+              <div className="experience-description mt-3">
+                <ul className="space-y-1">
+                  {exp.description.map((desc: string, index: number) => (
+                    <li 
+                      key={index} 
+                      className="flex items-start group/item"
                       style={{ 
-                        color: styles.colors.accent,
-                        fontSize: styles.typography.fontSize.base
+                        fontSize: styles.typography.fontSize.base,
+                        lineHeight: styles.typography.lineHeight.normal,
+                        color: styles.colors.text,
                       }}
                     >
-                      •
-                    </span>
-                    <EditableText
-                      value={desc}
-                      onSave={(value) => handleDescriptionEdit(exp.id, index, value)}
-                      className="flex-1"
-                      style={{ fontSize: styles.typography.fontSize.base }}
-                      placeholder="Describe your achievements and responsibilities"
-                      multiline
-                    />
-                  </li>
-                ))}
-              </ul>
+                      <span 
+                        className="bullet mr-3 mt-1 flex-shrink-0"
+                        style={{ 
+                          color: styles.colors.accent,
+                          fontSize: styles.typography.fontSize.base
+                        }}
+                      >
+                        •
+                      </span>
+                      <div className="flex-1 flex items-start">
+                        <EditableText
+                          value={desc}
+                          onSave={(value) => handleDescriptionEdit(exp.id, index, value)}
+                          className="flex-1"
+                          style={{ fontSize: styles.typography.fontSize.base }}
+                          placeholder="Describe your achievements and responsibilities"
+                        />
+                        {editMode && (
+                          <button
+                            onClick={() => removeDescriptionItem(exp.id, index)}
+                            className="text-red-500 hover:text-red-700 opacity-0 group-hover/item:opacity-100 transition-opacity ml-2 mt-1"
+                            title="Remove bullet point"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                
+                {editMode && (
+                  <button
+                    onClick={() => addDescriptionItem(exp.id)}
+                    className="text-blue-600 hover:text-blue-700 flex items-center mt-2 text-sm"
+                    title="Add bullet point"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    Add bullet point
+                  </button>
+                )}
+              </div>
             )}
           </div>
         ))}

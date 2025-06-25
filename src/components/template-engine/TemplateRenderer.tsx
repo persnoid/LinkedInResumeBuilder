@@ -122,7 +122,10 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     switch (layout.type) {
       case 'single-column':
         return (
-          <div className="template-single-column p-8">
+          <div 
+            className="template-single-column"
+            style={{ padding: styles.spacing.contentPadding || '32px' }}
+          >
             {sortedSections.map(renderSection)}
           </div>
         );
@@ -136,7 +139,10 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         console.log('Two-column layout - Right sections:', rightColumnSections.map(s => `${s.id} (columns: ${s.columns})`));
         
         return (
-          <div className="template-two-column grid grid-cols-3 gap-8 p-8">
+          <div 
+            className="template-two-column grid grid-cols-3 gap-8"
+            style={{ padding: styles.spacing.contentPadding || '32px' }}
+          >
             <div className="col-span-2">
               {leftColumnSections.map(renderSection)}
             </div>
@@ -160,14 +166,21 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         return (
           <div className="template-sidebar flex h-full min-h-full">
             {/* SIDEBAR ON LEFT - First in flex order */}
-            <div className="template-sidebar-aside w-1/3 p-6" style={{ 
-              backgroundColor: styles.colors.muted,
-            }}>
+            <div 
+              className="template-sidebar-aside w-1/3" 
+              style={{ 
+                backgroundColor: styles.colors.muted,
+                padding: styles.spacing.sidebarColumnPadding || '24px'
+              }}
+            >
               {sidebarSections.map(renderSection)}
             </div>
             
             {/* MAIN CONTENT ON RIGHT - Second in flex order */}
-            <div className="template-sidebar-content flex-1 p-8">
+            <div 
+              className="template-sidebar-content flex-1"
+              style={{ padding: styles.spacing.mainColumnPadding || '32px' }}
+            >
               {mainContentSections.map(renderSection)}
             </div>
           </div>
@@ -190,24 +203,35 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
           <div className="template-header-footer">
             {/* Header Section - Navy background */}
             {headerSections.length > 0 && (
-              <div className="template-header p-8" style={{ 
-                backgroundColor: styles.colors.primary,
-                color: styles.colors.background,
-              }}>
+              <div 
+                className="template-header"
+                style={{ 
+                  backgroundColor: styles.colors.primary,
+                  color: styles.colors.background,
+                  padding: styles.spacing.contentPadding || '32px'
+                }}
+              >
                 {headerSections.map(renderSection)}
               </div>
             )}
             
             {/* Main Body Section - White background */}
-            <div className="template-body p-8">
+            <div 
+              className="template-body"
+              style={{ padding: styles.spacing.contentPadding || '32px' }}
+            >
               {bodySections.map(renderSection)}
             </div>
             
             {/* Footer Section */}
             {footerSections.length > 0 && (
-              <div className="template-footer p-8" style={{ 
-                borderTop: `1px solid ${styles.colors.border}`,
-              }}>
+              <div 
+                className="template-footer"
+                style={{ 
+                  borderTop: `1px solid ${styles.colors.border}`,
+                  padding: styles.spacing.contentPadding || '32px'
+                }}
+              >
                 {footerSections.map(renderSection)}
               </div>
             )}
@@ -216,7 +240,10 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
 
       default:
         return (
-          <div className="template-default p-8">
+          <div 
+            className="template-default"
+            style={{ padding: styles.spacing.contentPadding || '32px' }}
+          >
             {sortedSections.map(renderSection)}
           </div>
         );

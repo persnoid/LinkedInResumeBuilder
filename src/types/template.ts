@@ -53,6 +53,9 @@ export interface TemplateLayout {
       section: string;
       item: string;
       compact: string;
+      contentPadding?: string;
+      sidebarColumnPadding?: string;
+      mainColumnPadding?: string;
     };
   };
 }

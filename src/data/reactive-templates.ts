@@ -118,7 +118,10 @@ export const reactiveTemplates: TemplateConfig[] = [
         spacing: {
           section: '24px',
           item: '12px',
-          compact: '8px'
+          compact: '8px',
+          contentPadding: '32px',
+          sidebarColumnPadding: '24px',
+          mainColumnPadding: '32px'
         }
       }
     }
@@ -228,7 +231,8 @@ export const reactiveTemplates: TemplateConfig[] = [
         spacing: {
           section: '28px',
           item: '14px',
-          compact: '10px'
+          compact: '10px',
+          contentPadding: '32px'
         }
       }
     }
@@ -338,7 +342,10 @@ export const reactiveTemplates: TemplateConfig[] = [
         spacing: {
           section: '32px',
           item: '16px',
-          compact: '12px'
+          compact: '12px',
+          contentPadding: '32px',
+          sidebarColumnPadding: '100px 24px 24px 24px', // Extra top padding to align with "About" section
+          mainColumnPadding: '32px'
         }
       }
     }
@@ -457,7 +464,8 @@ export const reactiveTemplates: TemplateConfig[] = [
         spacing: {
           section: '26px',
           item: '13px',
-          compact: '9px'
+          compact: '9px',
+          contentPadding: '32px'
         }
       }
     }
@@ -561,7 +569,8 @@ export const reactiveTemplates: TemplateConfig[] = [
         spacing: {
           section: '30px',
           item: '15px',
-          compact: '11px'
+          compact: '11px',
+          contentPadding: '36px'
         }
       }
     }
@@ -665,7 +674,8 @@ export const reactiveTemplates: TemplateConfig[] = [
         spacing: {
           section: '32px',
           item: '16px',
-          compact: '12px'
+          compact: '12px',
+          contentPadding: '40px'
         }
       }
     }
@@ -769,7 +779,8 @@ export const reactiveTemplates: TemplateConfig[] = [
         spacing: {
           section: '28px',
           item: '14px',
-          compact: '10px'
+          compact: '10px',
+          contentPadding: '36px'
         }
       }
     }
@@ -879,7 +890,8 @@ export const reactiveTemplates: TemplateConfig[] = [
         spacing: {
           section: '28px',
           item: '14px',
-          compact: '10px'
+          compact: '10px',
+          contentPadding: '32px'
         }
       }
     }
@@ -983,7 +995,8 @@ export const reactiveTemplates: TemplateConfig[] = [
         spacing: {
           section: '30px',
           item: '15px',
-          compact: '11px'
+          compact: '11px',
+          contentPadding: '36px'
         }
       }
     }

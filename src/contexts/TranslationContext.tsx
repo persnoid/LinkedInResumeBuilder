@@ -7,7 +7,7 @@ interface TranslationContextType {
   availableLanguages: string[];
 }
 
-const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
+export const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
 
 interface TranslationProviderProps {
   children: ReactNode;

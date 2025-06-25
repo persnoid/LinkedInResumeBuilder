@@ -1,0 +1,409 @@
+{
+  "app": {
+    "title": "LinkedIn Resume Generator",
+    "steps": {
+      "linkedinInput": "LinkedIn Input",
+      "chooseTemplate": "Choose Template", 
+      "customizeExport": "Customize & Export"
+    },
+    "loading": {
+      "data": "Loading your data...",
+      "resumeData": "Loading resume data...",
+      "draft": "Loading your draft..."
+    },
+    "buttons": {
+      "back": "Back",
+      "next": "Next",
+      "save": "Save",
+      "cancel": "Cancel",
+      "close": "Close",
+      "continue": "Continue",
+      "skip": "Skip",
+      "update": "Update",
+      "delete": "Delete",
+      "export": "Export",
+      "upload": "Upload",
+      "download": "Download",
+      "edit": "Edit",
+      "add": "Add",
+      "remove": "Remove",
+      "clear": "Clear",
+      "confirm": "Confirm",
+      "retry": "Retry"
+    },
+    "status": {
+      "loading": "Loading...",
+      "saving": "Saving...",
+      "success": "Success!",
+      "error": "Error",
+      "complete": "Complete",
+      "processing": "Processing..."
+    }
+  },
+  "linkedinInput": {
+    "title": "AI-Powered LinkedIn Resume Generator",
+    "subtitle": "Transform your LinkedIn profile into a professional resume using advanced AI",
+    "aiStatus": {
+      "ready": "AI-Powered Parsing Ready",
+      "configRequired": "AI Service Configuration Required"
+    },
+    "form": {
+      "linkedinUrl": {
+        "label": "LinkedIn Profile URL",
+        "placeholder": "https://www.linkedin.com/in/yourprofile"
+      },
+      "pdfUpload": {
+        "label": "Upload LinkedIn PDF Export",
+        "aiEnhanced": "AI Enhanced",
+        "dragDrop": "Upload a PDF file or drag and drop",
+        "fileSize": "PDF up to 10MB",
+        "aiProcessing": "✨ AI will intelligently extract your information"
+      },
+      "buttons": {
+        "tryProfile": "Try Profile URL",
+        "sampleData": "Try with Sample Data"
+      }
+    },
+    "instructions": {
+      "title": "How to get your LinkedIn PDF:",
+      "steps": [
+        "Go to your LinkedIn profile",
+        "Click \"More\" → \"Save to PDF\"",
+        "Upload the downloaded PDF here for AI-powered extraction",
+        "✨ Our AI will intelligently extract all your information!"
+      ]
+    },
+    "status": {
+      "checking": "Checking Profile...",
+      "aiProcessing": "🤖 AI Processing PDF...",
+      "loadingSample": "Loading Sample...",
+      "extractedSuccess": "Data extracted successfully using AI! Proceeding to next step..."
+    },
+    "errors": {
+      "invalidLinkedin": "Please enter a valid LinkedIn profile URL",
+      "invalidPdf": "Please upload a valid PDF file",
+      "fileSizeLimit": "File size must be less than 10MB",
+      "aiNotAvailable": "AI-powered parsing is not available. Please ensure the AI service is running and your OpenAI API key is configured.",
+      "processingFailed": "Failed to process PDF file with AI"
+    },
+    "drafts": {
+      "title": "Continue Previous Work",
+      "description": "Access your saved drafts and continue where you left off",
+      "manageDrafts": "Manage Drafts",
+      "recentDrafts": "Recent Drafts",
+      "viewAll": "View all drafts →",
+      "step": "Step: {{step}} of 4"
+    }
+  },
+  "draftManager": {
+    "title": "Draft Manager",
+    "subtitle": "Save, load, and manage your resume drafts",
+    "saveProgress": {
+      "title": "Save Current Progress",
+      "nameLabel": "Draft Name",
+      "namePlaceholder": "Enter draft name...",
+      "updatePlaceholder": "Update draft name..."
+    },
+    "buttons": {
+      "saveDraft": "Save as Draft",
+      "updateDraft": "Update Draft",
+      "importDraft": "Import Draft",
+      "exportDraft": "Export draft",
+      "deleteDraft": "Delete draft",
+      "renameDraft": "Rename draft",
+      "loadDraft": "Load",
+      "manageDrafts": "Manage Drafts"
+    },
+    "status": {
+      "current": "Current",
+      "draftSaved": "Draft Saved",
+      "loadingDrafts": "Loading drafts...",
+      "noDrafts": "No drafts saved yet",
+      "noDraftsDescription": "Save your current progress to continue later",
+      "savedSuccessfully": "Draft saved successfully!",
+      "updatedSuccessfully": "Draft updated successfully!",
+      "importedSuccessfully": "Draft imported successfully!",
+      "loadedSuccessfully": "Draft loaded successfully! Transitioning to your work...",
+      "deletedSuccessfully": "Draft deleted successfully!"
+    },
+    "info": {
+      "updated": "Updated: {{date}}",
+      "step": "Step: {{stepName}}",
+      "template": "Template: {{templateName}}",
+      "name": "Name: {{name}}",
+      "draftsCount": "Saved Drafts ({{count}})",
+      "localStorage": "Drafts are saved locally in your browser"
+    },
+    "errors": {
+      "invalidName": "Please enter a draft name and ensure you have resume data",
+      "loadFailed": "Failed to load draft. Please try again.",
+      "saveFailed": "Failed to save draft. Please try again.",
+      "deleteFailed": "Failed to delete draft. Please try again.",
+      "exportFailed": "Failed to export draft. Please try again.",
+      "importFailed": "Failed to import draft: {{error}}",
+      "invalidDraft": "Invalid draft data structure"
+    },
+    "confirmations": {
+      "delete": "Are you sure you want to delete this draft?"
+    }
+  },
+  "draftSavePrompt": {
+    "title": "Save Your Progress",
+    "description": "Would you like to save your current progress as a draft? You can continue working on it later without re-uploading your CV.",
+    "form": {
+      "nameLabel": "Draft Name",
+      "namePlaceholder": "e.g., My Resume Draft"
+    },
+    "buttons": {
+      "saveDraft": "Save Draft",
+      "skip": "Skip"
+    }
+  },
+  "progressIndicator": {
+    "draftSaved": "Draft Saved",
+    "manageDrafts": "Manage Drafts"
+  },
+  "userProfile": {
+    "title": "User Profile",
+    "subtitle": "Manage your personal information and display preferences",
+    "sections": {
+      "profileInformation": "Profile Information",
+      "displayOptions": "Display Options",
+      "profileSummary": "Profile Summary"
+    },
+    "buttons": {
+      "saveProfile": "Save Profile",
+      "clearProfile": "Clear All Profile Data"
+    },
+    "status": {
+      "saving": "Saving...",
+      "savedSuccessfully": "Profile saved successfully!",
+      "clearedSuccessfully": "Profile cleared successfully!",
+      "saveFailed": "Failed to save profile. Please try again."
+    },
+    "guidelines": {
+      "profilePicture": {
+        "title": "Profile Picture Guidelines",
+        "formats": "Supported formats: JPG, PNG",
+        "maxSize": "Maximum file size: 5MB",
+        "aspectRatio": "Recommended: Square aspect ratio (1:1)",
+        "style": "Professional headshot works best"
+      },
+      "contactInfo": {
+        "title": "Contact Information Tips",
+        "email": "Use a professional email address",
+        "phone": "Include country code for international applications",
+        "location": "City and state/country are usually sufficient",
+        "linkedin": "Use your custom LinkedIn URL if available"
+      }
+    },
+    "summary": {
+      "currentInfo": "Current Information",
+      "actions": "Actions",
+      "fields": {
+        "name": "Name:",
+        "title": "Title:",
+        "email": "Email:",
+        "phone": "Phone:",
+        "photo": "Photo:"
+      },
+      "values": {
+        "notSet": "Not set",
+        "uploaded": "Uploaded",
+        "defaultAvatar": "Default avatar"
+      },
+      "clearWarning": "This will remove all your profile information and reset to defaults.",
+      "storageInfo": "Your profile information is stored locally in your browser and used across all resume templates."
+    },
+    "confirmations": {
+      "clearProfile": "Are you sure you want to clear all profile data? This action cannot be undone."
+    }
+  },
+  "templateSelector": {
+    "title": "Choose Your Template",
+    "subtitle": "Select from our collection of professionally designed resume layouts. Click any template to see a full preview.",
+    "filters": {
+      "all": "All Templates",
+      "modern": "Modern",
+      "professional": "Professional", 
+      "creative": "Creative",
+      "minimal": "Minimal"
+    },
+    "buttons": {
+      "saveDraft": "Save Draft",
+      "updateDraft": "Update Draft",
+      "fullPreview": "Full Preview",
+      "viewFullPreview": "View Full Preview",
+      "selectTemplate": "Select This Template",
+      "selectContinue": "Select & Continue",
+      "customizeResume": "Customize Resume →",
+      "closePreview": "Close Preview"
+    },
+    "preview": {
+      "title": "{{templateName}} - Full Preview",
+      "layout": "Layout: {{layoutType}}",
+      "category": "Category: {{category}}"
+    },
+    "status": {
+      "selected": "Selected: {{templateName}}",
+      "noSelection": "No template selected"
+    },
+    "dataPreview": {
+      "experienceEntries": "{{count}} experience entries",
+      "skills": "{{count}} skills"
+    }
+  },
+  "resumeCustomizer": {
+    "title": "Customize Resume",
+    "subtitle": "Personalize your resume design",
+    "tabs": {
+      "colors": "Colors",
+      "fonts": "Fonts", 
+      "layout": "Layout"
+    },
+    "sections": {
+      "colorPresets": "Color Presets",
+      "customColors": "Custom Colors",
+      "fontFamily": "Font Family",
+      "fontSizes": "Font Sizes",
+      "templateLayout": "Template Layout"
+    },
+    "colors": {
+      "primary": "Primary Color",
+      "secondary": "Secondary Color", 
+      "accent": "Accent Color"
+    },
+    "fonts": {
+      "baseText": "Base Text",
+      "mainHeading": "Main Heading",
+      "sectionHeading": "Section Heading",
+      "subHeading": "Sub Heading",
+      "smallText": "Small Text"
+    },
+    "buttons": {
+      "saveDraft": "Save",
+      "updateDraft": "Update",
+      "exportPdf": "Export as PDF",
+      "exportWord": "Export as Word",
+      "backToTemplates": "Back to Templates"
+    },
+    "editMode": {
+      "label": "Edit Mode",
+      "enabled": "Click on text to edit directly",
+      "disabled": "Enable to edit text in preview"
+    },
+    "preview": {
+      "title": "Live Preview"
+    },
+    "status": {
+      "exporting": "Exporting..."
+    }
+  },
+  "sections": {
+    "personalInfo": "Personal Information",
+    "summary": "Summary",
+    "experience": "Experience", 
+    "education": "Education",
+    "skills": "Skills",
+    "languages": "Languages",
+    "certifications": "Certifications",
+    "contactDetails": "Contact Details",
+    "aboutMe": "About Me",
+    "workExperience": "Work Experience",
+    "professionalSummary": "Professional Summary",
+    "coreSkills": "Core Skills",
+    "technicalSkills": "Technical Skills"
+  },
+  "forms": {
+    "placeholders": {
+      "name": "Your Name",
+      "title": "Your Professional Title",
+      "email": "Your Email",
+      "phone": "Your Phone",
+      "location": "Your Location",
+      "linkedin": "Your LinkedIn",
+      "website": "Your Website",
+      "summary": "Write a compelling summary of your professional background...",
+      "position": "Position Title",
+      "company": "Company Name",
+      "location": "Location",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "description": "Describe your achievements and responsibilities",
+      "degree": "Degree and Field of Study",
+      "school": "School or University",
+      "skillName": "Skill name",
+      "level": "Level",
+      "certificationName": "Certification name",
+      "issuer": "Issuing organization",
+      "date": "Date",
+      "url": "Certification URL",
+      "language": "Language",
+      "proficiency": "Proficiency Level"
+    },
+    "labels": {
+      "clickToEdit": "Click to edit",
+      "clickToEditSummary": "Click to edit summary"
+    }
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "invalidUrl": "Please enter a valid URL",
+    "fileTooLarge": "File size must be less than {{maxSize}}",
+    "invalidFileType": "Please upload a {{allowedTypes}} file",
+    "imageValidation": {
+      "invalidType": "Please upload a JPG or PNG image file.",
+      "tooLarge": "File size must be less than 5MB. Please choose a smaller image.",
+      "uploadSuccess": "Image uploaded successfully!",
+      "readError": "Failed to read the image file. Please try again.",
+      "validating": "Validating image..."
+    }
+  },
+  "export": {
+    "pdf": {
+      "title": "Export as PDF",
+      "error": "Failed to export PDF. Please try again."
+    },
+    "word": {
+      "title": "Export as Word", 
+      "error": "Failed to export Word document. Please try again."
+    }
+  },
+  "ai": {
+    "status": {
+      "ready": "AI-Powered Parsing Ready",
+      "configRequired": "AI Service Configuration Required",
+      "unavailable": "AI service unavailable - please check your configuration",
+      "starting": "AI service is starting up...",
+      "keyRequired": "OpenAI API key required for AI-powered parsing"
+    },
+    "processing": {
+      "analyzing": "🤖 AI Processing PDF...",
+      "extracting": "AI will intelligently extract your information",
+      "enhancing": "AI Enhanced"
+    }
+  },
+  "common": {
+    "or": "or",
+    "and": "and",
+    "of": "of",
+    "to": "to",
+    "from": "from",
+    "at": "at",
+    "in": "in",
+    "on": "on",
+    "with": "with",
+    "for": "for",
+    "by": "by",
+    "present": "Present",
+    "current": "Current",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info"
+  }
+}

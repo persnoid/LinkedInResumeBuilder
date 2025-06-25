@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Save, X } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface DraftSavePromptProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export const DraftSavePrompt: React.FC<DraftSavePromptProps> = ({
   onCancel,
   defaultName = ''
 }) => {
+  const { t } = useTranslation();
   const [draftName, setDraftName] = useState(defaultName);
 
   if (!isOpen) return null;
@@ -32,7 +34,7 @@ export const DraftSavePrompt: React.FC<DraftSavePromptProps> = ({
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Save Your Progress</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t('draftSavePrompt.title')}</h3>
             <button
               onClick={onCancel}
               className="text-gray-400 hover:text-gray-600"
@@ -42,18 +44,18 @@ export const DraftSavePrompt: React.FC<DraftSavePromptProps> = ({
           </div>
 
           <p className="text-gray-600 mb-4">
-            Would you like to save your current progress as a draft? You can continue working on it later without re-uploading your CV.
+            {t('draftSavePrompt.description')}
           </p>
 
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Draft Name
+              {t('draftSavePrompt.form.nameLabel')}
             </label>
             <input
               type="text"
               value={draftName}
               onChange={(e) => setDraftName(e.target.value)}
-              placeholder="e.g., My Resume Draft"
+              placeholder={t('draftSavePrompt.form.namePlaceholder')}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               onKeyPress={(e) => e.key === 'Enter' && handleSave()}
               autoFocus
@@ -67,13 +69,13 @@ export const DraftSavePrompt: React.FC<DraftSavePromptProps> = ({
               className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white px-4 py-2 rounded-lg flex items-center justify-center transition-colors"
             >
               <Save className="w-4 h-4 mr-2" />
-              Save Draft
+              {t('draftSavePrompt.buttons.saveDraft')}
             </button>
             <button
               onClick={onSkip}
               className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition-colors"
             >
-              Skip
+              {t('draftSavePrompt.buttons.skip')}
             </button>
           </div>
         </div>

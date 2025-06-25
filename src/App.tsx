@@ -10,14 +10,17 @@ import { sampleResumeData } from './data/sampleData';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
 import { DraftManager } from './utils/draftManager';
 import { ResumeData, DraftResume } from './types/resume';
-
-const STEPS = [
-  'LinkedIn Input',
-  'Choose Template',
-  'Customize & Export'
-];
+import { useTranslation } from './hooks/useTranslation';
 
 function App() {
+  const { t } = useTranslation();
+  
+  const STEPS = [
+    t('app.steps.linkedinInput'),
+    t('app.steps.chooseTemplate'),
+    t('app.steps.customizeExport')
+  ];
+
   const [currentStep, setCurrentStep] = useState(0);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState('azurill');
@@ -248,7 +251,7 @@ function App() {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading your draft...</p>
+            <p className="text-gray-600">{t('app.loading.draft')}</p>
           </div>
         </div>
       );
@@ -278,7 +281,7 @@ function App() {
           <div className="min-h-screen bg-gray-50 flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading your data...</p>
+              <p className="text-gray-600">{t('app.loading.data')}</p>
             </div>
           </div>
         );
@@ -298,7 +301,7 @@ function App() {
           <div className="min-h-screen bg-gray-50 flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading resume data...</p>
+              <p className="text-gray-600">{t('app.loading.resumeData')}</p>
             </div>
           </div>
         );
@@ -326,7 +329,7 @@ function App() {
         <button
           onClick={() => setShowUserProfile(true)}
           className="fixed top-6 right-6 bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl z-40"
-          title="User Profile"
+          title={t('userProfile.title')}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />

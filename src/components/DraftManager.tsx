@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Save, FolderOpen, Trash2, Download, Upload, Clock, FileText, X, Edit3, Check } from 'lucide-react';
 import { DraftManager } from '../utils/draftManager';
 import { DraftResume, ResumeData } from '../types/resume';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface DraftManagerProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   currentStep,
   currentDraftId
 }) => {
+  const { t } = useTranslation();
   const [drafts, setDrafts] = useState<DraftResume[]>([]);
   const [saveName, setSaveName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -48,7 +50,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       setDrafts(allDrafts);
     } catch (err) {
       console.error('Error loading drafts:', err);
-      setError('Failed to load drafts');
+      setError(t('draftManager.errors.loadFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +58,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
 
   const handleSaveDraft = () => {
     if (!currentResumeData || !saveName.trim()) {
-      setError('Please enter a draft name and ensure you have resume data');
+      setError(t('draftManager.errors.invalidName'));
       return;
     }
 
@@ -82,18 +84,18 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       loadDrafts();
       
       // Show success message
-      const message = currentDraftId ? 'Draft updated successfully!' : 'Draft saved successfully!';
+      const message = currentDraftId ? t('draftManager.status.updatedSuccessfully') : t('draftManager.status.savedSuccessfully');
       alert(message);
     } catch (err) {
       console.error('Error saving draft:', err);
-      setError('Failed to save draft');
+      setError(t('draftManager.errors.saveFailed'));
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDeleteDraft = (id: string) => {
-    if (confirm('Are you sure you want to delete this draft?')) {
+    if (confirm(t('draftManager.confirmations.delete'))) {
       try {
         setIsLoading(true);
         DraftManager.deleteDraft(id);
@@ -101,7 +103,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         setError(null);
       } catch (err) {
         console.error('Error deleting draft:', err);
-        setError('Failed to delete draft');
+        setError(t('draftManager.errors.deleteFailed'));
       } finally {
         setIsLoading(false);
       }
@@ -144,7 +146,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       setError(null);
     } catch (err) {
       console.error('Error exporting draft:', err);
-      setError('Failed to export draft');
+      setError(t('draftManager.errors.exportFailed'));
     }
   };
 
@@ -157,11 +159,11 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       .then(() => {
         loadDrafts();
         setError(null);
-        alert('Draft imported successfully!');
+        alert(t('draftManager.status.importedSuccessfully'));
       })
       .catch((error) => {
         console.error('Import error:', error);
-        setError(`Failed to import draft: ${error.message}`);
+        setError(t('draftManager.errors.importFailed', { error: error.message }));
       })
       .finally(() => {
         setIsLoading(false);
@@ -180,7 +182,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       
       // Validate draft data before loading
       if (!draft.resumeData || !draft.resumeData.personalInfo) {
-        throw new Error('Invalid draft data structure');
+        throw new Error(t('draftManager.errors.invalidDraft'));
       }
 
       // Ensure all required fields exist
@@ -219,12 +221,12 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       
       // Success feedback
       setTimeout(() => {
-        alert('Draft loaded successfully! Transitioning to your work...');
+        alert(t('draftManager.status.loadedSuccessfully'));
       }, 100);
       
     } catch (err) {
       console.error('Error loading draft:', err);
-      setError(`Failed to load draft: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setError(t('draftManager.errors.loadFailed'));
     } finally {
       setLoadingDraftId(null);
     }
@@ -257,8 +259,8 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         {/* Header */}
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Draft Manager</h2>
-            <p className="text-sm text-gray-600">Save, load, and manage your resume drafts</p>
+            <h2 className="text-xl font-bold text-gray-900">{t('draftManager.title')}</h2>
+            <p className="text-sm text-gray-600">{t('draftManager.subtitle')}</p>
           </div>
           <button
             onClick={onClose}
@@ -288,14 +290,14 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
           {currentResumeData && (
             <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-blue-900">Save Current Progress</h3>
+                <h3 className="font-semibold text-blue-900">{t('draftManager.saveProgress.title')}</h3>
                 <button
                   onClick={() => setShowSaveForm(!showSaveForm)}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center text-sm transition-colors"
                   disabled={isLoading}
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  {currentDraftId ? 'Update Draft' : 'Save as Draft'}
+                  {currentDraftId ? t('draftManager.buttons.updateDraft') : t('draftManager.buttons.saveDraft')}
                 </button>
               </div>
 
@@ -305,7 +307,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                     type="text"
                     value={saveName}
                     onChange={(e) => setSaveName(e.target.value)}
-                    placeholder={currentDraftId ? "Update draft name..." : "Enter draft name..."}
+                    placeholder={currentDraftId ? t('draftManager.saveProgress.updatePlaceholder') : t('draftManager.saveProgress.namePlaceholder')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     onKeyPress={(e) => e.key === 'Enter' && handleSaveDraft()}
                     disabled={isLoading}
@@ -316,7 +318,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                       disabled={!saveName.trim() || isLoading}
                       className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white px-4 py-2 rounded-md text-sm transition-colors"
                     >
-                      {isLoading ? 'Saving...' : (currentDraftId ? 'Update' : 'Save')}
+                      {isLoading ? t('app.status.saving') : (currentDraftId ? t('app.buttons.update') : t('app.buttons.save'))}
                     </button>
                     <button
                       onClick={() => {
@@ -327,7 +329,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                       className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm transition-colors"
                       disabled={isLoading}
                     >
-                      Cancel
+                      {t('app.buttons.cancel')}
                     </button>
                   </div>
                 </div>
@@ -339,7 +341,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
           <div className="mb-6 flex space-x-3">
             <label className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center text-sm cursor-pointer transition-colors">
               <Upload className="w-4 h-4 mr-2" />
-              Import Draft
+              {t('draftManager.buttons.importDraft')}
               <input
                 type="file"
                 accept=".json"
@@ -354,19 +356,19 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-900 flex items-center">
               <FolderOpen className="w-5 h-5 mr-2" />
-              Saved Drafts ({drafts.length})
+              {t('draftManager.info.draftsCount', { count: drafts.length })}
             </h3>
 
             {isLoading && !loadingDraftId ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-3"></div>
-                <p className="text-gray-500">Loading drafts...</p>
+                <p className="text-gray-500">{t('draftManager.status.loadingDrafts')}</p>
               </div>
             ) : drafts.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p>No drafts saved yet</p>
-                <p className="text-sm">Save your current progress to continue later</p>
+                <p>{t('draftManager.status.noDrafts')}</p>
+                <p className="text-sm">{t('draftManager.status.noDraftsDescription')}</p>
               </div>
             ) : (
               <div className="grid gap-4">
@@ -415,7 +417,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                             <h4 className="font-semibold text-gray-900">{draft.name}</h4>
                             {currentDraftId === draft.id && (
                               <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                Current
+                                {t('draftManager.status.current')}
                               </span>
                             )}
                             <button
@@ -434,16 +436,16 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                         <div className="text-sm text-gray-600 space-y-1">
                           <div className="flex items-center">
                             <Clock className="w-4 h-4 mr-1" />
-                            <span>Updated: {formatDate(draft.updatedAt)}</span>
+                            <span>{t('draftManager.info.updated', { date: formatDate(draft.updatedAt) })}</span>
                           </div>
                           <div>
-                            <span className="font-medium">Step:</span> {getStepName(draft.step)}
+                            <span className="font-medium">{t('draftManager.info.step', { stepName: getStepName(draft.step) })}</span>
                           </div>
                           <div>
-                            <span className="font-medium">Template:</span> {draft.selectedTemplate}
+                            <span className="font-medium">{t('draftManager.info.template', { templateName: draft.selectedTemplate })}</span>
                           </div>
                           <div>
-                            <span className="font-medium">Name:</span> {draft.resumeData?.personalInfo?.name || 'Not set'}
+                            <span className="font-medium">{t('draftManager.info.name', { name: draft.resumeData?.personalInfo?.name || 'Not set' })}</span>
                           </div>
                         </div>
                       </div>
@@ -457,16 +459,16 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                           {loadingDraftId === draft.id ? (
                             <>
                               <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent mr-1"></div>
-                              Loading
+                              {t('app.status.loading')}
                             </>
                           ) : (
-                            'Load'
+                            t('draftManager.buttons.loadDraft')
                           )}
                         </button>
                         <button
                           onClick={() => handleExportDraft(draft.id)}
                           className="text-gray-500 hover:text-gray-700 transition-colors"
-                          title="Export draft"
+                          title={t('draftManager.buttons.exportDraft')}
                           disabled={isLoading}
                         >
                           <Download className="w-4 h-4" />
@@ -474,7 +476,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                         <button
                           onClick={() => handleDeleteDraft(draft.id)}
                           className="text-red-500 hover:text-red-700 transition-colors"
-                          title="Delete draft"
+                          title={t('draftManager.buttons.deleteDraft')}
                           disabled={isLoading}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -492,14 +494,14 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         <div className="p-6 border-t border-gray-200 bg-gray-50">
           <div className="flex justify-between items-center">
             <p className="text-sm text-gray-600">
-              Drafts are saved locally in your browser
+              {t('draftManager.info.localStorage')}
             </p>
             <button
               onClick={onClose}
               className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition-colors"
               disabled={isLoading}
             >
-              Close
+              {t('app.buttons.close')}
             </button>
           </div>
         </div>

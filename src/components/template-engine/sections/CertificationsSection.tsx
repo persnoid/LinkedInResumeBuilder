@@ -137,7 +137,8 @@ export const CertificationsSection: React.FC<CertificationsSectionProps> = ({
         {editMode && (
           <button
             onClick={addCertification}
-            className="text-green-600 hover:text-green-700 flex items-center text-sm"
+            className="text-green-600 hover:text-green-700 flex items-center"
+            style={{ fontSize: styles.typography.fontSize.small }}
             title="Add new certification"
           >
             <Plus className="w-4 h-4 mr-1" />
@@ -196,19 +197,30 @@ export const CertificationsSection: React.FC<CertificationsSectionProps> = ({
                   <EditableText
                     value={cert.url}
                     onSave={(value) => handleCertificationEdit(cert.id, 'url', value)}
-                    className="certification-url block text-xs mt-1"
-                    style={{ color: styles.colors.secondary }}
+                    className="certification-url block mt-1"
+                    style={{ 
+                      fontSize: styles.typography.fontSize.small,
+                      color: styles.colors.secondary 
+                    }}
                     placeholder="Certification URL"
                   />
                 )}
               </div>
               
               {cert.date && (
-                <div className="certification-date flex items-center text-sm" style={{ color: styles.colors.secondary }}>
-                  <Calendar className="w-3 h-3 mr-1" />
+                <div className="certification-date flex items-center" style={{ color: styles.colors.secondary }}>
+                  <Calendar 
+                    className="mr-1" 
+                    style={{ 
+                      width: '12px', 
+                      height: '12px',
+                      fontSize: styles.typography.fontSize.small 
+                    }} 
+                  />
                   <EditableText
                     value={cert.date}
                     onSave={(value) => handleCertificationEdit(cert.id, 'date', value)}
+                    style={{ fontSize: styles.typography.fontSize.small }}
                     placeholder="Date"
                   />
                 </div>

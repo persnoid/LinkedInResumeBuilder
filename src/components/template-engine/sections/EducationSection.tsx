@@ -149,7 +149,8 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
         {editMode && (
           <button
             onClick={addEducation}
-            className="text-green-600 hover:text-green-700 flex items-center text-sm"
+            className="text-green-600 hover:text-green-700 flex items-center"
+            style={{ fontSize: styles.typography.fontSize.small }}
             title="Add new education"
           >
             <Plus className="w-4 h-4 mr-1" />
@@ -193,9 +194,16 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
               placeholder="School or University"
             />
             
-            <div className="education-meta flex items-center gap-4 text-sm mt-1" style={{ color: styles.colors.secondary }}>
+            <div className="education-meta flex items-center gap-4 mt-1" style={{ color: styles.colors.secondary }}>
               <div className="date-range flex items-center">
-                <Calendar className="w-4 h-4 mr-1" />
+                <Calendar 
+                  className="mr-1" 
+                  style={{ 
+                    width: '16px', 
+                    height: '16px',
+                    fontSize: styles.typography.fontSize.small 
+                  }} 
+                />
                 <EditableText
                   value={`${edu.startDate || 'Start'} - ${edu.endDate || 'End'}`}
                   onSave={(value) => {
@@ -203,15 +211,24 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
                     handleEducationEdit(edu.id, 'startDate', start);
                     handleEducationEdit(edu.id, 'endDate', end);
                   }}
+                  style={{ fontSize: styles.typography.fontSize.small }}
                   placeholder="Start Date - End Date"
                 />
               </div>
               {edu.location && (
                 <div className="location flex items-center">
-                  <MapPin className="w-4 h-4 mr-1" />
+                  <MapPin 
+                    className="mr-1" 
+                    style={{ 
+                      width: '16px', 
+                      height: '16px',
+                      fontSize: styles.typography.fontSize.small 
+                    }} 
+                  />
                   <EditableText
                     value={edu.location}
                     onSave={(value) => handleEducationEdit(edu.id, 'location', value)}
+                    style={{ fontSize: styles.typography.fontSize.small }}
                     placeholder="Location"
                   />
                 </div>
@@ -219,10 +236,11 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
             </div>
             
             {edu.gpa && (
-              <div className="gpa text-sm mt-1" style={{ color: styles.colors.secondary }}>
+              <div className="gpa mt-1" style={{ color: styles.colors.secondary }}>
                 GPA: <EditableText
                   value={edu.gpa}
                   onSave={(value) => handleEducationEdit(edu.id, 'gpa', value)}
+                  style={{ fontSize: styles.typography.fontSize.small }}
                   placeholder="GPA"
                 />
               </div>

@@ -183,7 +183,8 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
         {editMode && (
           <button
             onClick={addExperience}
-            className="text-green-600 hover:text-green-700 flex items-center text-sm"
+            className="text-green-600 hover:text-green-700 flex items-center"
+            style={{ fontSize: styles.typography.fontSize.small }}
             title="Add new experience"
           >
             <Plus className="w-4 h-4 mr-1" />
@@ -226,9 +227,16 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                 }}
                 placeholder="Company Name"
               />
-              <div className="experience-meta flex items-center gap-4 text-sm mt-1" style={{ color: styles.colors.secondary }}>
+              <div className="experience-meta flex items-center gap-4 mt-1" style={{ color: styles.colors.secondary }}>
                 <div className="date-range flex items-center">
-                  <Calendar className="w-4 h-4 mr-1" />
+                  <Calendar 
+                    className="mr-1" 
+                    style={{ 
+                      width: '16px', 
+                      height: '16px',
+                      fontSize: styles.typography.fontSize.small 
+                    }} 
+                  />
                   <EditableText
                     value={`${exp.startDate || 'Start'} - ${exp.current ? 'Present' : exp.endDate || 'End'}`}
                     onSave={(value) => {
@@ -237,15 +245,24 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                       handleFieldEdit(exp.id, 'endDate', end);
                       handleFieldEdit(exp.id, 'current', end === 'Present');
                     }}
+                    style={{ fontSize: styles.typography.fontSize.small }}
                     placeholder="Start Date - End Date"
                   />
                 </div>
                 {exp.location && (
                   <div className="location flex items-center">
-                    <MapPin className="w-4 h-4 mr-1" />
+                    <MapPin 
+                      className="mr-1" 
+                      style={{ 
+                        width: '16px', 
+                        height: '16px',
+                        fontSize: styles.typography.fontSize.small 
+                      }} 
+                    />
                     <EditableText
                       value={exp.location}
                       onSave={(value) => handleFieldEdit(exp.id, 'location', value)}
+                      style={{ fontSize: styles.typography.fontSize.small }}
                       placeholder="Location"
                     />
                   </div>
@@ -267,7 +284,10 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                   >
                     <span 
                       className="bullet mr-3 mt-1 flex-shrink-0"
-                      style={{ color: styles.colors.accent }}
+                      style={{ 
+                        color: styles.colors.accent,
+                        fontSize: styles.typography.fontSize.base
+                      }}
                     >
                       •
                     </span>
@@ -275,6 +295,7 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                       value={desc}
                       onSave={(value) => handleDescriptionEdit(exp.id, index, value)}
                       className="flex-1"
+                      style={{ fontSize: styles.typography.fontSize.base }}
                       placeholder="Describe your achievements and responsibilities"
                       multiline
                     />

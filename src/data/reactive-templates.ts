@@ -63,7 +63,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           order: 3,
           columns: 2, // SIDEBAR
           styles: { 
-            alignment: 'left',
+            alignment: 'left', 
             display: 'list',
             spacing: 'normal',
             headerStyle: 'underline',
@@ -1173,7 +1173,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           item: '16px',
           compact: '12px',
           contentPadding: '32px',
-          sidebarColumnPadding: '100px 24px 24px 24px',
+          sidebarColumnPadding: '32px',
           mainColumnPadding: '32px',
           xs: '4px',
           sm: '8px',

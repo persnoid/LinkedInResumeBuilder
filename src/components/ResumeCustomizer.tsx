@@ -89,15 +89,18 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
       newCustomizations[field] = value;
     }
     
+    console.log('Customization changed:', field, value);
+    console.log('New customizations:', newCustomizations);
     onCustomizationsUpdate(newCustomizations);
   };
 
   const handleSectionVisibilityToggle = (sectionId: string) => {
-    const currentSections = customizations.visibleSections || currentSections.map(s => s.id);
-    const newVisibleSections = currentSections.includes(sectionId)
-      ? currentSections.filter((id: string) => id !== sectionId)
-      : [...currentSections, sectionId];
+    const currentVisibleSections = customizations.visibleSections || currentSections.map(s => s.id);
+    const newVisibleSections = currentVisibleSections.includes(sectionId)
+      ? currentVisibleSections.filter((id: string) => id !== sectionId)
+      : [...currentVisibleSections, sectionId];
     
+    console.log('Section visibility toggle:', sectionId, 'New visible sections:', newVisibleSections);
     handleCustomizationChange('visibleSections', newVisibleSections);
   };
 
@@ -109,6 +112,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     const [reorderedItem] = newOrder.splice(result.source.index, 1);
     newOrder.splice(result.destination.index, 0, reorderedItem);
 
+    console.log('Section reorder:', 'Old order:', currentOrder, 'New order:', newOrder);
     handleCustomizationChange('sectionOrder', newOrder);
   };
 
@@ -116,6 +120,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     const currentSectionStyles = customizations.sections || {};
     const sectionStyles = currentSectionStyles[sectionId] || {};
     
+    console.log('Section style change:', sectionId, styleKey, value);
     handleCustomizationChange(`sections.${sectionId}.${styleKey}`, value);
   };
 
@@ -127,8 +132,19 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   // Get current colors for display
   const currentColors = customizations.colors || {};
   const currentEffects = customizations.effects || {};
+  
+  // ENHANCED: Initialize visibility and order if not set
   const visibleSections = customizations.visibleSections || currentSections.map(s => s.id);
   const sectionOrder = customizations.sectionOrder || currentSections.map(s => s.id);
+
+  // Debug logging
+  console.log('=== ResumeCustomizer Debug ===');
+  console.log('Current template:', selectedTemplate);
+  console.log('Current sections from template:', currentSections.map(s => s.id));
+  console.log('Visible sections from customizations:', visibleSections);
+  console.log('Section order from customizations:', sectionOrder);
+  console.log('Current customizations:', customizations);
+  console.log('=== End Debug ===');
 
   return (
     <div className="min-h-screen bg-gray-50 flex">

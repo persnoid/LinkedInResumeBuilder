@@ -94,7 +94,22 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     onCustomizationsUpdate(newCustomizations);
   };
 
+  // ENHANCED: Check if a section is personal info and should be protected
+  const isPersonalInfoSection = (sectionId: string) => {
+    return sectionId === 'personalInfo' || 
+           sectionId === 'personalInfoSidebar' || 
+           sectionId === 'personalInfoMain' ||
+           sectionId.toLowerCase().includes('personalinfo');
+  };
+
   const handleSectionVisibilityToggle = (sectionId: string) => {
+    // PROTECTION: Prevent hiding personal info sections
+    if (isPersonalInfoSection(sectionId)) {
+      console.warn('Cannot hide personal information section - it must always be visible');
+      alert('Personal information section cannot be hidden as it is essential for any resume.');
+      return;
+    }
+
     const currentVisibleSections = customizations.visibleSections || currentSections.map(s => s.id);
     const newVisibleSections = currentVisibleSections.includes(sectionId)
       ? currentVisibleSections.filter((id: string) => id !== sectionId)
@@ -108,6 +123,23 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     if (!result.destination) return;
 
     const currentOrder = customizations.sectionOrder || currentSections.map(s => s.id);
+    const draggedItemId = currentOrder[result.source.index];
+    
+    // PROTECTION: Prevent moving personal info sections
+    if (isPersonalInfoSection(draggedItemId)) {
+      console.warn('Cannot move personal information section - it must remain at the top');
+      alert('Personal information section cannot be moved as it should always appear at the top of your resume.');
+      return;
+    }
+
+    // PROTECTION: Prevent moving items to position 0 if personal info is there
+    const personalInfoIndex = currentOrder.findIndex(id => isPersonalInfoSection(id));
+    if (personalInfoIndex === 0 && result.destination.index === 0) {
+      console.warn('Cannot move section to top position - personal information must remain first');
+      alert('Personal information section must remain at the top of your resume.');
+      return;
+    }
+
     const newOrder = Array.from(currentOrder);
     const [reorderedItem] = newOrder.splice(result.source.index, 1);
     newOrder.splice(result.destination.index, 0, reorderedItem);
@@ -129,13 +161,31 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     setEditableResumeData(updatedData);
   };
 
+  // ENHANCED: Ensure personal info sections are always first and visible
+  const ensurePersonalInfoFirst = (sections: string[]) => {
+    const personalInfoSections = sections.filter(id => isPersonalInfoSection(id));
+    const otherSections = sections.filter(id => !isPersonalInfoSection(id));
+    return [...personalInfoSections, ...otherSections];
+  };
+
   // Get current colors for display
   const currentColors = customizations.colors || {};
   const currentEffects = customizations.effects || {};
   
-  // ENHANCED: Initialize visibility and order if not set
-  const visibleSections = customizations.visibleSections || currentSections.map(s => s.id);
-  const sectionOrder = customizations.sectionOrder || currentSections.map(s => s.id);
+  // ENHANCED: Initialize visibility and order if not set, ensuring personal info is protected
+  let visibleSections = customizations.visibleSections || currentSections.map(s => s.id);
+  let sectionOrder = customizations.sectionOrder || currentSections.map(s => s.id);
+
+  // PROTECTION: Ensure personal info sections are always visible and first
+  const personalInfoSectionIds = currentSections.filter(s => isPersonalInfoSection(s.id)).map(s => s.id);
+  personalInfoSectionIds.forEach(id => {
+    if (!visibleSections.includes(id)) {
+      visibleSections = [id, ...visibleSections];
+      console.log('Auto-added personal info section to visible sections:', id);
+    }
+  });
+
+  sectionOrder = ensurePersonalInfoFirst(sectionOrder);
 
   // Debug logging
   console.log('=== ResumeCustomizer Debug ===');
@@ -143,6 +193,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   console.log('Current sections from template:', currentSections.map(s => s.id));
   console.log('Visible sections from customizations:', visibleSections);
   console.log('Section order from customizations:', sectionOrder);
+  console.log('Personal info sections detected:', personalInfoSectionIds);
   console.log('Current customizations:', customizations);
   console.log('=== End Debug ===');
 
@@ -390,30 +441,45 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Section Visibility</h3>
                 <div className="space-y-2">
-                  {currentSections.map((section) => (
-                    <div key={section.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm font-medium text-gray-900">{section.name}</span>
-                      <button
-                        onClick={() => handleSectionVisibilityToggle(section.id)}
-                        className={`p-1 rounded ${
-                          visibleSections.includes(section.id)
-                            ? 'text-blue-600 hover:text-blue-700'
-                            : 'text-gray-400 hover:text-gray-600'
-                        }`}
-                      >
-                        {visibleSections.includes(section.id) ? (
-                          <Eye className="w-4 h-4" />
-                        ) : (
-                          <EyeOff className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  ))}
+                  {currentSections.map((section) => {
+                    const isPersonalInfo = isPersonalInfoSection(section.id);
+                    return (
+                      <div key={section.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span className="text-sm font-medium text-gray-900">
+                          {section.name}
+                          {isPersonalInfo && (
+                            <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                              Required
+                            </span>
+                          )}
+                        </span>
+                        <button
+                          onClick={() => handleSectionVisibilityToggle(section.id)}
+                          className={`p-1 rounded ${
+                            visibleSections.includes(section.id)
+                              ? 'text-blue-600 hover:text-blue-700'
+                              : 'text-gray-400 hover:text-gray-600'
+                          } ${isPersonalInfo ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          disabled={isPersonalInfo}
+                          title={isPersonalInfo ? 'Personal information cannot be hidden' : 'Toggle section visibility'}
+                        >
+                          {visibleSections.includes(section.id) ? (
+                            <Eye className="w-4 h-4" />
+                          ) : (
+                            <EyeOff className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Section Order</h3>
+                <p className="text-xs text-gray-600 mb-3">
+                  Drag sections to reorder them. Personal information must remain at the top.
+                </p>
                 <DragDropContext onDragEnd={handleSectionReorder}>
                   <Droppable droppableId="sections">
                     {(provided) => (
@@ -422,18 +488,32 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                           const section = currentSections.find(s => s.id === sectionId);
                           if (!section) return null;
                           
+                          const isPersonalInfo = isPersonalInfoSection(section.id);
+                          
                           return (
-                            <Draggable key={section.id} draggableId={section.id} index={index}>
-                              {(provided) => (
+                            <Draggable 
+                              key={section.id} 
+                              draggableId={section.id} 
+                              index={index}
+                              isDragDisabled={isPersonalInfo}
+                            >
+                              {(provided, snapshot) => (
                                 <div
                                   ref={provided.innerRef}
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
-                                  className="flex items-center p-3 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow"
+                                  className={`flex items-center p-3 bg-white border border-gray-200 rounded-lg transition-shadow ${
+                                    snapshot.isDragging ? 'shadow-lg' : 'hover:shadow-sm'
+                                  } ${isPersonalInfo ? 'opacity-75 cursor-not-allowed' : 'cursor-move'}`}
                                 >
-                                  <GripVertical className="w-4 h-4 text-gray-400 mr-3" />
+                                  <GripVertical className={`w-4 h-4 mr-3 ${isPersonalInfo ? 'text-gray-300' : 'text-gray-400'}`} />
                                   <span className="text-sm font-medium text-gray-900 flex-1">
                                     {section.name}
+                                    {isPersonalInfo && (
+                                      <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                                        Fixed Position
+                                      </span>
+                                    )}
                                   </span>
                                   <span className="text-xs text-gray-500">
                                     {index + 1}
@@ -570,7 +650,10 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                   customizations: {
                     ...customizations,
                     editMode: isEditMode,
-                    onDataUpdate: handleResumeDataUpdate
+                    onDataUpdate: handleResumeDataUpdate,
+                    // PROTECTION: Ensure personal info sections are always visible and first
+                    visibleSections: visibleSections,
+                    sectionOrder: sectionOrder
                   }
                 }}
               />

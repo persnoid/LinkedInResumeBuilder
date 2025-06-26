@@ -44,14 +44,14 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   ];
 
   const colorPresets = [
-    { name: 'Professional Blue', primary: '#3B82F6', secondary: '#1E40AF', accent: '#10B981', surface: '#F8FAFC' },
-    { name: 'Corporate Navy', primary: '#1E293B', secondary: '#475569', accent: '#0EA5E9', surface: '#F1F5F9' },
-    { name: 'Creative Purple', primary: '#8B5CF6', secondary: '#7C3AED', accent: '#F59E0B', surface: '#FAF5FF' },
-    { name: 'Modern Teal', primary: '#14B8A6', secondary: '#0F766E', accent: '#F97316', surface: '#F0FDFA' },
-    { name: 'Classic Black', primary: '#1F2937', secondary: '#4B5563', accent: '#EF4444', surface: '#F9FAFB' },
-    { name: 'Tech Green', primary: '#059669', secondary: '#047857', accent: '#F59E0B', surface: '#ECFDF5' },
-    { name: 'Warm Orange', primary: '#F97316', secondary: '#EA580C', accent: '#3B82F6', surface: '#FFF7ED' },
-    { name: 'Elegant Rose', primary: '#E11D48', secondary: '#BE185D', accent: '#8B5CF6', surface: '#FFF1F2' }
+    { name: 'Professional Blue', primary: '#3B82F6', secondary: '#1E40AF', accent: '#10B981', surface: '#F8FAFC', muted: '#F1F5F9' },
+    { name: 'Corporate Navy', primary: '#1E293B', secondary: '#475569', accent: '#0EA5E9', surface: '#F1F5F9', muted: '#E2E8F0' },
+    { name: 'Creative Purple', primary: '#8B5CF6', secondary: '#7C3AED', accent: '#F59E0B', surface: '#FAF5FF', muted: '#F3E8FF' },
+    { name: 'Modern Teal', primary: '#14B8A6', secondary: '#0F766E', accent: '#F97316', surface: '#F0FDFA', muted: '#CCFBF1' },
+    { name: 'Classic Black', primary: '#1F2937', secondary: '#4B5563', accent: '#EF4444', surface: '#F9FAFB', muted: '#F3F4F6' },
+    { name: 'Tech Green', primary: '#059669', secondary: '#047857', accent: '#F59E0B', surface: '#ECFDF5', muted: '#D1FAE5' },
+    { name: 'Warm Orange', primary: '#F97316', secondary: '#EA580C', accent: '#3B82F6', surface: '#FFF7ED', muted: '#FED7AA' },
+    { name: 'Elegant Rose', primary: '#E11D48', secondary: '#BE185D', accent: '#8B5CF6', surface: '#FFF1F2', muted: '#FECDD3' }
   ];
 
   const effectPresets = [
@@ -214,7 +214,8 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                           primary: preset.primary,
                           secondary: preset.secondary,
                           accent: preset.accent,
-                          surface: preset.surface
+                          surface: preset.surface,
+                          muted: preset.muted
                         });
                       }}
                       className="p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors text-left"
@@ -236,6 +237,10 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                           className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: preset.surface }}
                         />
+                        <div 
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: preset.muted }}
+                        />
                       </div>
                       <div className="text-xs font-medium text-gray-900">{preset.name}</div>
                     </button>
@@ -250,7 +255,8 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                     { key: 'primary', label: 'Primary Color' },
                     { key: 'secondary', label: 'Secondary Color' },
                     { key: 'accent', label: 'Accent Color' },
-                    { key: 'surface', label: 'Surface Color' }
+                    { key: 'surface', label: 'Surface Color' },
+                    { key: 'muted', label: 'Sidebar Background' }
                   ].map((color) => (
                     <div key={color.key} className="flex items-center justify-between">
                       <span className="text-sm text-gray-700">{color.label}</span>

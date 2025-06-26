@@ -235,7 +235,7 @@ export const reactiveTemplates: TemplateConfig[] = [
       sections: [
         {
           id: 'personalInfo',
-          name: 'Executive Profile',
+          name: 'Contact Information',
           component: 'PersonalInfo',
           visible: true,
           order: 1,
@@ -249,7 +249,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         },
         {
           id: 'summary',
-          name: 'Executive Summary',
+          name: 'About me',
           component: 'Summary',
           visible: true,
           order: 2,
@@ -266,7 +266,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         },
         {
           id: 'experience',
-          name: 'Leadership Experience',
+          name: 'Work Experience',
           component: 'Experience',
           visible: true,
           order: 3,
@@ -281,7 +281,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         },
         {
           id: 'education',
-          name: 'Education & Credentials',
+          name: 'Education',
           component: 'Education',
           visible: true,
           order: 4,
@@ -296,7 +296,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         },
         {
           id: 'skills',
-          name: 'Core Competencies',
+          name: 'Skills',
           component: 'Skills',
           visible: true,
           order: 5,
@@ -442,7 +442,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         // LEFT COLUMN - columns: 1
         {
           id: 'personalInfo',
-          name: 'Developer Profile',
+          name: 'Contact Information',
           component: 'PersonalInfo',
           visible: true,
           order: 1,
@@ -456,7 +456,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         },
         {
           id: 'summary',
-          name: 'Technical Summary',
+          name: 'About me',
           component: 'Summary',
           visible: true,
           order: 2,
@@ -470,7 +470,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         },
         {
           id: 'experience',
-          name: 'Professional Experience',
+          name: 'Work Experience',
           component: 'Experience',
           visible: true,
           order: 3,
@@ -486,7 +486,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         // RIGHT COLUMN - columns: 2
         {
           id: 'skills',
-          name: 'Technical Skills',
+          name: 'Skills',
           component: 'Skills',
           visible: true,
           order: 4,
@@ -646,7 +646,7 @@ export const reactiveTemplates: TemplateConfig[] = [
       sections: [
         {
           id: 'personalInfo',
-          name: 'Academic Profile',
+          name: 'Contact Information',
           component: 'PersonalInfo',
           visible: true,
           order: 1,
@@ -659,7 +659,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         },
         {
           id: 'summary',
-          name: 'Research Interests',
+          name: 'About me',
           component: 'Summary',
           visible: true,
           order: 2,
@@ -687,7 +687,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         },
         {
           id: 'experience',
-          name: 'Academic Experience',
+          name: 'Work Experience',
           component: 'Experience',
           visible: true,
           order: 4,
@@ -701,7 +701,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         },
         {
           id: 'skills',
-          name: 'Research Skills',
+          name: 'Skills',
           component: 'Skills',
           visible: true,
           order: 5,
@@ -730,7 +730,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         },
         {
           id: 'certifications',
-          name: 'Publications & Awards',
+          name: 'Certifications',
           component: 'Certifications',
           visible: true,
           order: 7,
@@ -846,7 +846,7 @@ export const reactiveTemplates: TemplateConfig[] = [
       sections: [
         {
           id: 'personalInfo',
-          name: 'Personal Information',
+          name: 'Contact Information',
           component: 'PersonalInfo',
           visible: true,
           order: 1,
@@ -855,7 +855,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         },
         {
           id: 'summary',
-          name: 'Professional Summary',
+          name: 'About me',
           component: 'Summary',
           visible: true,
           order: 2,
@@ -894,7 +894,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         },
         {
           id: 'skills',
-          name: 'Core Skills',
+          name: 'Skills',
           component: 'Skills',
           visible: true,
           order: 5,
@@ -1035,7 +1035,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         // MAIN CONTENT - columns: 1
         {
           id: 'personalInfo',
-          name: 'Personal Information',
+          name: 'Contact Information',
           component: 'PersonalInfo',
           visible: true,
           order: 1,
@@ -1044,7 +1044,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         },
         {
           id: 'summary',
-          name: 'About',
+          name: 'About me',
           component: 'Summary',
           visible: true,
           order: 2,
@@ -1057,7 +1057,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         },
         {
           id: 'experience',
-          name: 'Experience',
+          name: 'Work Experience',
           component: 'Experience',
           visible: true,
           order: 3,

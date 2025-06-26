@@ -30,16 +30,26 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
   }>({
     aiAvailable: false,
     openaiConfigured: false,
-    message: t('ai.status.unavailable')
+    message: 'AI service unavailable'
   });
   const [recentDrafts, setRecentDrafts] = useState<any[]>([]);
 
   // Check AI availability on component mount
   useEffect(() => {
     const checkAI = async () => {
-      const status = await checkAIAvailability();
-      setAiStatus(status);
+      try {
+        const status = await checkAIAvailability();
+        setAiStatus(status);
+      } catch (error) {
+        console.error('Error checking AI availability:', error);
+        setAiStatus({
+          aiAvailable: false,
+          openaiConfigured: false,
+          message: 'AI service unavailable - please check your configuration'
+        });
+      }
     };
+    
     checkAI();
     
     // Load recent drafts
@@ -59,7 +69,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
 
   const handleExtractData = async () => {
     if (!linkedinUrl.includes('linkedin.com')) {
-      setError(t('linkedinInput.errors.invalidLinkedin'));
+      setError('Please enter a valid LinkedIn profile URL');
       return;
     }
 
@@ -81,18 +91,18 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
     if (!file) return;
 
     if (file.type !== 'application/pdf') {
-      setError(t('linkedinInput.errors.invalidPdf'));
+      setError('Please upload a valid PDF file');
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      setError(t('linkedinInput.errors.fileSizeLimit'));
+      setError('File size must be less than 10MB');
       return;
     }
 
     // Check if AI is available before processing
     if (!aiStatus.aiAvailable) {
-      setError(t('linkedinInput.errors.aiNotAvailable'));
+      setError('AI-powered parsing is not available. Please ensure the AI service is running and your OpenAI API key is configured.');
       return;
     }
 
@@ -133,7 +143,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
     } catch (error) {
       setIsLoading(false);
       setUploadProgress(0);
-      setError(error instanceof Error ? error.message : t('linkedinInput.errors.processingFailed'));
+      setError(error instanceof Error ? error.message : 'Failed to process PDF file');
       setExtractionMethod(null);
     }
   };
@@ -185,6 +195,10 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
         { id: '5', name: 'AWS', level: 'Intermediate' },
         { id: '6', name: 'Docker', level: 'Intermediate' }
       ],
+      languages: [
+        { id: '1', name: 'English', level: 'Native' },
+        { id: '2', name: 'Spanish', level: 'Fluent' }
+      ],
       certifications: [{
         id: '1',
         name: 'AWS Solutions Architect',
@@ -232,10 +246,10 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
             <Linkedin className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {t('linkedinInput.title')}
+            AI-Powered LinkedIn Resume Generator
           </h1>
           <p className="text-gray-600 text-lg">
-            {t('linkedinInput.subtitle')}
+            Transform your LinkedIn profile into a professional resume using advanced AI
           </p>
           
           {/* AI Status Indicator */}
@@ -247,12 +261,12 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
             {aiStatus.aiAvailable ? (
               <>
                 <Brain className="w-4 h-4 mr-2" />
-                {t('ai.status.ready')}
+                AI-Powered Parsing Ready
               </>
             ) : (
               <>
                 <Settings className="w-4 h-4 mr-2" />
-                {t('ai.status.configRequired')}
+                AI Service Configuration Required
               </>
             )}
           </div>
@@ -266,7 +280,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                 {/* LinkedIn URL Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('linkedinInput.form.linkedinUrl.label')}
+                    LinkedIn Profile URL
                   </label>
                   <div className="relative">
                     <input
@@ -277,7 +291,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                         setError('');
                         setSuccess(false);
                       }}
-                      placeholder={t('linkedinInput.form.linkedinUrl.placeholder')}
+                      placeholder="https://www.linkedin.com/in/yourprofile"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                       disabled={isLoading || success}
                     />
@@ -295,12 +309,12 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                   {isLoading && extractionMethod === 'url' ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                      {t('linkedinInput.status.checking')}
+                      Checking Profile...
                     </>
                   ) : (
                     <>
                       <ExternalLink className="w-5 h-5 mr-2" />
-                      {t('linkedinInput.form.buttons.tryProfile')}
+                      Try Profile URL
                     </>
                   )}
                 </button>
@@ -311,7 +325,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                   </div>
                   <div className="relative flex justify-center text-sm">
                     <span className="px-2 bg-white text-gray-500">
-                      {aiStatus.aiAvailable ? t('ai.processing.enhancing') : t('linkedinInput.form.pdfUpload.label')}
+                      {aiStatus.aiAvailable ? 'AI Enhanced' : 'Upload LinkedIn PDF Export'}
                     </span>
                   </div>
                 </div>
@@ -319,11 +333,11 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                 {/* PDF Upload */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('linkedinInput.form.pdfUpload.label')}
+                    Upload LinkedIn PDF Export
                     {aiStatus.aiAvailable && (
                       <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
                         <Brain className="w-3 h-3 mr-1" />
-                        {t('ai.processing.enhancing')}
+                        AI Enhanced
                       </span>
                     )}
                   </label>
@@ -338,7 +352,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                         <label className={`relative cursor-pointer bg-white rounded-md font-medium focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 ${
                           aiStatus.aiAvailable ? 'text-blue-600 hover:text-blue-500' : 'text-gray-600 hover:text-gray-500'
                         }`}>
-                          <span>{t('linkedinInput.form.pdfUpload.dragDrop')}</span>
+                          <span>Upload a PDF file</span>
                           <input
                             type="file"
                             accept=".pdf"
@@ -347,12 +361,12 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                             disabled={isLoading || success || !aiStatus.aiAvailable}
                           />
                         </label>
-                        <p className="pl-1">{t('common.or')} drag and drop</p>
+                        <p className="pl-1">or drag and drop</p>
                       </div>
-                      <p className="text-xs text-gray-500">{t('linkedinInput.form.pdfUpload.fileSize')}</p>
+                      <p className="text-xs text-gray-500">PDF up to 10MB</p>
                       {aiStatus.aiAvailable && (
                         <p className="text-xs text-blue-600 font-medium">
-                          {t('linkedinInput.form.pdfUpload.aiProcessing')}
+                          ✨ AI will intelligently extract your information
                         </p>
                       )}
                     </div>
@@ -362,9 +376,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                   {isLoading && extractionMethod === 'pdf' && uploadProgress > 0 && (
                     <div className="mt-4">
                       <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
-                        <span>
-                          {t('ai.processing.analyzing')}
-                        </span>
+                        <span>🤖 AI Processing PDF...</span>
                         <span>{uploadProgress}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
@@ -389,7 +401,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                 {success && (
                   <div className="flex items-center mt-2 text-green-600 text-sm bg-green-50 p-3 rounded-lg">
                     <CheckCircle className="w-4 h-4 mr-2" />
-                    {t('linkedinInput.status.extractedSuccess')}
+                    Data extracted successfully using AI! Proceeding to next step...
                   </div>
                 )}
 
@@ -398,7 +410,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                     <div className="w-full border-t border-gray-300" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">{t('common.or')}</span>
+                    <span className="px-2 bg-white text-gray-500">or</span>
                   </div>
                 </div>
 
@@ -411,12 +423,12 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                   {isLoading && extractionMethod === null ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-transparent mr-2"></div>
-                      {t('linkedinInput.status.loadingSample')}
+                      Loading Sample...
                     </>
                   ) : (
                     <>
                       <FileText className="w-5 h-5 mr-2" />
-                      {t('linkedinInput.form.buttons.sampleData')}
+                      Try with Sample Data
                     </>
                   )}
                 </button>
@@ -439,24 +451,25 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                       {aiStatus.aiAvailable ? (
                         <>
                           <p className="text-sm text-blue-700">
-                            <strong>{t('linkedinInput.instructions.title')}</strong>
+                            <strong>How to get your LinkedIn PDF:</strong>
                           </p>
                           <ol className="text-sm text-blue-700 mt-2 list-decimal list-inside space-y-1">
-                            {t('linkedinInput.instructions.steps', { returnObjects: true }).map((step: string, index: number) => (
-                              <li key={index}>{step}</li>
-                            ))}
+                            <li>Go to your LinkedIn profile</li>
+                            <li>Click "More" → "Save to PDF"</li>
+                            <li>Upload the downloaded PDF here for AI-powered extraction</li>
+                            <li>✨ Our AI will intelligently extract all your information!</li>
                           </ol>
                         </>
                       ) : (
                         <>
                           <p className="text-sm text-yellow-700">
-                            <strong>{t('ai.status.configRequired')}:</strong>
+                            <strong>AI Service Configuration Required:</strong>
                           </p>
                           <p className="text-sm text-yellow-700 mt-2">
                             {aiStatus.message}
                           </p>
                           <p className="text-xs text-yellow-600 mt-1">
-                            {t('ai.status.keyRequired')}
+                            OpenAI API key required for AI-powered parsing
                           </p>
                         </>
                       )}
@@ -473,24 +486,24 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <FolderOpen className="w-5 h-5 mr-2" />
-                {t('linkedinInput.drafts.title')}
+                Continue Previous Work
               </h3>
               <p className="text-sm text-gray-600 mb-4">
-                {t('linkedinInput.drafts.description')}
+                Access your saved drafts and continue where you left off
               </p>
               <button
                 onClick={handleOpenDraftManager}
                 className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
               >
                 <FolderOpen className="w-4 h-4 mr-2" />
-                {t('linkedinInput.drafts.manageDrafts')}
+                Manage Drafts
               </button>
             </div>
 
             {/* Recent Drafts */}
             {recentDrafts.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('linkedinInput.drafts.recentDrafts')}</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Drafts</h3>
                 <div className="space-y-3">
                   {recentDrafts.map((draft) => (
                     <div
@@ -505,7 +518,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                         {formatDate(draft.updatedAt)}
                       </div>
                       <div className="text-xs text-blue-600 mt-1">
-                        {t('linkedinInput.drafts.step', { step: draft.step + 1 })}
+                        Step: {draft.step + 1} of 4
                       </div>
                     </div>
                   ))}
@@ -514,7 +527,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                   onClick={handleOpenDraftManager}
                   className="w-full mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium"
                 >
-                  {t('linkedinInput.drafts.viewAll')}
+                  View all drafts →
                 </button>
               </div>
             )}

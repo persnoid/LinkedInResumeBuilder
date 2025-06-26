@@ -1012,14 +1012,14 @@ export const reactiveTemplates: TemplateConfig[] = [
   },
   {
     id: 'chikorita',
-    name: 'Chikorita',
-    description: 'Clean minimal template with elegant typography and spacing',
-    category: 'minimal',
+    name: 'Clean Professional',
+    description: 'Clean professional template with sidebar layout, perfect for showcasing contact information and skills',
+    category: 'professional',
     preview: '/templates/chikorita.jpg',
-    tags: ['minimal', 'elegant', 'clean'],
-    difficulty: 'intermediate',
-    industry: ['design', 'creative', 'consulting'],
-    features: ['minimal design', 'elegant typography', 'clean spacing'],
+    tags: ['professional', 'clean', 'sidebar'],
+    difficulty: 'beginner',
+    industry: ['business', 'consulting', 'finance', 'healthcare'],
+    features: ['sidebar contact section', 'clean typography', 'professional layout'],
     customizable: {
       colors: true,
       fonts: true,
@@ -1029,18 +1029,21 @@ export const reactiveTemplates: TemplateConfig[] = [
     },
     layout: {
       id: 'chikorita-layout',
-      name: 'Chikorita Layout',
+      name: 'Clean Professional Layout',
       type: 'sidebar',
       sections: [
         // MAIN CONTENT - columns: 1
         {
-          id: 'personalInfo',
-          name: 'Contact Information',
+          id: 'personalInfoMain',
+          name: 'Header Information',
           component: 'PersonalInfo',
           visible: true,
           order: 1,
           columns: 1, // MAIN CONTENT
-          styles: { alignment: 'left' }
+          styles: { 
+            alignment: 'left',
+            displayParts: ['name', 'title']
+          }
         },
         {
           id: 'summary',
@@ -1081,43 +1084,44 @@ export const reactiveTemplates: TemplateConfig[] = [
             headerStyle: 'underline'
           }
         },
-        {
-          id: 'certifications',
-          name: 'Certifications',
-          component: 'Certifications',
-          visible: true,
-          order: 5,
-          columns: 1, // MAIN CONTENT ONLY
-          styles: { 
-            alignment: 'left',
-            headerStyle: 'underline'
-          }
-        },
         
         // SIDEBAR - columns: 2
         {
-          id: 'skills',
-          name: 'Skills',
-          component: 'Skills',
+          id: 'personalInfoSidebar',
+          name: 'Contact Information',
+          component: 'PersonalInfo',
+          visible: true,
+          order: 5,
+          columns: 2, // SIDEBAR ONLY
+          styles: { 
+            alignment: 'left',
+            displayParts: ['photo', 'contact'],
+            photoSize: '24'
+          }
+        },
+        {
+          id: 'languages',
+          name: 'Language(s)',
+          component: 'Languages',
           visible: true,
           order: 6,
           columns: 2, // SIDEBAR ONLY
           styles: { 
-            alignment: 'left', 
-            display: 'list',
+            alignment: 'left',
             headerStyle: 'underline',
             divider: true
           }
         },
         {
-          id: 'languages',
-          name: 'Languages',
-          component: 'Languages',
+          id: 'skills',
+          name: 'Skills',
+          component: 'Skills',
           visible: true,
           order: 7,
           columns: 2, // SIDEBAR ONLY
           styles: { 
-            alignment: 'left',
+            alignment: 'left', 
+            display: 'list',
             headerStyle: 'underline'
           }
         }
@@ -1131,19 +1135,19 @@ export const reactiveTemplates: TemplateConfig[] = [
         typography: {
           fontFamily: 'Inter, sans-serif',
           fontSize: {
-            base: '12px',
-            heading1: '30px',
-            heading2: '20px',
-            heading3: '18px',
-            small: '11px',
+            base: '11px',
+            heading1: '22px',
+            heading2: '16px',
+            heading3: '14px',
+            small: '10px',
             contactInfo: '10px',
             micro: '9px'
           },
           lineHeight: {
             tight: '1.2',
-            normal: '1.5',
-            relaxed: '1.7',
-            loose: '1.9'
+            normal: '1.4',
+            relaxed: '1.6',
+            loose: '1.8'
           },
           fontWeight: {
             light: '300',
@@ -1154,24 +1158,24 @@ export const reactiveTemplates: TemplateConfig[] = [
           }
         },
         colors: {
-          primary: '#111827',
-          secondary: '#4b5563',
-          accent: '#059669',
-          text: '#374151',
+          primary: '#2D3748',
+          secondary: '#4A5568',
+          accent: '#319795',
+          text: '#2D3748',
           background: '#ffffff',
-          muted: '#16a34a',
-          border: '#d1d5db',
-          success: '#059669',
-          warning: '#f59e0b',
-          error: '#ef4444',
-          info: '#059669',
-          surface: '#f9fafb',
-          overlay: 'rgba(17, 24, 39, 0.5)'
+          muted: '#E6FFFA',
+          border: '#E2E8F0',
+          success: '#38A169',
+          warning: '#D69E2E',
+          error: '#E53E3E',
+          info: '#3182CE',
+          surface: '#F7FAFC',
+          overlay: 'rgba(45, 55, 72, 0.5)'
         },
         spacing: {
-          section: '32px',
-          item: '16px',
-          compact: '12px',
+          section: '24px',
+          item: '12px',
+          compact: '8px',
           contentPadding: '32px',
           sidebarColumnPadding: '32px',
           mainColumnPadding: '32px',

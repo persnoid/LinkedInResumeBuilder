@@ -35,6 +35,10 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   const displayLinkedin = personalInfo.linkedin || 'linkedin.com/in/jessicamiller';
   const displayWebsite = personalInfo.website || 'jessicamiller.dev';
 
+  // Get display parts from sectionStyles, defaulting to all parts
+  const displayParts = sectionStyles?.displayParts || ['photo', 'name', 'title', 'contact'];
+  const photoSize = sectionStyles?.photoSize || '24'; // Default to 96px (24 * 4)
+
   const contactItems = [
     { icon: Mail, value: displayEmail, label: 'Email', field: 'email' },
     { icon: Phone, value: displayPhone, label: 'Phone', field: 'phone' },
@@ -253,153 +257,109 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     </div>
   );
 
-  const renderSidebar = () => (
-    <div className="personal-info-sidebar mb-6">
-      {/* Profile Photo */}
-      <div className="photo-container mb-6 flex justify-center">
-        <PhotoUpload className="w-24 h-24" />
-      </div>
+  // Render components based on displayParts
+  const renderPhoto = () => displayParts.includes('photo') && (
+    <div className="photo-container mb-6 flex justify-center">
+      <PhotoUpload className={`w-${photoSize} h-${photoSize}`} />
+    </div>
+  );
+
+  const renderName = () => displayParts.includes('name') && (
+    <EditableText
+      value={displayName}
+      field="name"
+      className="name font-bold block"
+      style={{ 
+        fontSize: styles.typography.fontSize.heading1,
+        color: styles.colors.text,
+        lineHeight: styles.typography.lineHeight.tight,
+      }}
+      placeholder="Your Name"
+    />
+  );
+
+  const renderTitle = () => displayParts.includes('title') && (
+    <EditableText
+      value={displayTitle}
+      field="title"
+      className="title block"
+      style={{ 
+        fontSize: styles.typography.fontSize.heading2,
+        color: styles.colors.secondary,
+      }}
+      placeholder="Your Professional Title"
+    />
+  );
+
+  const renderContact = () => displayParts.includes('contact') && (
+    <div className="contact-section">
+      <h4 
+        className="contact-header font-bold mb-4 text-center uppercase tracking-wide"
+        style={{ 
+          fontSize: styles.typography.fontSize.heading3,
+          color: styles.colors.primary,
+          borderBottom: `2px solid ${styles.colors.primary}`,
+          paddingBottom: '4px',
+        }}
+      >
+        Contact Information
+      </h4>
       
-      {/* Name and Title */}
-      <div className="text-center mb-6">
-        <EditableText
-          value={displayName}
-          field="name"
-          className="name font-bold mb-2 block"
-          style={{ 
-            fontSize: styles.typography.fontSize.heading1,
-            color: styles.colors.primary,
-            lineHeight: styles.typography.lineHeight.tight,
-          }}
-          placeholder="Your Name"
-        />
-        <EditableText
-          value={displayTitle}
-          field="title"
-          className="title block"
-          style={{ 
-            fontSize: styles.typography.fontSize.heading2,
-            color: styles.colors.secondary,
-          }}
-          placeholder="Your Professional Title"
-        />
-      </div>
-      
-      {/* Contact Information Section */}
-      <div className="contact-section">
-        <h4 
-          className="contact-header font-bold mb-4 text-center uppercase tracking-wide"
-          style={{ 
-            fontSize: styles.typography.fontSize.heading3,
-            color: styles.colors.primary,
-            borderBottom: `2px solid ${styles.colors.primary}`,
-            paddingBottom: '4px',
-          }}
-        >
-          Contact Information
-        </h4>
-        
-        <div className="contact-info space-y-3">
-          {contactItems.map((item, index) => (
-            <div key={index} className="contact-item flex items-center">
-              <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
-              <EditableText
-                value={item.value}
-                field={item.field}
-                className="break-all"
-                style={{
-                  fontSize: styles.typography.fontSize.contactInfo || styles.typography.fontSize.small,
-                  color: styles.colors.text
-                }}
-                placeholder={`Your ${item.label}`}
-              />
-            </div>
-          ))}
-        </div>
+      <div className="contact-info space-y-3">
+        {contactItems.map((item, index) => (
+          <div key={index} className="contact-item flex items-center">
+            <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
+            <EditableText
+              value={item.value}
+              field={item.field}
+              className="break-all"
+              style={{
+                fontSize: styles.typography.fontSize.contactInfo || styles.typography.fontSize.small,
+                color: styles.colors.text
+              }}
+              placeholder={`Your ${item.label}`}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
 
-  const renderMainContentHeader = () => (
-    <div className="personal-info-main-content flex items-start mb-6">
-      {/* Profile Photo on the left */}
-      <div className="photo-container mr-6 flex-shrink-0">
-        <PhotoUpload className="w-24 h-24" />
+  // For sidebar layout (columns: 2), show photo and contact info
+  if (config.columns === 2) {
+    return (
+      <div className="personal-info-sidebar">
+        {renderPhoto()}
+        {renderContact()}
       </div>
-      
-      {/* Name, title, and contact info on the right */}
-      <div className="info-content flex-1">
-        <EditableText
-          value={displayName}
-          field="name"
-          className="name font-bold mb-2 block"
-          style={{ 
-            fontSize: styles.typography.fontSize.heading1,
-            color: styles.colors.primary,
-            lineHeight: styles.typography.lineHeight.tight,
-          }}
-          placeholder="Your Name"
-        />
-        <EditableText
-          value={displayTitle}
-          field="title"
-          className="title mb-4 block"
-          style={{ 
-            fontSize: styles.typography.fontSize.heading2,
-            color: styles.colors.secondary,
-          }}
-          placeholder="Your Professional Title"
-        />
-        
-        {/* COMPACT CONTACT INFO - 2 rows maximum */}
-        <div className="contact-info grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
-          {contactItems.map((item, index) => (
-            <div key={index} className="contact-item flex items-center">
-              <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
-              <EditableText
-                value={item.value}
-                field={item.field}
-                className="break-all truncate"
-                style={{
-                  fontSize: styles.typography.fontSize.contactInfo || styles.typography.fontSize.small,
-                  color: styles.colors.text
-                }}
-                placeholder={`Your ${item.label}`}
-              />
-            </div>
-          ))}
+    );
+  }
+
+  // For main content (columns: 1), show name and title only
+  if (config.columns === 1) {
+    return (
+      <div className="personal-info-main-content mb-6">
+        <div className="text-left">
+          {renderName()}
+          <div className="mt-2">
+            {renderTitle()}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
-  const renderHeader = () => (
+  // For header (columns: 0), show everything in header layout
+  return (
     <div className="personal-info-header flex items-center justify-between mb-6">
       <div className="info-content">
-        <EditableText
-          value={displayName}
-          field="name"
-          className="name font-bold mb-2 block"
-          style={{ 
-            fontSize: styles.typography.fontSize.heading1,
-            color: 'inherit',
-            lineHeight: styles.typography.lineHeight.tight,
-          }}
-          placeholder="Your Name"
-        />
-        <EditableText
-          value={displayTitle}
-          field="title"
-          className="title mb-4 block"
-          style={{ 
-            fontSize: styles.typography.fontSize.heading2,
-            color: styles.colors.accent,
-          }}
-          placeholder="Your Professional Title"
-        />
+        {renderName()}
+        <div className="mt-2">
+          {renderTitle()}
+        </div>
         
         {/* COMPACT CONTACT INFO - Single row with flex wrap */}
-        <div className="contact-info flex flex-wrap gap-x-6 gap-y-2">
+        <div className="contact-info flex flex-wrap gap-x-6 gap-y-2 mt-4">
           {contactItems.map((item, index) => (
             <div key={index} className="contact-item flex items-center">
               <item.icon className="w-4 h-4 mr-1" />
@@ -418,18 +378,4 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
       </div>
     </div>
   );
-
-  // CRITICAL: Determine layout based on section configuration
-  console.log(`PersonalInfoSection rendering with columns: ${config.columns}, id: ${config.id}`);
-  
-  if (config.columns === 2) {
-    // For sidebar (columns === 2), show full contact info section like in the image
-    return renderSidebar();
-  } else if (config.columns === 0) {
-    // For header (columns === 0), show full header with name/title
-    return renderHeader();
-  } else {
-    // For main content area (columns === 1), show name/title with contact
-    return renderMainContentHeader();
-  }
 };

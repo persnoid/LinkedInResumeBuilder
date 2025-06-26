@@ -70,31 +70,10 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     }
   };
 
-  // CRITICAL FIX: Separate PersonalInfo sections from other sections
-  const separatePersonalInfoSections = () => {
-    const personalInfoSections: any[] = [];
-    const otherSections: any[] = [];
-    
-    layout.sections.forEach(section => {
-      if (section.component === 'PersonalInfo') {
-        personalInfoSections.push(section);
-      } else {
-        otherSections.push(section);
-      }
-    });
-    
-    console.log('=== PERSONAL INFO SEPARATION ===');
-    console.log('PersonalInfo sections found:', personalInfoSections.map(s => `${s.id} (columns: ${s.columns})`));
-    console.log('Other sections:', otherSections.map(s => `${s.id} (columns: ${s.columns})`));
-    console.log('=== END SEPARATION ===');
-    
-    return { personalInfoSections, otherSections };
-  };
-
-  // ENHANCED SECTION FILTERING AND SORTING LOGIC - EXCLUDING PERSONAL INFO
-  const getSortedAndFilteredSections = (sectionsToProcess: any[]) => {
-    // Start with provided sections (excluding PersonalInfo)
-    let sections = [...sectionsToProcess];
+  // ENHANCED SECTION FILTERING AND SORTING LOGIC
+  const getSortedAndFilteredSections = () => {
+    // Start with all sections from the template configuration
+    let sections = [...layout.sections];
     
     // Apply visibility filtering based on customizations
     const visibleSections = customizations.visibleSections;
@@ -123,12 +102,11 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
       sections.sort((a, b) => a.order - b.order);
     }
     
-    console.log('Final sorted and filtered sections (excluding PersonalInfo):', sections.map(s => `${s.id} (columns: ${s.columns})`));
+    console.log('Final sorted and filtered sections:', sections.map(s => `${s.id} (columns: ${s.columns})`));
     return sections;
   };
 
-  const { personalInfoSections, otherSections } = separatePersonalInfoSections();
-  const sortedSections = getSortedAndFilteredSections(otherSections);
+  const sortedSections = getSortedAndFilteredSections();
 
   const renderSection = (section: any) => {
     const SectionComponent = sectionComponents[section.component as keyof typeof sectionComponents];
@@ -179,17 +157,6 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
             }}
           />
         )}
-      </div>
-    );
-  };
-
-  // CRITICAL FIX: Render PersonalInfo sections at the very top
-  const renderPersonalInfoAtTop = () => {
-    if (personalInfoSections.length === 0) return null;
-    
-    return (
-      <div className="template-personal-info-top">
-        {personalInfoSections.map(section => renderSection(section))}
       </div>
     );
   };
@@ -349,10 +316,6 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         position: 'relative'
       }}
     >
-      {/* CRITICAL FIX: Always render PersonalInfo sections at the very top */}
-      {renderPersonalInfoAtTop()}
-      
-      {/* Then render the main layout with other sections */}
       {renderLayout()}
     </div>
   );

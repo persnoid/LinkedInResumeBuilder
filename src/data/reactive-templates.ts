@@ -1012,7 +1012,8 @@ export const reactiveTemplates: TemplateConfig[] = [
             light: '300',
             normal: '400',
             medium: '500',
-            semibold: '600',
+            semibol
+d: '600',
             bold: '700'
           }
         },

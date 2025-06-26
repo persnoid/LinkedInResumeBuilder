@@ -3,7 +3,6 @@ import { Linkedin, Upload, AlertCircle, CheckCircle, FileText, ExternalLink, Bra
 import { parsePDFFile, checkAIAvailability } from '../utils/pdfParser';
 import { DraftManager } from '../utils/draftManager';
 import { ResumeData } from '../types/resume';
-import { useTranslation } from '../hooks/useTranslation';
 
 interface LinkedInInputProps {
   onDataExtracted: (data: ResumeData) => void;
@@ -16,7 +15,6 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
   onNext,
   onOpenDraftManager
 }) => {
-  const { t } = useTranslation();
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');

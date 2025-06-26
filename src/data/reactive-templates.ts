@@ -122,7 +122,8 @@ export const reactiveTemplates: TemplateConfig[] = [
           order: 7,
           columns: 1, // MAIN CONTENT
           styles: { 
-            alignment: 'left',
+            alignment: 'left', 
+            divider: true,
             spacing: 'normal',
             headerStyle: 'underline'
           }

@@ -39,13 +39,12 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     );
   }
 
-  // Merge default styles with customizations - ENHANCED TO INCLUDE EFFECTS
+  // Merge default styles with customizations
   const styles = {
     ...layout.styles,
     colors: { ...layout.styles.colors, ...customizations.colors },
     typography: { ...layout.styles.typography, ...customizations.typography },
     spacing: { ...layout.styles.spacing, ...customizations.spacing },
-    effects: { ...layout.styles.effects, ...customizations.effects }, // FIXED: Merge effects
   };
 
   // Extract edit mode and data update handler from customizations
@@ -70,43 +69,10 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     }
   };
 
-  // ENHANCED SECTION FILTERING AND SORTING LOGIC
-  const getSortedAndFilteredSections = () => {
-    // Start with all sections from the template configuration
-    let sections = [...layout.sections];
-    
-    // Apply visibility filtering based on customizations
-    const visibleSections = customizations.visibleSections;
-    if (visibleSections && Array.isArray(visibleSections)) {
-      console.log('Applying visibility filter:', visibleSections);
-      sections = sections.filter(section => visibleSections.includes(section.id));
-    } else {
-      // Fallback to default visibility
-      sections = sections.filter(section => section.visible);
-    }
-    
-    // Apply custom ordering based on customizations
-    const sectionOrder = customizations.sectionOrder;
-    if (sectionOrder && Array.isArray(sectionOrder)) {
-      console.log('Applying custom section order:', sectionOrder);
-      // Create a map for quick lookup of custom order
-      const orderMap = new Map(sectionOrder.map((id, index) => [id, index]));
-      
-      sections.sort((a, b) => {
-        const orderA = orderMap.has(a.id) ? orderMap.get(a.id)! : 999;
-        const orderB = orderMap.has(b.id) ? orderMap.get(b.id)! : 999;
-        return orderA - orderB;
-      });
-    } else {
-      // Fallback to default order
-      sections.sort((a, b) => a.order - b.order);
-    }
-    
-    console.log('Final sorted and filtered sections:', sections.map(s => `${s.id} (columns: ${s.columns})`));
-    return sections;
-  };
-
-  const sortedSections = getSortedAndFilteredSections();
+  // Sort sections by order and filter visible ones
+  const sortedSections = layout.sections
+    .filter(section => section.visible)
+    .sort((a, b) => a.order - b.order);
 
   const renderSection = (section: any) => {
     const SectionComponent = sectionComponents[section.component as keyof typeof sectionComponents];
@@ -117,18 +83,9 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     }
 
     const sectionData = data;
-    
-    // ENHANCED SECTION STYLES MERGING - Include effects and custom section styles
     const sectionStyles = {
       ...section.styles,
       ...customizations.sections?.[section.id]?.styles,
-      // Apply global effects to section styles if not overridden
-      borderRadius: customizations.sections?.[section.id]?.styles?.borderRadius || 
-                   customizations.effects?.borderRadius || 
-                   section.styles?.borderRadius,
-      shadow: customizations.sections?.[section.id]?.styles?.shadow || 
-              customizations.effects?.shadow || 
-              section.styles?.shadow,
     };
 
     return (

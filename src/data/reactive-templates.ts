@@ -2,15 +2,15 @@ import { TemplateConfig } from '../types/template';
 
 export const reactiveTemplates: TemplateConfig[] = [
   {
-    id: 'azurill',
-    name: 'Azurill',
-    description: 'A clean, modern template with a professional sidebar layout',
+    id: 'azurill-enhanced',
+    name: 'Azurill Enhanced',
+    description: 'A clean, modern template with professional sidebar layout and prominent personal information display',
     category: 'modern',
     preview: '/templates/azurill.jpg',
-    tags: ['sidebar', 'professional', 'clean'],
+    tags: ['sidebar', 'professional', 'clean', 'enhanced'],
     difficulty: 'beginner',
     industry: ['technology', 'business', 'consulting'],
-    features: ['sidebar layout', 'contact section', 'skills visualization'],
+    features: ['sidebar layout', 'contact section', 'skills visualization', 'prominent personal info'],
     customizable: {
       colors: true,
       fonts: true,
@@ -19,78 +19,33 @@ export const reactiveTemplates: TemplateConfig[] = [
       effects: true,
     },
     layout: {
-      id: 'azurill-layout',
-      name: 'Azurill Layout',
+      id: 'azurill-enhanced-layout',
+      name: 'Azurill Enhanced Layout',
       type: 'sidebar',
       sections: [
-        // SIDEBAR SECTIONS (LEFT COLUMN) - columns: 2
+        // MAIN CONTENT SECTIONS (RIGHT COLUMN) - columns: 1
         {
-          id: 'personalInfo',
-          name: 'Contact Information',
+          id: 'personalInfoMain',
+          name: 'Personal Information',
           component: 'PersonalInfo',
           visible: true,
-          order: 1,
-          columns: 2, // SIDEBAR
+          order: 0,
+          columns: 1, // MAIN CONTENT
           styles: { 
-            alignment: 'left',
-            padding: '16px',
-            backgroundColor: '#f8fafc',
-            borderRadius: 'lg',
-            iconSize: 'md',
-            headerStyle: 'minimal'
+            alignment: 'center',
+            displayParts: ['photo', 'name', 'title'],
+            photoSize: '32',
+            divider: true,
+            padding: '24px',
+            spacing: 'relaxed'
           }
         },
-        {
-          id: 'skills',
-          name: 'Skills',
-          component: 'Skills',
-          visible: true,
-          order: 2,
-          columns: 2, // SIDEBAR
-          styles: { 
-            alignment: 'left', 
-            display: 'list',
-            spacing: 'compact',
-            headerStyle: 'underline',
-            divider: true
-          }
-        },
-        {
-          id: 'languages',
-          name: 'Languages',
-          component: 'Languages',
-          visible: true,
-          order: 3,
-          columns: 2, // SIDEBAR
-          styles: { 
-            alignment: 'left', 
-            display: 'list',
-            spacing: 'normal',
-            headerStyle: 'underline',
-            divider: true
-          }
-        },
-        {
-          id: 'certifications',
-          name: 'Certifications',
-          component: 'Certifications',
-          visible: true,
-          order: 4,
-          columns: 2, // SIDEBAR
-          styles: { 
-            alignment: 'left',
-            spacing: 'compact',
-            headerStyle: 'underline'
-          }
-        },
-        
-        // MAIN CONTENT SECTIONS (RIGHT COLUMN) - columns: 1
         {
           id: 'summary',
           name: 'About me',
           component: 'Summary',
           visible: true,
-          order: 5,
+          order: 1,
           columns: 1, // MAIN CONTENT
           styles: { 
             alignment: 'left', 
@@ -104,7 +59,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           name: 'Work Experience',
           component: 'Experience',
           visible: true,
-          order: 6,
+          order: 2,
           columns: 1, // MAIN CONTENT
           styles: { 
             alignment: 'left', 
@@ -119,12 +74,74 @@ export const reactiveTemplates: TemplateConfig[] = [
           name: 'Education',
           component: 'Education',
           visible: true,
-          order: 7,
+          order: 3,
           columns: 1, // MAIN CONTENT
           styles: { 
             alignment: 'left', 
             divider: true,
             spacing: 'normal',
+            headerStyle: 'underline'
+          }
+        },
+        
+        // SIDEBAR SECTIONS (LEFT COLUMN) - columns: 2
+        {
+          id: 'personalInfoContact',
+          name: 'Contact Information',
+          component: 'PersonalInfo',
+          visible: true,
+          order: 4,
+          columns: 2, // SIDEBAR
+          styles: { 
+            alignment: 'left',
+            displayParts: ['contact'],
+            padding: '16px',
+            backgroundColor: '#f8fafc',
+            borderRadius: 'lg',
+            iconSize: 'md',
+            headerStyle: 'minimal'
+          }
+        },
+        {
+          id: 'skills',
+          name: 'Skills',
+          component: 'Skills',
+          visible: true,
+          order: 5,
+          columns: 2, // SIDEBAR
+          styles: { 
+            alignment: 'left', 
+            display: 'list',
+            spacing: 'compact',
+            headerStyle: 'underline',
+            divider: true
+          }
+        },
+        {
+          id: 'languages',
+          name: 'Languages',
+          component: 'Languages',
+          visible: true,
+          order: 6,
+          columns: 2, // SIDEBAR
+          styles: { 
+            alignment: 'left', 
+            display: 'list',
+            spacing: 'normal',
+            headerStyle: 'underline',
+            divider: true
+          }
+        },
+        {
+          id: 'certifications',
+          name: 'Certifications',
+          component: 'Certifications',
+          visible: true,
+          order: 7,
+          columns: 2, // SIDEBAR
+          styles: { 
+            alignment: 'left',
+            spacing: 'compact',
             headerStyle: 'underline'
           }
         }

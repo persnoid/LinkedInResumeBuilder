@@ -45,6 +45,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     colors: { ...layout.styles.colors, ...customizations.colors },
     typography: { ...layout.styles.typography, ...customizations.typography },
     spacing: { ...layout.styles.spacing, ...customizations.spacing },
+    effects: { ...layout.styles.effects, ...customizations.effects },
   };
 
   // Extract edit mode and data update handler from customizations
@@ -60,7 +61,9 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
       // Handle nested field updates (e.g., "personalInfo.name")
       if (field.includes('.')) {
         const [parent, child] = field.split('.');
-        updatedData[parent] = { ...updatedData[parent], [child]: value };
+        if (parent === 'personalInfo') {
+          updatedData[parent] = { ...updatedData[parent], [child]: value };
+        }
       } else {
         updatedData[field] = value;
       }
@@ -69,8 +72,25 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     }
   };
 
-  // Sort sections by order and filter visible ones
-  const sortedSections = layout.sections
+  // CRITICAL: Apply section visibility and order customizations
+  let sectionsToRender = layout.sections;
+
+  // Apply custom section order if provided
+  if (customizations.sectionOrder && customizations.sectionOrder.length > 0) {
+    sectionsToRender = customizations.sectionOrder
+      .map(sectionId => layout.sections.find(s => s.id === sectionId))
+      .filter(Boolean) as typeof layout.sections;
+  }
+
+  // Apply custom section visibility if provided
+  if (customizations.visibleSections && customizations.visibleSections.length > 0) {
+    sectionsToRender = sectionsToRender.filter(section => 
+      customizations.visibleSections!.includes(section.id)
+    );
+  }
+
+  // Sort sections by order and filter visible ones (fallback to default behavior)
+  const sortedSections = sectionsToRender
     .filter(section => section.visible)
     .sort((a, b) => a.order - b.order);
 
@@ -253,25 +273,29 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
   // Determine if this is a preview (scaled down) or full size
   const isPreview = className.includes('template-preview-scaled');
 
+  // CRITICAL: Apply effects customizations to the main container
+  const containerStyles: React.CSSProperties = {
+    fontFamily: styles.typography.fontFamily,
+    fontSize: styles.typography.fontSize.base,
+    lineHeight: styles.typography.lineHeight.normal,
+    color: styles.colors.text,
+    backgroundColor: styles.colors.background,
+    width: '794px',
+    height: isPreview ? '1123px' : 'auto',
+    minHeight: isPreview ? '1123px' : '297mm',
+    maxWidth: '794px',
+    margin: '0',
+    boxShadow: isPreview ? 'none' : (styles.effects?.shadow?.[customizations.effects?.shadow || 'md'] || '0 0 10px rgba(0, 0, 0, 0.1)'),
+    borderRadius: styles.effects?.borderRadius?.[customizations.effects?.borderRadius || 'md'] || '8px',
+    overflow: 'hidden',
+    position: 'relative'
+  };
+
   return (
     <div
       id={isPreview ? undefined : "resume-preview"}
       className={`template-container ${isPreview ? '' : 'a4-page'} ${className}`}
-      style={{
-        fontFamily: styles.typography.fontFamily,
-        fontSize: styles.typography.fontSize.base,
-        lineHeight: styles.typography.lineHeight.normal,
-        color: styles.colors.text,
-        backgroundColor: styles.colors.background,
-        width: '794px',
-        height: isPreview ? '1123px' : 'auto',
-        minHeight: isPreview ? '1123px' : '297mm',
-        maxWidth: '794px',
-        margin: '0',
-        boxShadow: isPreview ? 'none' : '0 0 10px rgba(0, 0, 0, 0.1)',
-        overflow: 'hidden',
-        position: 'relative'
-      }}
+      style={containerStyles}
     >
       {renderLayout()}
     </div>

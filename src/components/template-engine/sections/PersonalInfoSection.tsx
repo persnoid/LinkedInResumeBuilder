@@ -35,6 +35,9 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   const displayLinkedin = personalInfo.linkedin || 'linkedin.com/in/jessicamiller';
   const displayWebsite = personalInfo.website || 'jessicamiller.dev';
 
+  // Default professional photo from Pexels
+  const defaultPhoto = 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=2';
+
   // Get display parts from sectionStyles, defaulting to all parts
   const displayParts = sectionStyles?.displayParts || ['photo', 'name', 'title', 'contact'];
   const photoSize = sectionStyles?.photoSize || '24'; // Default to 96px (24 * 4)
@@ -201,25 +204,16 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      {personalInfo.photo ? (
-        <img
-          src={personalInfo.photo}
-          alt="Profile"
-          className="w-full h-full object-cover rounded-full border-2 cursor-pointer"
-          style={{ borderColor: styles.colors.primary }}
-          onClick={() => editMode && fileInputRef.current?.click()}
-        />
-      ) : (
-        <div 
-          className={`w-full h-full rounded-full bg-gray-200 flex items-center justify-center border-2 ${editMode ? 'cursor-pointer hover:bg-gray-300' : ''}`}
-          style={{ borderColor: styles.colors.primary }}
-          onClick={() => editMode && fileInputRef.current?.click()}
-        >
-          <User className="w-12 h-12 text-gray-400" />
-        </div>
-      )}
+      {/* Always show an image - either uploaded photo or default */}
+      <img
+        src={personalInfo.photo || defaultPhoto}
+        alt="Profile"
+        className="w-full h-full object-cover rounded-full border-2 cursor-pointer"
+        style={{ borderColor: styles.colors.primary }}
+        onClick={() => editMode && fileInputRef.current?.click()}
+      />
       
-      {editMode && (isHovering || !personalInfo.photo) && (
+      {editMode && isHovering && (
         <div 
           className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center cursor-pointer"
           onClick={() => fileInputRef.current?.click()}
@@ -339,7 +333,8 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   if (config.columns === 1) {
     return (
       <div className="personal-info-main-content mb-6">
-        <div className="text-left">
+        <div className="text-center">
+          {renderPhoto()}
           {renderName()}
           <div className="mt-2">
             {renderTitle()}

@@ -95,7 +95,6 @@ export const reactiveTemplates: TemplateConfig[] = [
           styles: { 
             alignment: 'left',
             displayParts: ['contact'],
-            padding: '16px',
             backgroundColor: '#f8fafc',
             borderRadius: 'lg',
             iconSize: 'md',
@@ -199,7 +198,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           item: '12px',
           compact: '8px',
           contentPadding: '32px',
-          sidebarColumnPadding: '24px',
+          sidebarColumnPadding: '32px',
           mainColumnPadding: '32px',
           xs: '4px',
           sm: '8px',

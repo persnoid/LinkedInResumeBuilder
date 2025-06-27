@@ -13,6 +13,7 @@ interface DraftManagerProps {
   currentCustomizations?: any;
   currentStep?: number;
   currentDraftId?: string | null;
+  showToast: (message: string, type: 'success' | 'error' | 'info' | 'warning', duration?: number) => void;
 }
 
 export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
@@ -23,7 +24,8 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   currentTemplate,
   currentCustomizations,
   currentStep,
-  currentDraftId
+  currentDraftId,
+  showToast
 }) => {
   const { t } = useTranslation();
   const [drafts, setDrafts] = useState<DraftResume[]>([]);
@@ -83,12 +85,13 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       setError(null);
       loadDrafts();
       
-      // Show success message
+      // Show success toast
       const message = currentDraftId ? t('draftManager.status.updatedSuccessfully') : t('draftManager.status.savedSuccessfully');
-      alert(message);
+      showToast(message, 'success');
     } catch (err) {
       console.error('Error saving draft:', err);
       setError(t('draftManager.errors.saveFailed'));
+      showToast(t('draftManager.errors.saveFailed'), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -101,9 +104,11 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         DraftManager.deleteDraft(id);
         loadDrafts();
         setError(null);
+        showToast('Draft deleted successfully!', 'success');
       } catch (err) {
         console.error('Error deleting draft:', err);
         setError(t('draftManager.errors.deleteFailed'));
+        showToast(t('draftManager.errors.deleteFailed'), 'error');
       } finally {
         setIsLoading(false);
       }
@@ -132,9 +137,11 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       setEditingName('');
       setError(null);
       loadDrafts();
+      showToast('Draft renamed successfully!', 'success');
     } catch (err) {
       console.error('Error renaming draft:', err);
       setError('Failed to rename draft');
+      showToast('Failed to rename draft', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -144,9 +151,11 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     try {
       DraftManager.exportDraft(id);
       setError(null);
+      showToast('Draft exported successfully!', 'success');
     } catch (err) {
       console.error('Error exporting draft:', err);
       setError(t('draftManager.errors.exportFailed'));
+      showToast(t('draftManager.errors.exportFailed'), 'error');
     }
   };
 
@@ -159,11 +168,12 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       .then(() => {
         loadDrafts();
         setError(null);
-        alert(t('draftManager.status.importedSuccessfully'));
+        showToast(t('draftManager.status.importedSuccessfully'), 'success');
       })
       .catch((error) => {
         console.error('Import error:', error);
         setError(t('draftManager.errors.importFailed', { error: error.message }));
+        showToast(t('draftManager.errors.importFailed', { error: error.message }), 'error');
       })
       .finally(() => {
         setIsLoading(false);
@@ -219,14 +229,10 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       
       console.log('Draft load function called successfully');
       
-      // Success feedback
-      setTimeout(() => {
-        alert(t('draftManager.status.loadedSuccessfully'));
-      }, 100);
-      
     } catch (err) {
       console.error('Error loading draft:', err);
       setError(t('draftManager.errors.loadFailed'));
+      showToast(t('draftManager.errors.loadFailed'), 'error');
     } finally {
       setLoadingDraftId(null);
     }

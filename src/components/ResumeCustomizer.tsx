@@ -89,17 +89,15 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
       newCustomizations[field] = value;
     }
     
-    console.log('Customization change:', field, value, newCustomizations);
     onCustomizationsUpdate(newCustomizations);
   };
 
   const handleSectionVisibilityToggle = (sectionId: string) => {
-    const currentVisibleSections = customizations.visibleSections || currentSections.map(s => s.id);
-    const newVisibleSections = currentVisibleSections.includes(sectionId)
-      ? currentVisibleSections.filter((id: string) => id !== sectionId)
-      : [...currentVisibleSections, sectionId];
+    const currentSections = customizations.visibleSections || currentSections.map(s => s.id);
+    const newVisibleSections = currentSections.includes(sectionId)
+      ? currentSections.filter((id: string) => id !== sectionId)
+      : [...currentSections, sectionId];
     
-    console.log('Section visibility toggle:', sectionId, newVisibleSections);
     handleCustomizationChange('visibleSections', newVisibleSections);
   };
 
@@ -111,7 +109,6 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     const [reorderedItem] = newOrder.splice(result.source.index, 1);
     newOrder.splice(result.destination.index, 0, reorderedItem);
 
-    console.log('Section reorder:', newOrder);
     handleCustomizationChange('sectionOrder', newOrder);
   };
 

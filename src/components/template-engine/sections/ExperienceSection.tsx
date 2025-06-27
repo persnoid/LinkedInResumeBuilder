@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, Plus, Trash2, Briefcase, Building } from 'lucide-react';
+import { Calendar, MapPin, Plus, Trash2, Briefcase, Building, Edit3, Save, X } from 'lucide-react';
 
 interface ExperienceSectionProps {
   data: any;
@@ -8,6 +8,27 @@ interface ExperienceSectionProps {
   config: any;
   editMode?: boolean;
   onDataUpdate?: (field: string, value: any) => void;
+}
+
+interface ExperienceEntry {
+  id: string;
+  position: string;
+  company: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  description: string[];
+}
+
+interface ExperienceFormData {
+  position: string;
+  company: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  description: string[];
 }
 
 export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
@@ -52,74 +73,135 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
     }
   ];
 
-  const handleFieldEdit = (expId: string, field: string, value: any) => {
-    if (onDataUpdate) {
-      const updatedExperience = displayExperience.map((exp: any) => 
-        exp.id === expId ? { ...exp, [field]: value } : exp
+  // Form state management
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState<ExperienceFormData>({
+    position: '',
+    company: '',
+    location: '',
+    startDate: '',
+    endDate: '',
+    current: false,
+    description: ['']
+  });
+
+  // Initialize form for new entry
+  const initializeNewForm = () => {
+    setFormData({
+      position: '',
+      company: '',
+      location: '',
+      startDate: '',
+      endDate: '',
+      current: false,
+      description: ['']
+    });
+    setEditingId(null);
+    setShowForm(true);
+  };
+
+  // Initialize form for editing existing entry
+  const initializeEditForm = (exp: ExperienceEntry) => {
+    setFormData({
+      position: exp.position,
+      company: exp.company,
+      location: exp.location,
+      startDate: exp.startDate,
+      endDate: exp.endDate,
+      current: exp.current,
+      description: [...exp.description]
+    });
+    setEditingId(exp.id);
+    setShowForm(true);
+  };
+
+  // Handle form field changes
+  const handleFormChange = (field: keyof ExperienceFormData, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Handle description changes
+  const handleDescriptionChange = (index: number, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      description: prev.description.map((desc, i) => i === index ? value : desc)
+    }));
+  };
+
+  // Add new description bullet point
+  const addDescriptionPoint = () => {
+    setFormData(prev => ({
+      ...prev,
+      description: [...prev.description, '']
+    }));
+  };
+
+  // Remove description bullet point
+  const removeDescriptionPoint = (index: number) => {
+    if (formData.description.length > 1) {
+      setFormData(prev => ({
+        ...prev,
+        description: prev.description.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
+  // Handle form submission
+  const handleFormSubmit = () => {
+    if (!formData.position.trim() || !formData.company.trim()) {
+      alert('Please fill in at least the position and company fields.');
+      return;
+    }
+
+    const newEntry: ExperienceEntry = {
+      id: editingId || Date.now().toString(),
+      position: formData.position.trim(),
+      company: formData.company.trim(),
+      location: formData.location.trim(),
+      startDate: formData.startDate,
+      endDate: formData.current ? 'Present' : formData.endDate,
+      current: formData.current,
+      description: formData.description.filter(desc => desc.trim() !== '')
+    };
+
+    let updatedExperience;
+    if (editingId) {
+      // Update existing entry
+      updatedExperience = displayExperience.map((exp: ExperienceEntry) => 
+        exp.id === editingId ? newEntry : exp
       );
+    } else {
+      // Add new entry
+      updatedExperience = [...displayExperience, newEntry];
+    }
+
+    if (onDataUpdate) {
       onDataUpdate('experience', updatedExperience);
+    }
+
+    // Reset form
+    setShowForm(false);
+    setEditingId(null);
+  };
+
+  // Handle entry deletion
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this experience entry?')) {
+      const updatedExperience = displayExperience.filter((exp: ExperienceEntry) => exp.id !== id);
+      if (onDataUpdate) {
+        onDataUpdate('experience', updatedExperience);
+      }
     }
   };
 
-  const handleDescriptionEdit = (expId: string, descIndex: number, value: string) => {
-    if (onDataUpdate) {
-      const updatedExperience = displayExperience.map((exp: any) => 
-        exp.id === expId ? {
-          ...exp,
-          description: exp.description.map((desc: string, idx: number) => 
-            idx === descIndex ? value : desc
-          )
-        } : exp
-      );
-      onDataUpdate('experience', updatedExperience);
-    }
-  };
-
-  const addDescriptionItem = (expId: string) => {
-    if (onDataUpdate) {
-      const updatedExperience = displayExperience.map((exp: any) => 
-        exp.id === expId ? {
-          ...exp,
-          description: [...exp.description, '']
-        } : exp
-      );
-      onDataUpdate('experience', updatedExperience);
-    }
-  };
-
-  const removeDescriptionItem = (expId: string, descIndex: number) => {
-    if (onDataUpdate) {
-      const updatedExperience = displayExperience.map((exp: any) => 
-        exp.id === expId ? {
-          ...exp,
-          description: exp.description.filter((_: string, idx: number) => idx !== descIndex)
-        } : exp
-      );
-      onDataUpdate('experience', updatedExperience);
-    }
-  };
-
-  const addExperience = () => {
-    if (onDataUpdate) {
-      const newExp = {
-        id: Date.now().toString(),
-        position: 'New Position',
-        company: 'Company Name',
-        location: 'Location',
-        startDate: '2024-01',
-        endDate: 'Present',
-        current: true,
-        description: ['Describe your achievements and responsibilities']
-      };
-      onDataUpdate('experience', [...displayExperience, newExp]);
-    }
-  };
-
-  const removeExperience = (expId: string) => {
-    if (onDataUpdate) {
-      const updatedExperience = displayExperience.filter((exp: any) => exp.id !== expId);
-      onDataUpdate('experience', updatedExperience);
-    }
+  // Cancel form
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditingId(null);
   };
 
   const EditableText: React.FC<{
@@ -188,6 +270,167 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
     );
   };
 
+  // Experience Form Component
+  const ExperienceForm = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+        {/* Form Header */}
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">
+            {editingId ? 'Edit Experience' : 'Add New Experience'}
+          </h3>
+          <button
+            onClick={handleCancel}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Form Content */}
+        <div className="p-6 overflow-y-auto max-h-[70vh]">
+          <div className="space-y-4">
+            {/* Position */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Position Title *
+              </label>
+              <input
+                type="text"
+                value={formData.position}
+                onChange={(e) => handleFormChange('position', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., Senior Software Engineer"
+              />
+            </div>
+
+            {/* Company */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Company *
+              </label>
+              <input
+                type="text"
+                value={formData.company}
+                onChange={(e) => handleFormChange('company', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., Tech Solutions Inc."
+              />
+            </div>
+
+            {/* Location */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Location
+              </label>
+              <input
+                type="text"
+                value={formData.location}
+                onChange={(e) => handleFormChange('location', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., San Francisco, CA"
+              />
+            </div>
+
+            {/* Dates */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Start Date
+                </label>
+                <input
+                  type="month"
+                  value={formData.startDate}
+                  onChange={(e) => handleFormChange('startDate', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  End Date
+                </label>
+                <input
+                  type="month"
+                  value={formData.endDate}
+                  onChange={(e) => handleFormChange('endDate', e.target.value)}
+                  disabled={formData.current}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+                />
+              </div>
+            </div>
+
+            {/* Current Position Checkbox */}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="current"
+                checked={formData.current}
+                onChange={(e) => handleFormChange('current', e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="current" className="ml-2 block text-sm text-gray-700">
+                I currently work here
+              </label>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Job Description & Achievements
+              </label>
+              <div className="space-y-2">
+                {formData.description.map((desc, index) => (
+                  <div key={index} className="flex items-start space-x-2">
+                    <span className="text-gray-400 mt-2">•</span>
+                    <textarea
+                      value={desc}
+                      onChange={(e) => handleDescriptionChange(index, e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                      rows={2}
+                      placeholder="Describe your achievements and responsibilities..."
+                    />
+                    {formData.description.length > 1 && (
+                      <button
+                        onClick={() => removeDescriptionPoint(index)}
+                        className="text-red-500 hover:text-red-700 mt-2"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  onClick={addDescriptionPoint}
+                  className="text-blue-600 hover:text-blue-700 flex items-center text-sm"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add bullet point
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Form Footer */}
+        <div className="p-6 border-t border-gray-200 flex items-center justify-end space-x-3">
+          <button
+            onClick={handleCancel}
+            className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleFormSubmit}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors flex items-center"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            {editingId ? 'Update' : 'Add'} Experience
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderTimelineExperience = () => (
     <div className="experience-timeline relative">
       {/* Timeline line */}
@@ -210,38 +453,45 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
           {/* Content */}
           <div className="ml-12 relative">
             {editMode && (
-              <button
-                onClick={() => removeExperience(exp.id)}
-                className="absolute -right-2 -top-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                title="Remove experience"
-              >
-                <Trash2 className="w-3 h-3" />
-              </button>
+              <div className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                <button
+                  onClick={() => initializeEditForm(exp)}
+                  className="bg-blue-500 text-white rounded-full p-1 hover:bg-blue-600"
+                  title="Edit experience"
+                >
+                  <Edit3 className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={() => handleDelete(exp.id)}
+                  className="bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                  title="Delete experience"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
             )}
             
             <div className="experience-header mb-3">
-              <EditableText
-                value={exp.position || 'Position Title'}
-                onSave={(value) => handleFieldEdit(exp.id, 'position', value)}
-                className="position font-bold block"
+              <h4 
+                className="position font-bold"
                 style={{ 
                   fontSize: styles.typography.fontSize.heading3,
                   color: styles.colors.text,
                 }}
-                placeholder="Position Title"
-              />
+              >
+                {exp.position}
+              </h4>
               <div className="flex items-center gap-2 mt-1">
                 <Building className="w-4 h-4" style={{ color: styles.colors.accent }} />
-                <EditableText
-                  value={exp.company || 'Company Name'}
-                  onSave={(value) => handleFieldEdit(exp.id, 'company', value)}
+                <span 
                   className="company font-medium"
                   style={{ 
                     fontSize: styles.typography.fontSize.base,
                     color: styles.colors.accent,
                   }}
-                  placeholder="Company Name"
-                />
+                >
+                  {exp.company}
+                </span>
               </div>
               <div className="experience-meta flex items-center gap-4 mt-2" style={{ color: styles.colors.secondary }}>
                 <div className="date-range flex items-center">
@@ -253,17 +503,9 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                       fontSize: styles.typography.fontSize.small 
                     }} 
                   />
-                  <EditableText
-                    value={`${exp.startDate || 'Start'} - ${exp.current ? 'Present' : exp.endDate || 'End'}`}
-                    onSave={(value) => {
-                      const [start, end] = value.split(' - ');
-                      handleFieldEdit(exp.id, 'startDate', start);
-                      handleFieldEdit(exp.id, 'endDate', end);
-                      handleFieldEdit(exp.id, 'current', end === 'Present');
-                    }}
-                    style={{ fontSize: styles.typography.fontSize.small }}
-                    placeholder="Start Date - End Date"
-                  />
+                  <span style={{ fontSize: styles.typography.fontSize.small }}>
+                    {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+                  </span>
                 </div>
                 {exp.location && (
                   <div className="location flex items-center">
@@ -275,12 +517,9 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                         fontSize: styles.typography.fontSize.small 
                       }} 
                     />
-                    <EditableText
-                      value={exp.location}
-                      onSave={(value) => handleFieldEdit(exp.id, 'location', value)}
-                      style={{ fontSize: styles.typography.fontSize.small }}
-                      placeholder="Location"
-                    />
+                    <span style={{ fontSize: styles.typography.fontSize.small }}>
+                      {exp.location}
+                    </span>
                   </div>
                 )}
               </div>
@@ -292,7 +531,7 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                   {exp.description.map((desc: string, index: number) => (
                     <li 
                       key={index} 
-                      className="flex items-start group/item"
+                      className="flex items-start"
                       style={{ 
                         fontSize: styles.typography.fontSize.base,
                         lineHeight: styles.typography.lineHeight.normal,
@@ -308,188 +547,13 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                       >
                         •
                       </span>
-                      <div className="flex-1 flex items-start">
-                        <EditableText
-                          value={desc}
-                          onSave={(value) => handleDescriptionEdit(exp.id, index, value)}
-                          className="flex-1"
-                          style={{ fontSize: styles.typography.fontSize.base }}
-                          placeholder="Describe your achievements and responsibilities"
-                        />
-                        {editMode && (
-                          <button
-                            onClick={() => removeDescriptionItem(exp.id, index)}
-                            className="text-red-500 hover:text-red-700 opacity-0 group-hover/item:opacity-100 transition-opacity ml-2 mt-1"
-                            title="Remove bullet point"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        )}
-                      </div>
+                      <span>{desc}</span>
                     </li>
                   ))}
                 </ul>
-                
-                {editMode && (
-                  <button
-                    onClick={() => addDescriptionItem(exp.id)}
-                    className="text-blue-600 hover:text-blue-700 flex items-center mt-3 text-sm"
-                    title="Add bullet point"
-                  >
-                    <Plus className="w-3 h-3 mr-1" />
-                    Add bullet point
-                  </button>
-                )}
               </div>
             )}
           </div>
-        </div>
-      ))}
-    </div>
-  );
-
-  const renderCardsExperience = () => (
-    <div className="experience-cards space-y-4">
-      {displayExperience.map((exp: any) => (
-        <div 
-          key={exp.id} 
-          className="experience-card p-4 border rounded-lg group hover:shadow-md transition-all duration-200 relative"
-          style={{
-            borderColor: styles.colors.border,
-            backgroundColor: styles.colors.surface,
-            borderRadius: sectionStyles?.borderRadius ? styles.effects?.borderRadius?.[sectionStyles.borderRadius] || '8px' : '8px'
-          }}
-        >
-          {editMode && (
-            <button
-              onClick={() => removeExperience(exp.id)}
-              className="absolute -right-2 -top-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-              title="Remove experience"
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
-          )}
-          
-          <div className="experience-header mb-3">
-            <EditableText
-              value={exp.position || 'Position Title'}
-              onSave={(value) => handleFieldEdit(exp.id, 'position', value)}
-              className="position font-bold block"
-              style={{ 
-                fontSize: styles.typography.fontSize.heading3,
-                color: styles.colors.text,
-              }}
-              placeholder="Position Title"
-            />
-            <EditableText
-              value={exp.company || 'Company Name'}
-              onSave={(value) => handleFieldEdit(exp.id, 'company', value)}
-              className="company font-medium block"
-              style={{ 
-                fontSize: styles.typography.fontSize.base,
-                color: styles.colors.accent,
-              }}
-              placeholder="Company Name"
-            />
-            <div className="experience-meta flex items-center gap-4 mt-2" style={{ color: styles.colors.secondary }}>
-              <div className="date-range flex items-center">
-                <Calendar 
-                  className="mr-1" 
-                  style={{ 
-                    width: '16px', 
-                    height: '16px',
-                    fontSize: styles.typography.fontSize.small 
-                  }} 
-                />
-                <EditableText
-                  value={`${exp.startDate || 'Start'} - ${exp.current ? 'Present' : exp.endDate || 'End'}`}
-                  onSave={(value) => {
-                    const [start, end] = value.split(' - ');
-                    handleFieldEdit(exp.id, 'startDate', start);
-                    handleFieldEdit(exp.id, 'endDate', end);
-                    handleFieldEdit(exp.id, 'current', end === 'Present');
-                  }}
-                  style={{ fontSize: styles.typography.fontSize.small }}
-                  placeholder="Start Date - End Date"
-                />
-              </div>
-              {exp.location && (
-                <div className="location flex items-center">
-                  <MapPin 
-                    className="mr-1" 
-                    style={{ 
-                      width: '16px', 
-                      height: '16px',
-                      fontSize: styles.typography.fontSize.small 
-                    }} 
-                  />
-                  <EditableText
-                    value={exp.location}
-                    onSave={(value) => handleFieldEdit(exp.id, 'location', value)}
-                    style={{ fontSize: styles.typography.fontSize.small }}
-                    placeholder="Location"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {exp.description && exp.description.length > 0 && (
-            <div className="experience-description">
-              <ul className="space-y-1">
-                {exp.description.map((desc: string, index: number) => (
-                  <li 
-                    key={index} 
-                    className="flex items-start group/item"
-                    style={{ 
-                      fontSize: styles.typography.fontSize.base,
-                      lineHeight: styles.typography.lineHeight.normal,
-                      color: styles.colors.text,
-                    }}
-                  >
-                    <span 
-                      className="bullet mr-3 mt-1 flex-shrink-0"
-                      style={{ 
-                        color: styles.colors.accent,
-                        fontSize: styles.typography.fontSize.base
-                      }}
-                    >
-                      •
-                    </span>
-                    <div className="flex-1 flex items-start">
-                      <EditableText
-                        value={desc}
-                        onSave={(value) => handleDescriptionEdit(exp.id, index, value)}
-                        className="flex-1"
-                        style={{ fontSize: styles.typography.fontSize.base }}
-                        placeholder="Describe your achievements and responsibilities"
-                      />
-                      {editMode && (
-                        <button
-                          onClick={() => removeDescriptionItem(exp.id, index)}
-                          className="text-red-500 hover:text-red-700 opacity-0 group-hover/item:opacity-100 transition-opacity ml-2 mt-1"
-                          title="Remove bullet point"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              
-              {editMode && (
-                <button
-                  onClick={() => addDescriptionItem(exp.id)}
-                  className="text-blue-600 hover:text-blue-700 flex items-center mt-2 text-sm"
-                  title="Add bullet point"
-                >
-                  <Plus className="w-3 h-3 mr-1" />
-                  Add bullet point
-                </button>
-              )}
-            </div>
-          )}
         </div>
       ))}
     </div>
@@ -500,36 +564,43 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
       {displayExperience.map((exp: any) => (
         <div key={exp.id} className="experience-item relative group">
           {editMode && (
-            <button
-              onClick={() => removeExperience(exp.id)}
-              className="absolute -right-2 -top-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-              title="Remove experience"
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
+            <div className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+              <button
+                onClick={() => initializeEditForm(exp)}
+                className="bg-blue-500 text-white rounded-full p-1 hover:bg-blue-600"
+                title="Edit experience"
+              >
+                <Edit3 className="w-3 h-3" />
+              </button>
+              <button
+                onClick={() => handleDelete(exp.id)}
+                className="bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                title="Delete experience"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
           )}
           
           <div className="experience-header mb-2">
-            <EditableText
-              value={exp.position || 'Position Title'}
-              onSave={(value) => handleFieldEdit(exp.id, 'position', value)}
-              className="position font-bold block"
+            <h4 
+              className="position font-bold"
               style={{ 
                 fontSize: styles.typography.fontSize.heading3,
                 color: styles.colors.text,
               }}
-              placeholder="Position Title"
-            />
-            <EditableText
-              value={exp.company || 'Company Name'}
-              onSave={(value) => handleFieldEdit(exp.id, 'company', value)}
-              className="company font-medium block"
+            >
+              {exp.position}
+            </h4>
+            <span 
+              className="company font-medium"
               style={{ 
                 fontSize: styles.typography.fontSize.base,
                 color: styles.colors.accent,
               }}
-              placeholder="Company Name"
-            />
+            >
+              {exp.company}
+            </span>
             <div className="experience-meta flex items-center gap-4 mt-1" style={{ color: styles.colors.secondary }}>
               <div className="date-range flex items-center">
                 <Calendar 
@@ -540,17 +611,9 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                     fontSize: styles.typography.fontSize.small 
                   }} 
                 />
-                <EditableText
-                  value={`${exp.startDate || 'Start'} - ${exp.current ? 'Present' : exp.endDate || 'End'}`}
-                  onSave={(value) => {
-                    const [start, end] = value.split(' - ');
-                    handleFieldEdit(exp.id, 'startDate', start);
-                    handleFieldEdit(exp.id, 'endDate', end);
-                    handleFieldEdit(exp.id, 'current', end === 'Present');
-                  }}
-                  style={{ fontSize: styles.typography.fontSize.small }}
-                  placeholder="Start Date - End Date"
-                />
+                <span style={{ fontSize: styles.typography.fontSize.small }}>
+                  {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+                </span>
               </div>
               {exp.location && (
                 <div className="location flex items-center">
@@ -562,12 +625,9 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                       fontSize: styles.typography.fontSize.small 
                     }} 
                   />
-                  <EditableText
-                    value={exp.location}
-                    onSave={(value) => handleFieldEdit(exp.id, 'location', value)}
-                    style={{ fontSize: styles.typography.fontSize.small }}
-                    placeholder="Location"
-                  />
+                  <span style={{ fontSize: styles.typography.fontSize.small }}>
+                    {exp.location}
+                  </span>
                 </div>
               )}
             </div>
@@ -579,7 +639,7 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                 {exp.description.map((desc: string, index: number) => (
                   <li 
                     key={index} 
-                    className="flex items-start group/item"
+                    className="flex items-start"
                     style={{ 
                       fontSize: styles.typography.fontSize.base,
                       lineHeight: styles.typography.lineHeight.normal,
@@ -595,38 +655,10 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                     >
                       •
                     </span>
-                    <div className="flex-1 flex items-start">
-                      <EditableText
-                        value={desc}
-                        onSave={(value) => handleDescriptionEdit(exp.id, index, value)}
-                        className="flex-1"
-                        style={{ fontSize: styles.typography.fontSize.base }}
-                        placeholder="Describe your achievements and responsibilities"
-                      />
-                      {editMode && (
-                        <button
-                          onClick={() => removeDescriptionItem(exp.id, index)}
-                          className="text-red-500 hover:text-red-700 opacity-0 group-hover/item:opacity-100 transition-opacity ml-2 mt-1"
-                          title="Remove bullet point"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      )}
-                    </div>
+                    <span>{desc}</span>
                   </li>
                 ))}
               </ul>
-              
-              {editMode && (
-                <button
-                  onClick={() => addDescriptionItem(exp.id)}
-                  className="text-blue-600 hover:text-blue-700 flex items-center mt-2 text-sm"
-                  title="Add bullet point"
-                >
-                  <Plus className="w-3 h-3 mr-1" />
-                  Add bullet point
-                </button>
-              )}
             </div>
           )}
         </div>
@@ -655,13 +687,12 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
         </h3>
         {editMode && (
           <button
-            onClick={addExperience}
-            className="text-green-600 hover:text-green-700 flex items-center"
-            style={{ fontSize: styles.typography.fontSize.small }}
+            onClick={initializeNewForm}
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center text-sm transition-colors"
             title="Add new experience"
           >
             <Plus className="w-4 h-4 mr-1" />
-            Add
+            Add Experience
           </button>
         )}
       </div>
@@ -676,10 +707,11 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
           boxShadow: sectionStyles?.shadow ? styles.effects?.shadow?.[sectionStyles.shadow] || 'none' : 'none'
         }}
       >
-        {sectionStyles?.display === 'timeline' ? renderTimelineExperience() :
-         sectionStyles?.display === 'cards' ? renderCardsExperience() :
-         renderDefaultExperience()}
+        {sectionStyles?.display === 'timeline' ? renderTimelineExperience() : renderDefaultExperience()}
       </div>
+
+      {/* Experience Form Modal */}
+      {showForm && <ExperienceForm />}
     </div>
   );
 };

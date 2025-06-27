@@ -288,12 +288,13 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   const renderContact = () => displayParts.includes('contact') && (
     <div className="contact-section">
       <h4 
-        className="contact-header font-bold mb-4 text-center uppercase tracking-wide"
+        className="contact-header font-bold mb-4 uppercase tracking-wide"
         style={{ 
           fontSize: styles.typography.fontSize.heading3,
           color: styles.colors.primary,
           borderBottom: `2px solid ${styles.colors.primary}`,
           paddingBottom: '4px',
+          textAlign: sectionStyles?.alignment || 'left'
         }}
       >
         Contact Information

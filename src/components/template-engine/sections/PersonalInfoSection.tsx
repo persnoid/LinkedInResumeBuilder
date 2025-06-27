@@ -251,7 +251,6 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     </div>
   );
 
-  // Render components based on displayParts
   const renderPhoto = () => displayParts.includes('photo') && (
     <div className="photo-container mb-6 flex justify-center">
       <PhotoUpload className={`w-${photoSize} h-${photoSize}`} />
@@ -320,58 +319,27 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     </div>
   );
 
-  // For sidebar layout (columns: 2), show photo and contact info
-  if (config.columns === 2) {
-    return (
-      <div className="personal-info-sidebar">
-        {renderPhoto()}
-        {renderContact()}
-      </div>
-    );
-  }
-
-  // For main content (columns: 1), show name and title only
-  if (config.columns === 1) {
-    return (
-      <div className="personal-info-main-content mb-6">
-        <div className="text-center">
-          {renderPhoto()}
-          {renderName()}
-          <div className="mt-2">
-            {renderTitle()}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // For header (columns: 0), show everything in header layout
+  // Unified rendering logic based on displayParts and alignment
   return (
-    <div className="personal-info-header flex items-center justify-between mb-6">
-      <div className="info-content">
-        {renderName()}
+    <div 
+      className={`personal-info-section ${sectionStyles?.alignment === 'center' ? 'text-center' : 'text-left'}`}
+      style={{
+        padding: sectionStyles?.padding || '0',
+        backgroundColor: sectionStyles?.backgroundColor || 'transparent'
+      }}
+    >
+      {renderPhoto()}
+      {renderName()}
+      {displayParts.includes('title') && (
         <div className="mt-2">
           {renderTitle()}
         </div>
-        
-        {/* COMPACT CONTACT INFO - Single row with flex wrap */}
-        <div className="contact-info flex flex-wrap gap-x-6 gap-y-2 mt-4">
-          {contactItems.map((item, index) => (
-            <div key={index} className="contact-item flex items-center">
-              <item.icon className="w-4 h-4 mr-1" />
-              <EditableText
-                value={item.value}
-                field={item.field}
-                style={{ fontSize: styles.typography.fontSize.contactInfo || styles.typography.fontSize.small }}
-                placeholder={`Your ${item.label}`}
-              />
-            </div>
-          ))}
+      )}
+      {displayParts.includes('contact') && (
+        <div className="mt-6">
+          {renderContact()}
         </div>
-      </div>
-      <div className="photo-container ml-8">
-        <PhotoUpload className="w-24 h-24" />
-      </div>
+      )}
     </div>
   );
 };

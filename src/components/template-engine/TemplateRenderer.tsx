@@ -94,7 +94,6 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         className={`template-section template-section-${section.id}`}
         style={{
           marginBottom: styles.spacing.section,
-          textAlign: sectionStyles?.alignment || 'left',
         }}
       >
         <SectionComponent

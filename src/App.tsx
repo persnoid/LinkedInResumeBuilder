@@ -6,13 +6,11 @@ import { ResumeCustomizer } from './components/ResumeCustomizer';
 import { DraftManagerComponent } from './components/DraftManager';
 import { DraftSavePrompt } from './components/DraftSavePrompt';
 import { UserProfilePage } from './pages/UserProfilePage';
-import { PageTemplateBuilderPage } from './pages/PageTemplateBuilderPage';
 import { ToastNotification, useToast } from './components/ToastNotification';
 import { sampleResumeData } from './data/sampleData';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
 import { DraftManager } from './utils/draftManager';
 import { ResumeData, DraftResume } from './types/resume';
-import { Layout, User } from 'lucide-react';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component<
@@ -68,7 +66,6 @@ function App() {
     'Customize & Export'
   ];
 
-  const [currentView, setCurrentView] = useState<'resume' | 'pageBuilder'>('resume');
   const [currentStep, setCurrentStep] = useState(0);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState('azurill');
@@ -373,31 +370,6 @@ function App() {
     }
   };
 
-  // Render Page Template Builder
-  if (currentView === 'pageBuilder') {
-    return (
-      <ErrorBoundary>
-        <PageTemplateBuilderPage />
-        
-        {/* Navigation Button */}
-        <button
-          onClick={() => setCurrentView('resume')}
-          className="fixed bottom-6 right-6 bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl z-40"
-          title="Back to Resume Builder"
-        >
-          <User className="w-6 h-6" />
-        </button>
-
-        {/* Toast Notification */}
-        <ToastNotification
-          toast={toast}
-          onClose={hideToast}
-        />
-      </ErrorBoundary>
-    );
-  }
-
-  // Render Resume Builder
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-50">
@@ -413,28 +385,18 @@ function App() {
         
         {renderCurrentStep()}
 
-        {/* Navigation Buttons - Fixed position */}
-        <div className="fixed top-6 right-6 flex items-center space-x-3 z-40">
-          {/* Page Template Builder Button */}
+        {/* User Profile Button - Fixed position */}
+        {!showUserProfile && (
           <button
-            onClick={() => setCurrentView('pageBuilder')}
-            className="bg-purple-500 hover:bg-purple-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl"
-            title="Page Template Builder"
+            onClick={() => setShowUserProfile(true)}
+            className="fixed top-6 right-6 bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl z-40"
+            title="User Profile"
           >
-            <Layout className="w-6 h-6" />
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
           </button>
-
-          {/* User Profile Button */}
-          {!showUserProfile && (
-            <button
-              onClick={() => setShowUserProfile(true)}
-              className="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl"
-              title="User Profile"
-            >
-              <User className="w-6 h-6" />
-            </button>
-          )}
-        </div>
+        )}
 
         {/* User Profile Modal */}
         <UserProfilePage

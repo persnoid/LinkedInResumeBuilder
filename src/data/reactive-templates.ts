@@ -34,7 +34,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           styles: { 
             alignment: 'center',
             displayParts: ['photo', 'name', 'title'],
-            photoSize: '32',
+            photoSize: '20', // Reduced from 32 to 20 for smaller photo
             divider: true,
             padding: '24px',
             spacing: 'relaxed'

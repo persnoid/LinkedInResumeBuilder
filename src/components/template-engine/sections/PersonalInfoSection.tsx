@@ -320,7 +320,118 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     </div>
   );
 
-  // Main render logic - unified approach based on displayParts
+  // LAYOUT-SPECIFIC RENDERING LOGIC
+  
+  // For header layout (columns: 0) - COMPACT HORIZONTAL LAYOUT
+  if (config.columns === 0) {
+    return (
+      <div className="personal-info-header flex items-center justify-between py-6 px-8">
+        <div className="info-content flex-1">
+          <EditableText
+            value={displayName}
+            field="name"
+            className="name font-bold block"
+            style={{ 
+              fontSize: styles.typography.fontSize.heading1,
+              color: styles.colors.background, // White text for dark header
+              lineHeight: styles.typography.lineHeight.tight,
+            }}
+            placeholder="Your Name"
+          />
+          <div className="mt-1">
+            <EditableText
+              value={displayTitle}
+              field="title"
+              className="title block"
+              style={{ 
+                fontSize: styles.typography.fontSize.heading2,
+                color: styles.colors.background, // White text for dark header
+                opacity: 0.9
+              }}
+              placeholder="Your Professional Title"
+            />
+          </div>
+          
+          {/* COMPACT CONTACT INFO - Single row with flex wrap */}
+          <div className="contact-info flex flex-wrap gap-x-6 gap-y-2 mt-4">
+            {contactItems.map((item, index) => (
+              <div key={index} className="contact-item flex items-center">
+                <item.icon 
+                  className="w-4 h-4 mr-1" 
+                  style={{ color: styles.colors.background }} 
+                />
+                <EditableText
+                  value={item.value}
+                  field={item.field}
+                  style={{ 
+                    fontSize: styles.typography.fontSize.contactInfo || styles.typography.fontSize.small,
+                    color: styles.colors.background // White text for dark header
+                  }}
+                  placeholder={`Your ${item.label}`}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="photo-container ml-8 flex-shrink-0">
+          <PhotoUpload className="w-20 h-20" />
+        </div>
+      </div>
+    );
+  }
+
+  // For sidebar layout (columns: 2) - VERTICAL STACK
+  if (config.columns === 2) {
+    return (
+      <div 
+        className={`personal-info-sidebar ${sectionStyles?.alignment === 'center' ? 'text-center' : 'text-left'}`}
+        style={{
+          padding: sectionStyles?.padding || '0',
+          backgroundColor: sectionStyles?.backgroundColor || 'transparent'
+        }}
+      >
+        {renderPhoto()}
+        {renderName()}
+        {renderTitle() && <div className="mt-2">{renderTitle()}</div>}
+        {renderContact() && <div className="mt-6">{renderContact()}</div>}
+      </div>
+    );
+  }
+
+  // For main content (columns: 1) - NAME AND TITLE ONLY
+  if (config.columns === 1) {
+    return (
+      <div className="personal-info-main-content mb-6">
+        <div className="text-left">
+          <EditableText
+            value={displayName}
+            field="name"
+            className="name font-bold block"
+            style={{ 
+              fontSize: styles.typography.fontSize.heading1,
+              color: styles.colors.text,
+              lineHeight: styles.typography.lineHeight.tight,
+            }}
+            placeholder="Your Name"
+          />
+          <div className="mt-2">
+            <EditableText
+              value={displayTitle}
+              field="title"
+              className="title block"
+              style={{ 
+                fontSize: styles.typography.fontSize.heading2,
+                color: styles.colors.secondary,
+              }}
+              placeholder="Your Professional Title"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Default fallback - unified approach based on displayParts
   return (
     <div 
       className={`personal-info-section ${sectionStyles?.alignment === 'center' ? 'text-center' : 'text-left'}`}

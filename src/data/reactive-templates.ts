@@ -23,78 +23,35 @@ export const reactiveTemplates: TemplateConfig[] = [
       name: 'Azurill Enhanced Layout',
       type: 'sidebar',
       sections: [
-        // MAIN CONTENT SECTIONS (RIGHT COLUMN) - columns: 1
+        // SIDEBAR SECTIONS (LEFT COLUMN) - columns: 2
         {
-          id: 'personalInfoMain',
+          id: 'personalInfoSidebar',
           name: 'Personal Information',
           component: 'PersonalInfo',
           visible: true,
-          order: 0,
-          columns: 1, // MAIN CONTENT
+          order: 1,
+          columns: 2, // SIDEBAR
           styles: { 
             alignment: 'center',
             displayParts: ['photo', 'name', 'title'],
-            photoSize: '20', // Reduced from 32 to 20 for smaller photo
+            photoSize: '20', // 80px (20 * 4)
             divider: true,
-            padding: '24px',
-            spacing: 'relaxed'
-          }
-        },
-        {
-          id: 'summary',
-          name: 'About me',
-          component: 'Summary',
-          visible: true,
-          order: 1,
-          columns: 1, // MAIN CONTENT
-          styles: { 
-            alignment: 'left', 
-            divider: true,
-            spacing: 'normal',
-            headerStyle: 'underline'
-          }
-        },
-        {
-          id: 'experience',
-          name: 'Work Experience',
-          component: 'Experience',
-          visible: true,
-          order: 2,
-          columns: 1, // MAIN CONTENT
-          styles: { 
-            alignment: 'left', 
-            divider: true,
-            display: 'timeline',
+            padding: '24px 16px',
             spacing: 'relaxed',
-            headerStyle: 'underline'
+            backgroundColor: 'transparent'
           }
         },
-        {
-          id: 'education',
-          name: 'Education',
-          component: 'Education',
-          visible: true,
-          order: 3,
-          columns: 1, // MAIN CONTENT
-          styles: { 
-            alignment: 'left', 
-            divider: true,
-            spacing: 'normal',
-            headerStyle: 'underline'
-          }
-        },
-        
-        // SIDEBAR SECTIONS (LEFT COLUMN) - columns: 2
         {
           id: 'personalInfoContact',
           name: 'Contact Information',
           component: 'PersonalInfo',
           visible: true,
-          order: 4,
+          order: 2,
           columns: 2, // SIDEBAR
           styles: { 
             alignment: 'left',
             displayParts: ['contact'],
+            padding: '16px',
             backgroundColor: '#f8fafc',
             borderRadius: 'lg',
             iconSize: 'md',
@@ -106,7 +63,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           name: 'Skills',
           component: 'Skills',
           visible: true,
-          order: 5,
+          order: 3,
           columns: 2, // SIDEBAR
           styles: { 
             alignment: 'left', 
@@ -121,7 +78,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           name: 'Languages',
           component: 'Languages',
           visible: true,
-          order: 6,
+          order: 4,
           columns: 2, // SIDEBAR
           styles: { 
             alignment: 'left', 
@@ -136,11 +93,56 @@ export const reactiveTemplates: TemplateConfig[] = [
           name: 'Certifications',
           component: 'Certifications',
           visible: true,
-          order: 7,
+          order: 5,
           columns: 2, // SIDEBAR
           styles: { 
             alignment: 'left',
             spacing: 'compact',
+            headerStyle: 'underline'
+          }
+        },
+        
+        // MAIN CONTENT SECTIONS (RIGHT COLUMN) - columns: 1
+        {
+          id: 'summary',
+          name: 'About me',
+          component: 'Summary',
+          visible: true,
+          order: 6,
+          columns: 1, // MAIN CONTENT
+          styles: { 
+            alignment: 'left', 
+            divider: true,
+            spacing: 'normal',
+            headerStyle: 'underline'
+          }
+        },
+        {
+          id: 'experience',
+          name: 'Work Experience',
+          component: 'Experience',
+          visible: true,
+          order: 7,
+          columns: 1, // MAIN CONTENT
+          styles: { 
+            alignment: 'left', 
+            divider: true,
+            display: 'timeline',
+            spacing: 'relaxed',
+            headerStyle: 'underline'
+          }
+        },
+        {
+          id: 'education',
+          name: 'Education',
+          component: 'Education',
+          visible: true,
+          order: 8,
+          columns: 1, // MAIN CONTENT
+          styles: { 
+            alignment: 'left', 
+            divider: true,
+            spacing: 'normal',
             headerStyle: 'underline'
           }
         }

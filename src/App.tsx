@@ -6,6 +6,7 @@ import { ResumeCustomizer } from './components/ResumeCustomizer';
 import { DraftManagerComponent } from './components/DraftManager';
 import { DraftSavePrompt } from './components/DraftSavePrompt';
 import { UserProfilePage } from './pages/UserProfilePage';
+import { ToastNotification, useToast } from './components/ToastNotification';
 import { sampleResumeData } from './data/sampleData';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
 import { DraftManager } from './utils/draftManager';
@@ -80,6 +81,9 @@ function App() {
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Toast notification hook
+  const { toast, showToast, hideToast } = useToast();
 
   // Load current draft on app start
   useEffect(() => {
@@ -162,10 +166,13 @@ function App() {
         draftId: draft.id
       });
       
+      // Show success toast instead of alert
+      showToast('Draft loaded successfully! Transitioning to your work...', 'success', 3000);
+      
     } catch (error) {
       console.error('Error loading draft data:', error);
       setIsTransitioning(false);
-      alert('Failed to load draft. Please try again.');
+      showToast('Failed to load draft. Please try again.', 'error');
     }
   };
 
@@ -194,12 +201,14 @@ function App() {
     try {
       if (format === 'pdf') {
         await exportToPDF('resume-preview', `${resumeData.personalInfo.name.replace(/\s+/g, '_')}_Resume.pdf`);
+        showToast('PDF exported successfully!', 'success');
       } else {
         await exportToWord(resumeData, `${resumeData.personalInfo.name.replace(/\s+/g, '_')}_Resume.docx`);
+        showToast('Word document exported successfully!', 'success');
       }
     } catch (error) {
       console.error('Export failed:', error);
-      alert('Export failed. Please try again.');
+      showToast('Export failed. Please try again.', 'error');
     }
   };
 
@@ -220,9 +229,10 @@ function App() {
       setShowSavePrompt(false);
       
       console.log('Draft saved with ID:', draftId);
+      showToast('Draft saved successfully!', 'success');
     } catch (error) {
       console.error('Error saving draft:', error);
-      alert('Failed to save draft. Please try again.');
+      showToast('Failed to save draft. Please try again.', 'error');
     }
   };
 
@@ -404,6 +414,7 @@ function App() {
           currentCustomizations={customizations}
           currentStep={currentStep}
           currentDraftId={currentDraftId}
+          showToast={showToast}
         />
 
         {/* Save Draft Prompt */}
@@ -413,6 +424,12 @@ function App() {
           onSkip={handleSavePromptSkip}
           onCancel={() => setShowSavePrompt(false)}
           defaultName={resumeData?.personalInfo.name ? `${resumeData.personalInfo.name} Resume` : ''}
+        />
+
+        {/* Toast Notification */}
+        <ToastNotification
+          toast={toast}
+          onClose={hideToast}
         />
       </div>
     </ErrorBoundary>

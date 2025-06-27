@@ -25,7 +25,7 @@ export const reactiveTemplates: TemplateConfig[] = [
       sections: [
         // SIDEBAR SECTIONS (LEFT COLUMN) - columns: 2
         {
-          id: 'personalInfoSidebar',
+          id: 'personalInfoHeader',
           name: 'Personal Information',
           component: 'PersonalInfo',
           visible: true,
@@ -52,10 +52,11 @@ export const reactiveTemplates: TemplateConfig[] = [
             alignment: 'left',
             displayParts: ['contact'],
             padding: '16px',
-            backgroundColor: '#f8fafc',
+            backgroundColor: 'transparent',
             borderRadius: 'lg',
             iconSize: 'md',
-            headerStyle: 'minimal'
+            headerStyle: 'underline',
+            divider: true
           }
         },
         {
@@ -105,7 +106,7 @@ export const reactiveTemplates: TemplateConfig[] = [
         // MAIN CONTENT SECTIONS (RIGHT COLUMN) - columns: 1
         {
           id: 'summary',
-          name: 'About me',
+          name: 'About Me',
           component: 'Summary',
           visible: true,
           order: 6,

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Palette, Type, Move, Download, FileText, FileType, Save, Eye, EyeOff, GripVertical, Settings, Layers, Sparkles } from 'lucide-react';
+import { Palette, Type, Download, FileText, FileType, Save, Eye, EyeOff } from 'lucide-react';
 import { ResumeData } from '../types/resume';
 import { reactiveTemplates } from '../data/reactive-templates';
 import { TemplateRenderer } from './template-engine/TemplateRenderer';
 import { ResumePreview } from './ResumePreview';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 interface ResumeCustomizerProps {
   resumeData: ResumeData;
@@ -27,7 +26,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   onSaveDraft,
   currentDraftId
 }) => {
-  const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'layout' | 'sections' | 'effects'>('colors');
+  const [activeTab, setActiveTab] = useState<'colors' | 'fonts'>('colors');
   const [isExporting, setIsExporting] = useState(false);
   const [editableResumeData, setEditableResumeData] = useState<ResumeData>(resumeData);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -54,17 +53,8 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     { name: 'Elegant Rose', primary: '#E11D48', secondary: '#BE185D', accent: '#8B5CF6', surface: '#FFF1F2', muted: '#FECDD3' }
   ];
 
-  const effectPresets = [
-    { name: 'Minimal', borderRadius: 'sm', shadow: 'none' },
-    { name: 'Soft', borderRadius: 'md', shadow: 'sm' },
-    { name: 'Modern', borderRadius: 'lg', shadow: 'md' },
-    { name: 'Bold', borderRadius: 'xl', shadow: 'lg' },
-    { name: 'Dramatic', borderRadius: 'xl', shadow: 'xl' }
-  ];
-
   // Get current template config
   const reactiveTemplate = reactiveTemplates.find(t => t.id === selectedTemplate);
-  const currentSections = reactiveTemplate?.layout.sections || [];
 
   const handleExport = async (format: 'pdf' | 'docx') => {
     setIsExporting(true);
@@ -92,33 +82,6 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     onCustomizationsUpdate(newCustomizations);
   };
 
-  const handleSectionVisibilityToggle = (sectionId: string) => {
-    const currentSections = customizations.visibleSections || currentSections.map(s => s.id);
-    const newVisibleSections = currentSections.includes(sectionId)
-      ? currentSections.filter((id: string) => id !== sectionId)
-      : [...currentSections, sectionId];
-    
-    handleCustomizationChange('visibleSections', newVisibleSections);
-  };
-
-  const handleSectionReorder = (result: any) => {
-    if (!result.destination) return;
-
-    const currentOrder = customizations.sectionOrder || currentSections.map(s => s.id);
-    const newOrder = Array.from(currentOrder);
-    const [reorderedItem] = newOrder.splice(result.source.index, 1);
-    newOrder.splice(result.destination.index, 0, reorderedItem);
-
-    handleCustomizationChange('sectionOrder', newOrder);
-  };
-
-  const handleSectionStyleChange = (sectionId: string, styleKey: string, value: any) => {
-    const currentSectionStyles = customizations.sections || {};
-    const sectionStyles = currentSectionStyles[sectionId] || {};
-    
-    handleCustomizationChange(`sections.${sectionId}.${styleKey}`, value);
-  };
-
   // Handle resume data updates from editable components
   const handleResumeDataUpdate = (updatedData: ResumeData) => {
     setEditableResumeData(updatedData);
@@ -126,9 +89,6 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
 
   // Get current colors for display
   const currentColors = customizations.colors || {};
-  const currentEffects = customizations.effects || {};
-  const visibleSections = customizations.visibleSections || currentSections.map(s => s.id);
-  const sectionOrder = customizations.sectionOrder || currentSections.map(s => s.id);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -138,7 +98,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">Customize Resume</h2>
-            <p className="text-sm text-gray-600">Personalize every aspect of your design</p>
+            <p className="text-sm text-gray-600">Personalize your design</p>
           </div>
           
           {/* Save Draft Button */}
@@ -173,20 +133,17 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           </p>
         </div>
 
-        {/* Enhanced Tabs */}
+        {/* Simplified Tabs - Only Colors and Fonts */}
         <div className="border-b border-gray-200">
           <nav className="flex">
             {[
               { key: 'colors', label: 'Colors', icon: Palette },
-              { key: 'fonts', label: 'Fonts', icon: Type },
-              { key: 'layout', label: 'Layout', icon: Move },
-              { key: 'sections', label: 'Sections', icon: Layers },
-              { key: 'effects', label: 'Effects', icon: Sparkles }
+              { key: 'fonts', label: 'Fonts', icon: Type }
             ].map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key as any)}
-                className={`flex-1 px-3 py-3 text-xs font-medium border-b-2 transition-colors ${
+                className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab.key
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -199,7 +156,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           </nav>
         </div>
 
-        {/* Enhanced Tab Content */}
+        {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-6">
           {activeTab === 'colors' && (
             <div className="space-y-6">
@@ -335,172 +292,6 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                     />
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'layout' && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-900">Template Layout</h3>
-              <p className="text-sm text-gray-600">
-                {reactiveTemplate 
-                  ? `This template uses a ${reactiveTemplate.layout.type.replace('-', ' ')} layout with customizable sections.`
-                  : 'Layout options are automatically arranged based on the selected template.'
-                }
-              </p>
-              {reactiveTemplate && (
-                <div className="space-y-2">
-                  {reactiveTemplate.layout.sections
-                    .sort((a, b) => a.order - b.order)
-                    .map((section) => (
-                      <div
-                        key={section.id}
-                        className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg"
-                      >
-                        <span className="text-sm font-medium text-gray-900">
-                          {section.name}
-                        </span>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-xs text-gray-500">
-                            {section.columns === 0 ? 'Header' : 
-                             section.columns === 1 ? 'Main' : 
-                             section.columns === 2 ? 'Sidebar' : 'Footer'}
-                          </span>
-                          <Move className="w-4 h-4 text-gray-400" />
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'sections' && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Section Visibility</h3>
-                <div className="space-y-2">
-                  {currentSections.map((section) => (
-                    <div key={section.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm font-medium text-gray-900">{section.name}</span>
-                      <button
-                        onClick={() => handleSectionVisibilityToggle(section.id)}
-                        className={`p-1 rounded ${
-                          visibleSections.includes(section.id)
-                            ? 'text-blue-600 hover:text-blue-700'
-                            : 'text-gray-400 hover:text-gray-600'
-                        }`}
-                      >
-                        {visibleSections.includes(section.id) ? (
-                          <Eye className="w-4 h-4" />
-                        ) : (
-                          <EyeOff className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Section Order</h3>
-                <DragDropContext onDragEnd={handleSectionReorder}>
-                  <Droppable droppableId="sections">
-                    {(provided) => (
-                      <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                        {sectionOrder.map((sectionId, index) => {
-                          const section = currentSections.find(s => s.id === sectionId);
-                          if (!section) return null;
-                          
-                          return (
-                            <Draggable key={section.id} draggableId={section.id} index={index}>
-                              {(provided) => (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  className="flex items-center p-3 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow"
-                                >
-                                  <GripVertical className="w-4 h-4 text-gray-400 mr-3" />
-                                  <span className="text-sm font-medium text-gray-900 flex-1">
-                                    {section.name}
-                                  </span>
-                                  <span className="text-xs text-gray-500">
-                                    {index + 1}
-                                  </span>
-                                </div>
-                              )}
-                            </Draggable>
-                          );
-                        })}
-                        {provided.placeholder}
-                      </div>
-                    )}
-                  </Droppable>
-                </DragDropContext>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'effects' && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Effect Presets</h3>
-                <div className="grid grid-cols-1 gap-3">
-                  {effectPresets.map((preset) => (
-                    <button
-                      key={preset.name}
-                      onClick={() => {
-                        handleCustomizationChange('effects', {
-                          borderRadius: preset.borderRadius,
-                          shadow: preset.shadow
-                        });
-                      }}
-                      className="p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors text-left"
-                    >
-                      <div className="text-sm font-medium text-gray-900">{preset.name}</div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        Radius: {preset.borderRadius} • Shadow: {preset.shadow}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Custom Effects</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-2">Border Radius</label>
-                    <select
-                      value={currentEffects.borderRadius || 'md'}
-                      onChange={(e) => handleCustomizationChange('effects.borderRadius', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="none">None</option>
-                      <option value="sm">Small</option>
-                      <option value="md">Medium</option>
-                      <option value="lg">Large</option>
-                      <option value="xl">Extra Large</option>
-                      <option value="full">Full</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-2">Shadow</label>
-                    <select
-                      value={currentEffects.shadow || 'sm'}
-                      onChange={(e) => handleCustomizationChange('effects.shadow', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="none">None</option>
-                      <option value="sm">Small</option>
-                      <option value="md">Medium</option>
-                      <option value="lg">Large</option>
-                      <option value="xl">Extra Large</option>
-                    </select>
-                  </div>
-                </div>
               </div>
             </div>
           )}

@@ -28,16 +28,26 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
   }>({
     aiAvailable: false,
     openaiConfigured: false,
-    message: 'Checking AI availability...'
+    message: 'AI service unavailable'
   });
   const [recentDrafts, setRecentDrafts] = useState<any[]>([]);
 
   // Check AI availability on component mount
   useEffect(() => {
     const checkAI = async () => {
-      const status = await checkAIAvailability();
-      setAiStatus(status);
+      try {
+        const status = await checkAIAvailability();
+        setAiStatus(status);
+      } catch (error) {
+        console.error('Error checking AI availability:', error);
+        setAiStatus({
+          aiAvailable: false,
+          openaiConfigured: false,
+          message: 'AI service unavailable - please check your configuration'
+        });
+      }
     };
+    
     checkAI();
     
     // Load recent drafts
@@ -131,7 +141,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
     } catch (error) {
       setIsLoading(false);
       setUploadProgress(0);
-      setError(error instanceof Error ? error.message : 'Failed to process PDF file with AI');
+      setError(error instanceof Error ? error.message : 'Failed to process PDF file');
       setExtractionMethod(null);
     }
   };
@@ -182,6 +192,10 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
         { id: '4', name: 'Python', level: 'Advanced' },
         { id: '5', name: 'AWS', level: 'Intermediate' },
         { id: '6', name: 'Docker', level: 'Intermediate' }
+      ],
+      languages: [
+        { id: '1', name: 'English', level: 'Native' },
+        { id: '2', name: 'Spanish', level: 'Fluent' }
       ],
       certifications: [{
         id: '1',
@@ -309,7 +323,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                   </div>
                   <div className="relative flex justify-center text-sm">
                     <span className="px-2 bg-white text-gray-500">
-                      {aiStatus.aiAvailable ? 'AI-Powered Method (Recommended)' : 'Upload Method'}
+                      {aiStatus.aiAvailable ? 'AI Enhanced' : 'Upload LinkedIn PDF Export'}
                     </span>
                   </div>
                 </div>
@@ -360,9 +374,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                   {isLoading && extractionMethod === 'pdf' && uploadProgress > 0 && (
                     <div className="mt-4">
                       <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
-                        <span>
-                          🤖 AI Processing PDF...
-                        </span>
+                        <span>🤖 AI Processing PDF...</span>
                         <span>{uploadProgress}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
@@ -443,7 +455,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                             <li>Go to your LinkedIn profile</li>
                             <li>Click "More" → "Save to PDF"</li>
                             <li>Upload the downloaded PDF here for AI-powered extraction</li>
-                            <li className="font-medium">✨ Our AI will intelligently extract all your information!</li>
+                            <li>✨ Our AI will intelligently extract all your information!</li>
                           </ol>
                         </>
                       ) : (
@@ -455,7 +467,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                             {aiStatus.message}
                           </p>
                           <p className="text-xs text-yellow-600 mt-1">
-                            Please configure your OpenAI API key to enable AI-powered parsing.
+                            OpenAI API key required for AI-powered parsing
                           </p>
                         </>
                       )}

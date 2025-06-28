@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Palette, Type, Move, Download, FileText, FileType, Save } from 'lucide-react';
+import { Palette, Type, Download, FileText, FileType, Save, Eye, EyeOff } from 'lucide-react';
 import { ResumeData } from '../types/resume';
 import { reactiveTemplates } from '../data/reactive-templates';
 import { TemplateRenderer } from './template-engine/TemplateRenderer';
@@ -26,28 +26,35 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   onSaveDraft,
   currentDraftId
 }) => {
-  const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'layout'>('colors');
+  const [activeTab, setActiveTab] = useState<'colors' | 'fonts'>('colors');
   const [isExporting, setIsExporting] = useState(false);
+  const [editableResumeData, setEditableResumeData] = useState<ResumeData>(resumeData);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const fonts = [
-    { name: 'Inter', value: 'Inter, sans-serif' },
-    { name: 'Roboto', value: 'Roboto, sans-serif' },
-    { name: 'Open Sans', value: 'Open Sans, sans-serif' },
-    { name: 'Lato', value: 'Lato, sans-serif' },
-    { name: 'Playfair Display', value: 'Playfair Display, serif' },
-    { name: 'Merriweather', value: 'Merriweather, serif' }
+    { name: 'Inter', value: 'Inter, sans-serif', category: 'Modern' },
+    { name: 'Roboto', value: 'Roboto, sans-serif', category: 'Modern' },
+    { name: 'Open Sans', value: 'Open Sans, sans-serif', category: 'Clean' },
+    { name: 'Lato', value: 'Lato, sans-serif', category: 'Clean' },
+    { name: 'Playfair Display', value: 'Playfair Display, serif', category: 'Elegant' },
+    { name: 'Merriweather', value: 'Merriweather, serif', category: 'Traditional' },
+    { name: 'Montserrat', value: 'Montserrat, sans-serif', category: 'Modern' },
+    { name: 'Source Sans Pro', value: 'Source Sans Pro, sans-serif', category: 'Professional' }
   ];
 
   const colorPresets = [
-    { name: 'Professional Blue', primary: '#3B82F6', secondary: '#1E40AF', accent: '#10B981' },
-    { name: 'Corporate Navy', primary: '#1E293B', secondary: '#475569', accent: '#0EA5E9' },
-    { name: 'Creative Purple', primary: '#8B5CF6', secondary: '#7C3AED', accent: '#F59E0B' },
-    { name: 'Modern Teal', primary: '#14B8A6', secondary: '#0F766E', accent: '#F97316' },
-    { name: 'Classic Black', primary: '#1F2937', secondary: '#4B5563', accent: '#EF4444' },
-    { name: 'Tech Green', primary: '#059669', secondary: '#047857', accent: '#F59E0B' },
-    { name: 'Orange Modern', primary: '#F97316', secondary: '#EA580C', accent: '#3B82F6' },
-    { name: 'Soft Blue', primary: '#1E40AF', secondary: '#6B7280', accent: '#93C5FD' }
+    { name: 'Professional Blue', primary: '#3B82F6', secondary: '#1E40AF', accent: '#10B981', surface: '#F8FAFC', muted: '#F1F5F9' },
+    { name: 'Corporate Navy', primary: '#1E293B', secondary: '#475569', accent: '#0EA5E9', surface: '#F1F5F9', muted: '#E2E8F0' },
+    { name: 'Creative Purple', primary: '#8B5CF6', secondary: '#7C3AED', accent: '#F59E0B', surface: '#FAF5FF', muted: '#F3E8FF' },
+    { name: 'Modern Teal', primary: '#14B8A6', secondary: '#0F766E', accent: '#F97316', surface: '#F0FDFA', muted: '#CCFBF1' },
+    { name: 'Classic Black', primary: '#1F2937', secondary: '#4B5563', accent: '#EF4444', surface: '#F9FAFB', muted: '#F3F4F6' },
+    { name: 'Tech Green', primary: '#059669', secondary: '#047857', accent: '#F59E0B', surface: '#ECFDF5', muted: '#D1FAE5' },
+    { name: 'Warm Orange', primary: '#F97316', secondary: '#EA580C', accent: '#3B82F6', surface: '#FFF7ED', muted: '#FED7AA' },
+    { name: 'Elegant Rose', primary: '#E11D48', secondary: '#BE185D', accent: '#8B5CF6', surface: '#FFF1F2', muted: '#FECDD3' }
   ];
+
+  // Get current template config
+  const reactiveTemplate = reactiveTemplates.find(t => t.id === selectedTemplate);
 
   const handleExport = async (format: 'pdf' | 'docx') => {
     setIsExporting(true);
@@ -61,8 +68,13 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   const handleCustomizationChange = (field: string, value: any) => {
     const newCustomizations = { ...customizations };
     if (field.includes('.')) {
-      const [parent, child] = field.split('.');
-      newCustomizations[parent] = { ...newCustomizations[parent], [child]: value };
+      const parts = field.split('.');
+      let current = newCustomizations;
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (!current[parts[i]]) current[parts[i]] = {};
+        current = current[parts[i]];
+      }
+      current[parts[parts.length - 1]] = value;
     } else {
       newCustomizations[field] = value;
     }
@@ -70,21 +82,23 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     onCustomizationsUpdate(newCustomizations);
   };
 
-  // Check if we have a reactive template
-  const reactiveTemplate = reactiveTemplates.find(t => t.id === selectedTemplate);
-  
+  // Handle resume data updates from editable components
+  const handleResumeDataUpdate = (updatedData: ResumeData) => {
+    setEditableResumeData(updatedData);
+  };
+
   // Get current colors for display
   const currentColors = customizations.colors || {};
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+      {/* Enhanced Sidebar */}
+      <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">Customize Resume</h2>
-            <p className="text-sm text-gray-600">Personalize your resume design</p>
+            <p className="text-sm text-gray-600">Personalize your design</p>
           </div>
           
           {/* Save Draft Button */}
@@ -97,13 +111,34 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           </button>
         </div>
 
-        {/* Tabs */}
+        {/* Edit Mode Toggle */}
+        <div className="p-4 border-b border-gray-200 bg-blue-50">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">Edit Mode</span>
+            <button
+              onClick={() => setIsEditMode(!isEditMode)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                isEditMode ? 'bg-blue-600' : 'bg-gray-200'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  isEditMode ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+          <p className="text-xs text-gray-600 mt-1">
+            {isEditMode ? 'Click on text to edit directly' : 'Enable to edit text in preview'}
+          </p>
+        </div>
+
+        {/* Simplified Tabs - Only Colors and Fonts */}
         <div className="border-b border-gray-200">
           <nav className="flex">
             {[
               { key: 'colors', label: 'Colors', icon: Palette },
-              { key: 'fonts', label: 'Fonts', icon: Type },
-              { key: 'layout', label: 'Layout', icon: Move }
+              { key: 'fonts', label: 'Fonts', icon: Type }
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -135,7 +170,9 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                         handleCustomizationChange('colors', {
                           primary: preset.primary,
                           secondary: preset.secondary,
-                          accent: preset.accent
+                          accent: preset.accent,
+                          surface: preset.surface,
+                          muted: preset.muted
                         });
                       }}
                       className="p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors text-left"
@@ -153,6 +190,14 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                           className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: preset.accent }}
                         />
+                        <div 
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: preset.surface }}
+                        />
+                        <div 
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: preset.muted }}
+                        />
                       </div>
                       <div className="text-xs font-medium text-gray-900">{preset.name}</div>
                     </button>
@@ -166,7 +211,9 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                   {[
                     { key: 'primary', label: 'Primary Color' },
                     { key: 'secondary', label: 'Secondary Color' },
-                    { key: 'accent', label: 'Accent Color' }
+                    { key: 'accent', label: 'Accent Color' },
+                    { key: 'surface', label: 'Surface Color' },
+                    { key: 'muted', label: 'Sidebar Background' }
                   ].map((color) => (
                     <div key={color.key} className="flex items-center justify-between">
                       <span className="text-sm text-gray-700">{color.label}</span>
@@ -186,54 +233,66 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           )}
 
           {activeTab === 'fonts' && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-900">Font Family</h3>
-              <div className="space-y-2">
-                {fonts.map((font) => (
-                  <button
-                    key={font.name}
-                    onClick={() => handleCustomizationChange('typography.fontFamily', font.value)}
-                    className={`w-full p-3 text-left border border-gray-200 rounded-lg transition-colors ${
-                      customizations.typography?.fontFamily === font.value
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'hover:border-gray-300'
-                    }`}
-                    style={{ fontFamily: font.value }}
-                  >
-                    <div className="font-medium text-gray-900">{font.name}</div>
-                    <div className="text-sm text-gray-500">The quick brown fox jumps</div>
-                  </button>
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Font Family</h3>
+                <div className="space-y-2">
+                  {fonts.map((font) => (
+                    <button
+                      key={font.name}
+                      onClick={() => handleCustomizationChange('typography.fontFamily', font.value)}
+                      className={`w-full p-3 text-left border border-gray-200 rounded-lg transition-colors ${
+                        customizations.typography?.fontFamily === font.value
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'hover:border-gray-300'
+                      }`}
+                      style={{ fontFamily: font.value }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-gray-900">{font.name}</div>
+                          <div className="text-sm text-gray-500">{font.category}</div>
+                        </div>
+                        <div className="text-sm text-gray-400">Aa</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-900">Font Sizes</h3>
+                {[
+                  { key: 'base', label: 'Base Text', min: 10, max: 16, default: 12 },
+                  { key: 'heading1', label: 'Main Heading', min: 24, max: 40, default: 28 },
+                  { key: 'heading2', label: 'Section Heading', min: 16, max: 28, default: 20 },
+                  { key: 'heading3', label: 'Sub Heading', min: 12, max: 20, default: 16 },
+                  { key: 'small', label: 'Small Text', min: 8, max: 12, default: 11 }
+                ].map((fontSize) => (
+                  <div key={fontSize.key} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-700">{fontSize.label}</span>
+                      <span className="text-xs text-gray-500">
+                        {customizations.typography?.fontSize?.[fontSize.key] || `${fontSize.default}px`}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={fontSize.min}
+                      max={fontSize.max}
+                      value={parseInt(customizations.typography?.fontSize?.[fontSize.key] || fontSize.default)}
+                      onChange={(e) => {
+                        const newFontSizes = {
+                          ...customizations.typography?.fontSize,
+                          [fontSize.key]: `${e.target.value}px`
+                        };
+                        handleCustomizationChange('typography.fontSize', newFontSizes);
+                      }}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {activeTab === 'layout' && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-900">Template Layout</h3>
-              <p className="text-sm text-gray-600">
-                {reactiveTemplate 
-                  ? `This template uses a ${reactiveTemplate.layout.type.replace('-', ' ')} layout with customizable sections.`
-                  : 'Layout options are automatically arranged based on the selected template.'
-                }
-              </p>
-              {reactiveTemplate && (
-                <div className="space-y-2">
-                  {reactiveTemplate.layout.sections
-                    .sort((a, b) => a.order - b.order)
-                    .map((section) => (
-                      <div
-                        key={section.id}
-                        className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg"
-                      >
-                        <span className="text-sm font-medium text-gray-900">
-                          {section.name}
-                        </span>
-                        <Move className="w-4 h-4 text-gray-400" />
-                      </div>
-                    ))}
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -278,21 +337,27 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Live Preview</h3>
-            <p className="text-gray-600">See how your resume looks with your customizations</p>
+            <p className="text-gray-600">
+              {isEditMode ? 'Click on any text to edit it directly' : 'Enable edit mode to modify content'}
+            </p>
           </div>
           
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
             {reactiveTemplate ? (
               <TemplateRenderer
                 context={{
-                  data: resumeData,
+                  data: editableResumeData,
                   config: reactiveTemplate,
-                  customizations: customizations
+                  customizations: {
+                    ...customizations,
+                    editMode: isEditMode,
+                    onDataUpdate: handleResumeDataUpdate
+                  }
                 }}
               />
             ) : (
               <ResumePreview
-                resumeData={resumeData}
+                resumeData={editableResumeData}
                 template={selectedTemplate}
                 customColors={customizations.colors}
                 font={customizations.typography?.fontFamily?.split(',')[0] || 'Inter'}

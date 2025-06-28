@@ -47,7 +47,29 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     spacing: { ...layout.styles.spacing, ...customizations.spacing },
   };
 
-  // Sort sections by order
+  // Extract edit mode and data update handler from customizations
+  const editMode = customizations.editMode || false;
+  const onDataUpdate = customizations.onDataUpdate;
+
+  // Handle data updates from sections
+  const handleSectionDataUpdate = (field: string, value: any) => {
+    if (onDataUpdate) {
+      // Create updated data object
+      const updatedData = { ...data };
+      
+      // Handle nested field updates (e.g., "personalInfo.name")
+      if (field.includes('.')) {
+        const [parent, child] = field.split('.');
+        updatedData[parent] = { ...updatedData[parent], [child]: value };
+      } else {
+        updatedData[field] = value;
+      }
+      
+      onDataUpdate(updatedData);
+    }
+  };
+
+  // Sort sections by order and filter visible ones
   const sortedSections = layout.sections
     .filter(section => section.visible)
     .sort((a, b) => a.order - b.order);
@@ -80,6 +102,8 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
           styles={styles}
           sectionStyles={sectionStyles}
           config={section}
+          editMode={editMode}
+          onDataUpdate={handleSectionDataUpdate}
         />
         {sectionStyles?.divider && (
           <div
@@ -98,65 +122,116 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     switch (layout.type) {
       case 'single-column':
         return (
-          <div className="template-single-column p-8">
+          <div 
+            className="template-single-column"
+            style={{ padding: styles.spacing.contentPadding || '32px' }}
+          >
             {sortedSections.map(renderSection)}
           </div>
         );
 
       case 'two-column':
-        const leftSections = sortedSections.filter(s => s.columns === 1 || !s.columns);
-        const rightSections = sortedSections.filter(s => s.columns === 2);
+        // FIXED: Use explicit filtering for two-column layout
+        const leftColumnSections = sortedSections.filter(s => s.columns === 1);
+        const rightColumnSections = sortedSections.filter(s => s.columns === 2);
+        
+        console.log('Two-column layout - Left sections:', leftColumnSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('Two-column layout - Right sections:', rightColumnSections.map(s => `${s.id} (columns: ${s.columns})`));
         
         return (
-          <div className="template-two-column grid grid-cols-3 gap-8 p-8">
+          <div 
+            className="template-two-column grid grid-cols-3 gap-8"
+            style={{ padding: styles.spacing.contentPadding || '32px' }}
+          >
             <div className="col-span-2">
-              {leftSections.map(renderSection)}
+              {leftColumnSections.map(renderSection)}
             </div>
             <div className="col-span-1">
-              {rightSections.map(renderSection)}
+              {rightColumnSections.map(renderSection)}
             </div>
           </div>
         );
 
       case 'sidebar':
-        const mainSections = sortedSections.filter(s => s.columns !== 2);
+        // CRITICAL FIX: SIDEBAR ON LEFT - Swap the order
+        const mainContentSections = sortedSections.filter(s => s.columns === 1);
         const sidebarSections = sortedSections.filter(s => s.columns === 2);
+        
+        console.log('=== SIDEBAR LAYOUT DEBUG ===');
+        console.log('All sorted sections:', sortedSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('Main content sections (columns === 1):', mainContentSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('Sidebar sections (columns === 2):', sidebarSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('=== END DEBUG ===');
         
         return (
           <div className="template-sidebar flex h-full min-h-full">
-            <div className="template-sidebar-content flex-1 p-8">
-              {mainSections.map(renderSection)}
-            </div>
-            <div className="template-sidebar-aside w-1/3 p-6" style={{ 
-              backgroundColor: styles.colors.muted,
-            }}>
+            {/* SIDEBAR ON LEFT - First in flex order */}
+            <div 
+              className="template-sidebar-aside w-1/3" 
+              style={{ 
+                backgroundColor: styles.colors.muted,
+                padding: styles.spacing.sidebarColumnPadding || '24px'
+              }}
+            >
               {sidebarSections.map(renderSection)}
+            </div>
+            
+            {/* MAIN CONTENT ON RIGHT - Second in flex order */}
+            <div 
+              className="template-sidebar-content flex-1"
+              style={{ padding: styles.spacing.mainColumnPadding || '32px' }}
+            >
+              {mainContentSections.map(renderSection)}
             </div>
           </div>
         );
 
       case 'header-footer':
+        // CRITICAL FIX: Use ONLY explicit column values
         const headerSections = sortedSections.filter(s => s.columns === 0);
-        const bodySections = sortedSections.filter(s => s.columns === 1 || !s.columns);
+        const bodySections = sortedSections.filter(s => s.columns === 1);
         const footerSections = sortedSections.filter(s => s.columns === 3);
+        
+        console.log('=== HEADER-FOOTER LAYOUT DEBUG ===');
+        console.log('All sorted sections:', sortedSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('Header sections (columns === 0):', headerSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('Body sections (columns === 1):', bodySections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('Footer sections (columns === 3):', footerSections.map(s => `${s.id} (columns: ${s.columns})`));
+        console.log('=== END DEBUG ===');
         
         return (
           <div className="template-header-footer">
+            {/* Header Section - Navy background */}
             {headerSections.length > 0 && (
-              <div className="template-header p-8" style={{ 
-                backgroundColor: styles.colors.primary,
-                color: styles.colors.background,
-              }}>
+              <div 
+                className="template-header"
+                style={{ 
+                  backgroundColor: styles.colors.primary,
+                  color: styles.colors.background,
+                  padding: styles.spacing.contentPadding || '32px'
+                }}
+              >
                 {headerSections.map(renderSection)}
               </div>
             )}
-            <div className="template-body p-8">
+            
+            {/* Main Body Section - White background */}
+            <div 
+              className="template-body"
+              style={{ padding: styles.spacing.contentPadding || '32px' }}
+            >
               {bodySections.map(renderSection)}
             </div>
+            
+            {/* Footer Section */}
             {footerSections.length > 0 && (
-              <div className="template-footer p-8" style={{ 
-                borderTop: `1px solid ${styles.colors.border}`,
-              }}>
+              <div 
+                className="template-footer"
+                style={{ 
+                  borderTop: `1px solid ${styles.colors.border}`,
+                  padding: styles.spacing.contentPadding || '32px'
+                }}
+              >
                 {footerSections.map(renderSection)}
               </div>
             )}
@@ -165,7 +240,10 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
 
       default:
         return (
-          <div className="template-default p-8">
+          <div 
+            className="template-default"
+            style={{ padding: styles.spacing.contentPadding || '32px' }}
+          >
             {sortedSections.map(renderSection)}
           </div>
         );

@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "python-setup": "cd python && pip install -r requirements.txt",
-    "python-server": "cd python && python api_server.py",
+    "python-server": "cd python && ./venv/bin/python3.12 api_server.py",
     "dev-full": "concurrently \"npm run python-server\" \"npm run dev\"",
     "setup": "npm install && npm run python-setup"
   },
@@ -45,6 +45,6 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
-    "vite": "^5.4.2"
+    "vite": "^6.3.5"
   }
 }

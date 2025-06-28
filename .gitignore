@@ -11,8 +11,13 @@ node_modules
 dist
 dist-ssr
 *.local
-
+package-lock.json
+package.json
 # Editor directories and files
+python/venv/*
+# Ignore Python virtual environments
+# Ignore Python cache files
+python/__pycache__ 
 .vscode/*
 !.vscode/extensions.json
 .idea

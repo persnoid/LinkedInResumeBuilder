@@ -49,9 +49,10 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     spacing: { ...layout.styles.spacing, ...customizations.spacing },
   };
 
-  // Extract edit mode and data update handler from customizations
+  // Extract edit mode, data update handler, and confirmation function from customizations
   const editMode = customizations.editMode || false;
   const onDataUpdate = customizations.onDataUpdate;
+  const showConfirmation = customizations.showConfirmation;
 
   // Handle data updates from sections
   const handleSectionDataUpdate = (field: string, value: any) => {
@@ -109,6 +110,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
           config={section}
           editMode={editMode}
           onDataUpdate={handleSectionDataUpdate}
+          showConfirmation={showConfirmation}
         />
         {sectionStyles?.divider && (
           <div

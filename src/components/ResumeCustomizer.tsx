@@ -4,6 +4,7 @@ import { ResumeData } from '../types/resume';
 import { reactiveTemplates } from '../data/reactive-templates';
 import { TemplateRenderer } from './template-engine/TemplateRenderer';
 import { ResumePreview } from './ResumePreview';
+import { useConfirmation } from '../hooks/useConfirmation';
 
 interface ResumeCustomizerProps {
   resumeData: ResumeData;
@@ -30,6 +31,9 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [editableResumeData, setEditableResumeData] = useState<ResumeData>(resumeData);
   const [isEditMode, setIsEditMode] = useState(false);
+
+  // Confirmation dialog hook
+  const { showConfirmation } = useConfirmation();
 
   console.log('ResumeCustomizer - Received resumeData:', resumeData); // Debug log
 
@@ -354,7 +358,8 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                   customizations: {
                     ...customizations,
                     editMode: isEditMode,
-                    onDataUpdate: handleResumeDataUpdate
+                    onDataUpdate: handleResumeDataUpdate,
+                    showConfirmation: showConfirmation
                   }
                 }}
               />

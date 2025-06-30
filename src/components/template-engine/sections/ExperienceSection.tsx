@@ -8,6 +8,13 @@ interface ExperienceSectionProps {
   config: any;
   editMode?: boolean;
   onDataUpdate?: (field: string, value: any) => void;
+  showConfirmation?: (options: {
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    type?: 'danger' | 'warning' | 'info';
+  }) => Promise<boolean>;
 }
 
 interface ExperienceEntry {
@@ -37,7 +44,8 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
   sectionStyles,
   config,
   editMode = false,
-  onDataUpdate
+  onDataUpdate,
+  showConfirmation
 }) => {
   const { experience } = data;
   
@@ -188,9 +196,24 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
     setEditingId(null);
   };
 
-  // Handle entry deletion
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this experience entry?')) {
+  // Handle entry deletion with unified confirmation
+  const handleDelete = async (id: string) => {
+    let confirmed = false;
+    
+    if (showConfirmation) {
+      confirmed = await showConfirmation({
+        title: 'Delete Experience Entry',
+        message: 'Are you sure you want to delete this experience entry? This action cannot be undone.',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        type: 'danger'
+      });
+    } else {
+      // Fallback to browser confirm if showConfirmation is not available
+      confirmed = confirm('Are you sure you want to delete this experience entry?');
+    }
+
+    if (confirmed) {
       const updatedExperience = displayExperience.filter((exp: ExperienceEntry) => exp.id !== id);
       if (onDataUpdate) {
         onDataUpdate('experience', updatedExperience);

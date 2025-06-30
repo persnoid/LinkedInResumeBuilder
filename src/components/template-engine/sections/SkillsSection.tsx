@@ -8,6 +8,13 @@ interface SkillsSectionProps {
   config: any;
   editMode?: boolean;
   onDataUpdate?: (field: string, value: any) => void;
+  showConfirmation?: (options: {
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    type?: 'danger' | 'warning' | 'info';
+  }) => Promise<boolean>;
 }
 
 interface SkillEntry {
@@ -27,7 +34,8 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
   sectionStyles,
   config,
   editMode = false,
-  onDataUpdate
+  onDataUpdate,
+  showConfirmation
 }) => {
   const { skills } = data;
   
@@ -120,9 +128,24 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
     setEditingId(null);
   };
 
-  // Handle entry deletion
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this skill?')) {
+  // Handle entry deletion with unified confirmation
+  const handleDelete = async (id: string) => {
+    let confirmed = false;
+    
+    if (showConfirmation) {
+      confirmed = await showConfirmation({
+        title: 'Delete Skill',
+        message: 'Are you sure you want to delete this skill? This action cannot be undone.',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        type: 'danger'
+      });
+    } else {
+      // Fallback to browser confirm if showConfirmation is not available
+      confirmed = confirm('Are you sure you want to delete this skill?');
+    }
+
+    if (confirmed) {
       const updatedSkills = displaySkills.filter((skill: SkillEntry) => skill.id !== id);
       if (onDataUpdate) {
         onDataUpdate('skills', updatedSkills);

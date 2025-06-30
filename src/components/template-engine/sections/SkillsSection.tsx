@@ -140,17 +140,19 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
     setEditingId(null);
   };
 
-  // Handle entry deletion with unified confirmation
+  // Handle entry deletion with unified confirmation - FIXED ASYNC HANDLING
   const handleDelete = async (id: string) => {
     console.log('SkillsSection - Delete button clicked for skill ID:', id);
     console.log('SkillsSection - showConfirmation available:', !!showConfirmation);
     console.log('SkillsSection - showConfirmation function:', showConfirmation);
+    console.log('SkillsSection - showConfirmation type:', typeof showConfirmation);
     
     let confirmed = false;
     
     if (showConfirmation && typeof showConfirmation === 'function') {
-      console.log('SkillsSection - Using unified confirmation dialog');
+      console.log('SkillsSection - Calling showConfirmation...');
       try {
+        // CRITICAL FIX: Properly await the confirmation dialog
         confirmed = await showConfirmation({
           title: 'Delete Skill',
           message: 'Are you sure you want to delete this skill? This action cannot be undone.',
@@ -158,15 +160,18 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
           cancelText: 'Cancel',
           type: 'danger'
         });
-        console.log('SkillsSection - Confirmation result:', confirmed);
+        console.log('SkillsSection - Confirmation dialog result:', confirmed);
       } catch (error) {
         console.error('SkillsSection - Error with confirmation dialog:', error);
-        confirmed = confirm('Are you sure you want to delete this skill?');
+        // Fallback to browser confirm if there's an error
+        confirmed = window.confirm('Are you sure you want to delete this skill?');
       }
     } else {
       console.log('SkillsSection - Using browser confirm fallback');
-      confirmed = confirm('Are you sure you want to delete this skill?');
+      confirmed = window.confirm('Are you sure you want to delete this skill?');
     }
+
+    console.log('SkillsSection - Final confirmation result:', confirmed);
 
     if (confirmed) {
       console.log('SkillsSection - User confirmed deletion, proceeding...');
@@ -381,6 +386,7 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
                   e.preventDefault();
                   e.stopPropagation();
                   console.log('SkillsSection - Delete button clicked for skill:', skill.id);
+                  // CRITICAL: Call handleDelete directly without wrapping in another function
                   handleDelete(skill.id);
                 }}
                 className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"

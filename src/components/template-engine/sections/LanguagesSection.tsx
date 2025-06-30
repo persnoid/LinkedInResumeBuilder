@@ -8,6 +8,13 @@ interface LanguagesSectionProps {
   config: any;
   editMode?: boolean;
   onDataUpdate?: (field: string, value: any) => void;
+  showConfirmation?: (options: {
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    type?: 'danger' | 'warning' | 'info';
+  }) => Promise<boolean>;
 }
 
 interface LanguageEntry {
@@ -27,7 +34,8 @@ export const LanguagesSection: React.FC<LanguagesSectionProps> = ({
   sectionStyles,
   config,
   editMode = false,
-  onDataUpdate
+  onDataUpdate,
+  showConfirmation
 }) => {
   const { languages } = data;
   
@@ -118,9 +126,24 @@ export const LanguagesSection: React.FC<LanguagesSectionProps> = ({
     setEditingId(null);
   };
 
-  // Handle entry deletion
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this language?')) {
+  // Handle entry deletion with unified confirmation
+  const handleDelete = async (id: string) => {
+    let confirmed = false;
+    
+    if (showConfirmation) {
+      confirmed = await showConfirmation({
+        title: 'Delete Language',
+        message: 'Are you sure you want to delete this language? This action cannot be undone.',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        type: 'danger'
+      });
+    } else {
+      // Fallback to browser confirm if showConfirmation is not available
+      confirmed = confirm('Are you sure you want to delete this language?');
+    }
+
+    if (confirmed) {
       const updatedLanguages = displayLanguages.filter((lang: LanguageEntry) => lang.id !== id);
       if (onDataUpdate) {
         onDataUpdate('languages', updatedLanguages);

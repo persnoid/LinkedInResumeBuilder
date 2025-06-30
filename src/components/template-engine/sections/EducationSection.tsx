@@ -8,6 +8,13 @@ interface EducationSectionProps {
   config: any;
   editMode?: boolean;
   onDataUpdate?: (field: string, value: any) => void;
+  showConfirmation?: (options: {
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    type?: 'danger' | 'warning' | 'info';
+  }) => Promise<boolean>;
 }
 
 interface EducationEntry {
@@ -37,7 +44,8 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
   sectionStyles,
   config,
   editMode = false,
-  onDataUpdate
+  onDataUpdate,
+  showConfirmation
 }) => {
   const { education } = data;
   
@@ -144,9 +152,24 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
     setEditingId(null);
   };
 
-  // Handle entry deletion
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this education entry?')) {
+  // Handle entry deletion with unified confirmation
+  const handleDelete = async (id: string) => {
+    let confirmed = false;
+    
+    if (showConfirmation) {
+      confirmed = await showConfirmation({
+        title: 'Delete Education Entry',
+        message: 'Are you sure you want to delete this education entry? This action cannot be undone.',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        type: 'danger'
+      });
+    } else {
+      // Fallback to browser confirm if showConfirmation is not available
+      confirmed = confirm('Are you sure you want to delete this education entry?');
+    }
+
+    if (confirmed) {
       const updatedEducation = displayEducation.filter((edu: EducationEntry) => edu.id !== id);
       if (onDataUpdate) {
         onDataUpdate('education', updatedEducation);

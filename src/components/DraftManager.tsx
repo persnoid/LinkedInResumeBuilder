@@ -14,6 +14,13 @@ interface DraftManagerProps {
   currentStep?: number;
   currentDraftId?: string | null;
   showToast: (message: string, type: 'success' | 'error' | 'info' | 'warning', duration?: number) => void;
+  showConfirmation: (options: {
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    type?: 'danger' | 'warning' | 'info';
+  }) => Promise<boolean>;
 }
 
 export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
@@ -25,7 +32,8 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   currentCustomizations,
   currentStep,
   currentDraftId,
-  showToast
+  showToast,
+  showConfirmation
 }) => {
   const { t } = useTranslation();
   const [drafts, setDrafts] = useState<DraftResume[]>([]);
@@ -97,8 +105,16 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     }
   };
 
-  const handleDeleteDraft = (id: string) => {
-    if (confirm(t('draftManager.confirmations.delete'))) {
+  const handleDeleteDraft = async (id: string) => {
+    const confirmed = await showConfirmation({
+      title: 'Delete Draft',
+      message: 'Are you sure you want to delete this draft? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
+
+    if (confirmed) {
       try {
         setIsLoading(true);
         DraftManager.deleteDraft(id);

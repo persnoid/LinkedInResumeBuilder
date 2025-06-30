@@ -6,13 +6,21 @@ import { PersonalInfo } from '../types/resume';
 interface UserProfilePageProps {
   isOpen: boolean;
   onClose: () => void;
+  showConfirmation: (options: {
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    type?: 'danger' | 'warning' | 'info';
+  }) => Promise<boolean>;
 }
 
 const USER_PROFILE_STORAGE_KEY = 'linkedin_resume_user_profile';
 
 export const UserProfilePage: React.FC<UserProfilePageProps> = ({
   isOpen,
-  onClose
+  onClose,
+  showConfirmation
 }) => {
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
     name: '',
@@ -93,8 +101,16 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
     }
   };
 
-  const clearProfile = () => {
-    if (confirm('Are you sure you want to clear all profile data? This action cannot be undone.')) {
+  const clearProfile = async () => {
+    const confirmed = await showConfirmation({
+      title: 'Clear Profile Data',
+      message: 'Are you sure you want to clear all profile data? This action cannot be undone.',
+      confirmText: 'Clear Data',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
+
+    if (confirmed) {
       setPersonalInfo({
         name: '',
         title: '',

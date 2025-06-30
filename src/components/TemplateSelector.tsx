@@ -42,6 +42,8 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   };
 
   const TemplatePreview: React.FC<{ template: TemplateConfig }> = ({ template }) => {
+    console.log('TemplatePreview - Using resumeData:', resumeData); // Debug log
+    
     return (
       <div className="w-full h-80 bg-white border rounded-xl overflow-hidden shadow-sm relative group hover:shadow-lg transition-all duration-300">
         {/* Template Preview Container - Exact fit with no extra space */}
@@ -65,7 +67,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           >
             <TemplateRenderer
               context={{
-                data: resumeData,
+                data: resumeData, // CRITICAL: Pass the actual parsed resumeData
                 config: template,
                 customizations: {}
               }}
@@ -97,7 +99,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-3">Choose Your Template</h2>
-            <p className="text-gray-600 text-lg">Select from our collection of professionally designed resume layouts. Click any template to see a full preview.</p>
+            <p className="text-gray-600 text-lg">Select from our collection of professionally designed resume layouts. Your parsed data will automatically fill the templates.</p>
           </div>
           
           {/* Save Draft Button */}
@@ -110,7 +112,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </button>
         </div>
 
-        {/* Data Preview Card */}
+        {/* Data Preview Card - Show what was parsed */}
         <div className="mb-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-start space-x-6">
             <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
@@ -121,27 +123,39 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               )}
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-semibold text-gray-900">{resumeData.personalInfo.name}</h3>
-              <p className="text-gray-600 text-lg">{resumeData.personalInfo.title}</p>
+              <h3 className="text-xl font-semibold text-gray-900">{resumeData.personalInfo.name || 'Name not parsed'}</h3>
+              <p className="text-gray-600 text-lg">{resumeData.personalInfo.title || 'Title not parsed'}</p>
               <div className="mt-3 flex items-center space-x-6 text-sm text-gray-500">
                 <span className="flex items-center">
                   <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                  {resumeData.personalInfo.email}
+                  {resumeData.personalInfo.email || 'Email not parsed'}
                 </span>
                 <span className="flex items-center">
                   <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  {resumeData.personalInfo.location}
+                  {resumeData.personalInfo.location || 'Location not parsed'}
                 </span>
                 <span className="flex items-center">
                   <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-                  {resumeData.experience.length} experience entries
+                  {resumeData.experience?.length || 0} experience entries
                 </span>
                 <span className="flex items-center">
                   <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
-                  {resumeData.skills.length} skills
+                  {resumeData.skills?.length || 0} skills
                 </span>
               </div>
             </div>
+          </div>
+          
+          {/* Debug info - Remove in production */}
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+            <p className="text-sm text-blue-700">
+              <strong>Parsed Data Summary:</strong> 
+              {resumeData.personalInfo.name ? ' ✓ Personal Info' : ' ✗ Personal Info'}
+              {resumeData.summary ? ' ✓ Summary' : ' ✗ Summary'}
+              {resumeData.experience?.length ? ` ✓ ${resumeData.experience.length} Experience` : ' ✗ Experience'}
+              {resumeData.education?.length ? ` ✓ ${resumeData.education.length} Education` : ' ✗ Education'}
+              {resumeData.skills?.length ? ` ✓ ${resumeData.skills.length} Skills` : ' ✗ Skills'}
+            </p>
           </div>
         </div>
 
@@ -325,7 +339,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                     {reactiveTemplates.find(t => t.id === previewTemplate) && (
                       <TemplateRenderer
                         context={{
-                          data: resumeData,
+                          data: resumeData, // CRITICAL: Use actual parsed data in modal too
                           config: reactiveTemplates.find(t => t.id === previewTemplate)!,
                           customizations: {}
                         }}

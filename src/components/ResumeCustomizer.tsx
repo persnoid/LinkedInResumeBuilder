@@ -31,6 +31,8 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   const [editableResumeData, setEditableResumeData] = useState<ResumeData>(resumeData);
   const [isEditMode, setIsEditMode] = useState(false);
 
+  console.log('ResumeCustomizer - Received resumeData:', resumeData); // Debug log
+
   const fonts = [
     { name: 'Inter', value: 'Inter, sans-serif', category: 'Modern' },
     { name: 'Roboto', value: 'Roboto, sans-serif', category: 'Modern' },
@@ -84,6 +86,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
 
   // Handle resume data updates from editable components
   const handleResumeDataUpdate = (updatedData: ResumeData) => {
+    console.log('ResumeCustomizer - Data updated:', updatedData); // Debug log
     setEditableResumeData(updatedData);
   };
 
@@ -346,7 +349,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
             {reactiveTemplate ? (
               <TemplateRenderer
                 context={{
-                  data: editableResumeData,
+                  data: editableResumeData, // Use the editable data that gets updated
                   config: reactiveTemplate,
                   customizations: {
                     ...customizations,

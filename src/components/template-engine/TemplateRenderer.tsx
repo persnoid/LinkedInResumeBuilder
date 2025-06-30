@@ -39,6 +39,8 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     );
   }
 
+  console.log('TemplateRenderer - Received data:', data); // Debug log
+
   // Merge default styles with customizations
   const styles = {
     ...layout.styles,
@@ -82,11 +84,14 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
       return null;
     }
 
+    // CRITICAL FIX: Pass the actual parsed data, not fallback data
     const sectionData = data;
     const sectionStyles = {
       ...section.styles,
       ...customizations.sections?.[section.id]?.styles,
     };
+
+    console.log(`Rendering section ${section.id} with data:`, sectionData); // Debug log
 
     return (
       <div

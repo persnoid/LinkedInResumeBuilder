@@ -39,6 +39,13 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
 }) => {
   const { skills } = data;
   
+  console.log('SkillsSection - Props received:', {
+    editMode,
+    hasOnDataUpdate: !!onDataUpdate,
+    hasShowConfirmation: !!showConfirmation,
+    skillsCount: skills?.length || 0
+  });
+  
   // Provide meaningful fallback skills data
   const displaySkills = skills && skills.length > 0 ? skills : [
     { id: '1', name: 'JavaScript', level: 'Expert' },
@@ -69,6 +76,7 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
 
   // Initialize form for new entry
   const initializeNewForm = () => {
+    console.log('SkillsSection - Initialize new form clicked');
     setFormData({
       name: '',
       level: 'Intermediate'
@@ -79,6 +87,7 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
 
   // Initialize form for editing existing entry
   const initializeEditForm = (skill: SkillEntry) => {
+    console.log('SkillsSection - Initialize edit form clicked for skill:', skill.id);
     setFormData({
       name: skill.name,
       level: skill.level || 'Intermediate'
@@ -97,6 +106,7 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
 
   // Handle form submission
   const handleFormSubmit = () => {
+    console.log('SkillsSection - Form submit clicked');
     if (!formData.name.trim()) {
       alert('Please enter a skill name.');
       return;
@@ -120,6 +130,7 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
     }
 
     if (onDataUpdate) {
+      console.log('SkillsSection - Calling onDataUpdate with:', updatedSkills);
       onDataUpdate('skills', updatedSkills);
     }
 
@@ -130,31 +141,48 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
 
   // Handle entry deletion with unified confirmation
   const handleDelete = async (id: string) => {
+    console.log('SkillsSection - Delete button clicked for skill ID:', id);
+    console.log('SkillsSection - showConfirmation available:', !!showConfirmation);
+    
     let confirmed = false;
     
     if (showConfirmation) {
-      confirmed = await showConfirmation({
-        title: 'Delete Skill',
-        message: 'Are you sure you want to delete this skill? This action cannot be undone.',
-        confirmText: 'Delete',
-        cancelText: 'Cancel',
-        type: 'danger'
-      });
+      console.log('SkillsSection - Using unified confirmation dialog');
+      try {
+        confirmed = await showConfirmation({
+          title: 'Delete Skill',
+          message: 'Are you sure you want to delete this skill? This action cannot be undone.',
+          confirmText: 'Delete',
+          cancelText: 'Cancel',
+          type: 'danger'
+        });
+        console.log('SkillsSection - Confirmation result:', confirmed);
+      } catch (error) {
+        console.error('SkillsSection - Error with confirmation dialog:', error);
+        confirmed = confirm('Are you sure you want to delete this skill?');
+      }
     } else {
-      // Fallback to browser confirm if showConfirmation is not available
+      console.log('SkillsSection - Using browser confirm fallback');
       confirmed = confirm('Are you sure you want to delete this skill?');
     }
 
     if (confirmed) {
+      console.log('SkillsSection - User confirmed deletion, proceeding...');
       const updatedSkills = displaySkills.filter((skill: SkillEntry) => skill.id !== id);
       if (onDataUpdate) {
+        console.log('SkillsSection - Calling onDataUpdate for deletion with:', updatedSkills);
         onDataUpdate('skills', updatedSkills);
+      } else {
+        console.error('SkillsSection - onDataUpdate not available for deletion');
       }
+    } else {
+      console.log('SkillsSection - User cancelled deletion');
     }
   };
 
   // Cancel form
   const handleCancel = () => {
+    console.log('SkillsSection - Form cancel clicked');
     setShowForm(false);
     setEditingId(null);
   };
@@ -335,15 +363,25 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
           {editMode && (
             <div className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1 ml-2">
               <button
-                onClick={() => initializeEditForm(skill)}
-                className="text-blue-500 hover:text-blue-700"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('SkillsSection - Edit button clicked for skill:', skill.id);
+                  initializeEditForm(skill);
+                }}
+                className="text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50"
                 title="Edit skill"
               >
                 <Edit3 className="w-3 h-3" />
               </button>
               <button
-                onClick={() => handleDelete(skill.id)}
-                className="text-red-500 hover:text-red-700"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('SkillsSection - Delete button clicked for skill:', skill.id);
+                  handleDelete(skill.id);
+                }}
+                className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
                 title="Remove skill"
               >
                 <Trash2 className="w-3 h-3" />
@@ -385,14 +423,24 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
           {editMode && (
             <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
               <button
-                onClick={() => initializeEditForm(skill)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('SkillsSection - Edit button clicked for skill:', skill.id);
+                  initializeEditForm(skill);
+                }}
                 className="bg-blue-500 text-white rounded-full p-0.5 hover:bg-blue-600"
                 title="Edit skill"
               >
                 <Edit3 className="w-2 h-2" />
               </button>
               <button
-                onClick={() => handleDelete(skill.id)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('SkillsSection - Delete button clicked for skill:', skill.id);
+                  handleDelete(skill.id);
+                }}
                 className="bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
                 title="Remove skill"
               >
@@ -434,14 +482,24 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
           {editMode && (
             <div className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1 ml-1">
               <button
-                onClick={() => initializeEditForm(skill)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('SkillsSection - Edit button clicked for skill:', skill.id);
+                  initializeEditForm(skill);
+                }}
                 className="text-blue-500 hover:text-blue-700"
                 title="Edit skill"
               >
                 <Edit3 className="w-3 h-3" />
               </button>
               <button
-                onClick={() => handleDelete(skill.id)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('SkillsSection - Delete button clicked for skill:', skill.id);
+                  handleDelete(skill.id);
+                }}
                 className="text-red-500 hover:text-red-700"
                 title="Remove skill"
               >
@@ -487,14 +545,24 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
             {editMode && (
               <div className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
                 <button
-                  onClick={() => initializeEditForm(skill)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('SkillsSection - Edit button clicked for skill:', skill.id);
+                    initializeEditForm(skill);
+                  }}
                   className="text-blue-500 hover:text-blue-700"
                   title="Edit skill"
                 >
                   <Edit3 className="w-3 h-3" />
                 </button>
                 <button
-                  onClick={() => handleDelete(skill.id)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('SkillsSection - Delete button clicked for skill:', skill.id);
+                    handleDelete(skill.id);
+                  }}
                   className="text-red-500 hover:text-red-700"
                   title="Remove skill"
                 >
@@ -536,6 +604,8 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
     }
   };
 
+  console.log('SkillsSection - Rendering with editMode:', editMode);
+
   return (
     <div className="skills-section">
       <div className="flex items-center justify-between mb-3">
@@ -557,7 +627,12 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
         </h3>
         {editMode && (
           <button
-            onClick={initializeNewForm}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('SkillsSection - Add new skill button clicked');
+              initializeNewForm();
+            }}
             className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center text-sm transition-colors"
             title="Add new skill"
           >

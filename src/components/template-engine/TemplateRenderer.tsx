@@ -39,8 +39,6 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     );
   }
 
-  console.log('TemplateRenderer - Received data:', data); // Debug log
-
   // Merge default styles with customizations
   const styles = {
     ...layout.styles,
@@ -54,8 +52,13 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
   const onDataUpdate = customizations.onDataUpdate;
   const showConfirmation = customizations.showConfirmation;
 
+  console.log('TemplateRenderer - Edit mode:', editMode);
+  console.log('TemplateRenderer - Has onDataUpdate:', !!onDataUpdate);
+  console.log('TemplateRenderer - Has showConfirmation:', !!showConfirmation);
+
   // Handle data updates from sections
   const handleSectionDataUpdate = (field: string, value: any) => {
+    console.log('TemplateRenderer - Section data update:', field, value);
     if (onDataUpdate) {
       // Create updated data object
       const updatedData = { ...data };
@@ -92,7 +95,12 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
       ...customizations.sections?.[section.id]?.styles,
     };
 
-    console.log(`Rendering section ${section.id} with data:`, sectionData); // Debug log
+    console.log(`TemplateRenderer - Rendering section ${section.id}:`, {
+      editMode,
+      hasOnDataUpdate: !!onDataUpdate,
+      hasShowConfirmation: !!showConfirmation,
+      sectionComponent: section.component
+    });
 
     return (
       <div

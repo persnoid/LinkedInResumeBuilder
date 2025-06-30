@@ -43,7 +43,8 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
     editMode,
     hasOnDataUpdate: !!onDataUpdate,
     hasShowConfirmation: !!showConfirmation,
-    skillsCount: skills?.length || 0
+    skillsCount: skills?.length || 0,
+    showConfirmationType: typeof showConfirmation
   });
   
   // Provide meaningful fallback skills data
@@ -143,10 +144,11 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
   const handleDelete = async (id: string) => {
     console.log('SkillsSection - Delete button clicked for skill ID:', id);
     console.log('SkillsSection - showConfirmation available:', !!showConfirmation);
+    console.log('SkillsSection - showConfirmation function:', showConfirmation);
     
     let confirmed = false;
     
-    if (showConfirmation) {
+    if (showConfirmation && typeof showConfirmation === 'function') {
       console.log('SkillsSection - Using unified confirmation dialog');
       try {
         confirmed = await showConfirmation({

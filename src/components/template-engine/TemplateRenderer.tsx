@@ -55,6 +55,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
   console.log('TemplateRenderer - Edit mode:', editMode);
   console.log('TemplateRenderer - Has onDataUpdate:', !!onDataUpdate);
   console.log('TemplateRenderer - Has showConfirmation:', !!showConfirmation);
+  console.log('TemplateRenderer - showConfirmation type:', typeof showConfirmation);
 
   // Handle data updates from sections
   const handleSectionDataUpdate = (field: string, value: any) => {
@@ -99,7 +100,8 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
       editMode,
       hasOnDataUpdate: !!onDataUpdate,
       hasShowConfirmation: !!showConfirmation,
-      sectionComponent: section.component
+      sectionComponent: section.component,
+      showConfirmationFunction: showConfirmation
     });
 
     return (

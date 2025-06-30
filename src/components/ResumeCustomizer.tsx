@@ -4,6 +4,7 @@ import { ResumeData } from '../types/resume';
 import { reactiveTemplates } from '../data/reactive-templates';
 import { TemplateRenderer } from './template-engine/TemplateRenderer';
 import { ResumePreview } from './ResumePreview';
+import { ConfirmationDialog } from './ConfirmationDialog';
 import { useConfirmation } from '../hooks/useConfirmation';
 
 interface ResumeCustomizerProps {
@@ -32,10 +33,11 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   const [editableResumeData, setEditableResumeData] = useState<ResumeData>(resumeData);
   const [isEditMode, setIsEditMode] = useState(false);
 
-  // Confirmation dialog hook
-  const { showConfirmation } = useConfirmation();
+  // CRITICAL FIX: Local confirmation dialog hook for this component
+  const { confirmation, showConfirmation } = useConfirmation();
 
   console.log('ResumeCustomizer - Received resumeData:', resumeData); // Debug log
+  console.log('ResumeCustomizer - showConfirmation available:', !!showConfirmation); // Debug log
 
   const fonts = [
     { name: 'Inter', value: 'Inter, sans-serif', category: 'Modern' },
@@ -359,7 +361,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                     ...customizations,
                     editMode: isEditMode,
                     onDataUpdate: handleResumeDataUpdate,
-                    showConfirmation: showConfirmation
+                    showConfirmation: showConfirmation // CRITICAL: Pass the local showConfirmation
                   }
                 }}
               />
@@ -374,6 +376,18 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           </div>
         </div>
       </div>
+
+      {/* CRITICAL FIX: Local Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmation.isOpen}
+        title={confirmation.title}
+        message={confirmation.message}
+        confirmText={confirmation.confirmText}
+        cancelText={confirmation.cancelText}
+        type={confirmation.type}
+        onConfirm={confirmation.onConfirm}
+        onCancel={confirmation.onCancel}
+      />
     </div>
   );
 };

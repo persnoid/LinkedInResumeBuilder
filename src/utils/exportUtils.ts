@@ -54,7 +54,7 @@ export const exportToPDF = async (elementId: string, filename: string = 'resume.
 
     // Capture the element
     const canvas = await html2canvas(element, {
-      scale: 3, // Increased scale for better quality
+      scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
@@ -84,146 +84,34 @@ export const exportToPDF = async (elementId: string, filename: string = 'resume.
           clonedElement.style.transform = 'none';
           clonedElement.style.transformOrigin = 'top left';
           
-          // Comprehensive icon sizing and alignment fix
-          const fixIconsInContainer = (container: Element) => {
-            const icons = container.querySelectorAll('svg');
-            icons.forEach((icon: any) => {
-              // Get the parent element to understand context
-              const parent = icon.parentElement;
-              const parentComputedStyle = parent ? window.getComputedStyle(parent) : null;
-              const parentFontSize = parentComputedStyle ? parseFloat(parentComputedStyle.fontSize) : 14;
-              
-              // Determine icon context and appropriate size
-              let iconSize = '16px';
-              
-              // Check if icon is in a heading context
-              if (parent && (
-                parent.tagName.match(/^H[1-6]$/) || 
-                parent.classList.contains('section-title') ||
-                parent.classList.contains('font-bold') ||
-                parentComputedStyle?.fontWeight === 'bold' ||
-                parseInt(parentComputedStyle?.fontWeight || '400') >= 600
-              )) {
-                // Heading context - size based on font size
-                if (parentFontSize >= 24) {
-                  iconSize = '20px'; // Large headings
-                } else if (parentFontSize >= 18) {
-                  iconSize = '18px'; // Medium headings
-                } else if (parentFontSize >= 16) {
-                  iconSize = '16px'; // Small headings
-                } else {
-                  iconSize = '14px'; // Very small headings
-                }
-              } else {
-                // Regular text context - size based on font size
-                if (parentFontSize >= 16) {
-                  iconSize = '16px';
-                } else if (parentFontSize >= 14) {
-                  iconSize = '14px';
-                } else {
-                  iconSize = '12px';
-                }
-              }
-              
-              // Apply consistent sizing
-              icon.style.width = iconSize;
-              icon.style.height = iconSize;
-              icon.style.minWidth = iconSize;
-              icon.style.minHeight = iconSize;
-              icon.style.maxWidth = iconSize;
-              icon.style.maxHeight = iconSize;
-              
-              // Critical alignment properties
-              icon.style.verticalAlign = 'middle';
-              icon.style.display = 'inline-block';
-              icon.style.flexShrink = '0';
-              icon.style.flexGrow = '0';
-              
-              // Ensure proper positioning relative to text baseline
-              icon.style.position = 'relative';
-              icon.style.top = '0';
-              icon.style.transform = 'translateY(-1px)'; // Small adjustment for better alignment
-              
-              // Set consistent stroke width for crisp rendering
-              icon.style.strokeWidth = '1.5';
-              
-              // Ensure the icon has proper spacing from adjacent text
-              if (parent && parent.textContent && parent.textContent.trim().length > 0) {
-                const textNode = Array.from(parent.childNodes).find(node => 
-                  node.nodeType === Node.TEXT_NODE && node.textContent?.trim()
-                );
-                
-                if (textNode && parent.firstChild === icon) {
-                  // Icon is first, add right margin
-                  icon.style.marginRight = '6px';
-                  icon.style.marginLeft = '0';
-                } else if (textNode && parent.lastChild === icon) {
-                  // Icon is last, add left margin
-                  icon.style.marginLeft = '6px';
-                  icon.style.marginRight = '0';
-                } else if (textNode) {
-                  // Icon in middle, add both margins
-                  icon.style.marginLeft = '4px';
-                  icon.style.marginRight = '4px';
-                }
-              }
-              
-              // Fix any potential color issues
-              if (!icon.style.color && !icon.getAttribute('color')) {
-                icon.style.color = 'inherit';
-              }
-              
-              // Ensure stroke and fill are properly set
-              if (!icon.getAttribute('stroke')) {
-                icon.setAttribute('stroke', 'currentColor');
-              }
-              if (!icon.getAttribute('fill')) {
-                icon.setAttribute('fill', 'none');
-              }
-            });
-          };
-          
-          // Apply icon fixes to the main element and all nested elements
-          fixIconsInContainer(clonedElement);
-          
-          // Also fix any flex containers that might contain icons
-          const flexContainers = clonedElement.querySelectorAll('[class*="flex"], .items-center, .justify-center, .space-x-');
-          flexContainers.forEach((container: any) => {
-            container.style.alignItems = 'center';
-            fixIconsInContainer(container);
+          // Fix icon sizes in cloned document
+          const icons = clonedElement.querySelectorAll('svg');
+          icons.forEach((icon: any) => {
+            const currentWidth = icon.getAttribute('width') || icon.style.width;
+            const currentHeight = icon.getAttribute('height') || icon.style.height;
+            
+            if (currentWidth && currentHeight) {
+              icon.style.width = currentWidth.includes('px') ? currentWidth : `${currentWidth}px`;
+              icon.style.height = currentHeight.includes('px') ? currentHeight : `${currentHeight}px`;
+            } else {
+              // Default icon size
+              icon.style.width = '16px';
+              icon.style.height = '16px';
+            }
+            icon.style.flexShrink = '0';
           });
 
-          // Fix images while we're at it
+          // Fix image sizes
           const images = clonedElement.querySelectorAll('img');
           images.forEach((img: any) => {
-            // Preserve existing dimensions if set
             if (img.style.width && img.style.height) {
-              // Keep as is
+              // Keep existing dimensions
             } else {
               const rect = img.getBoundingClientRect();
               if (rect.width && rect.height) {
                 img.style.width = `${rect.width}px`;
                 img.style.height = `${rect.height}px`;
               }
-            }
-            
-            // Ensure proper alignment
-            img.style.verticalAlign = 'middle';
-            img.style.display = 'inline-block';
-          });
-
-          // Fix any text alignment issues that might affect icons
-          const textElements = clonedElement.querySelectorAll('p, span, div, h1, h2, h3, h4, h5, h6');
-          textElements.forEach((el: any) => {
-            if (el.querySelector('svg')) {
-              // Element contains an icon, ensure proper line height and alignment
-              const computedStyle = window.getComputedStyle(el);
-              if (!el.style.lineHeight) {
-                el.style.lineHeight = computedStyle.lineHeight === 'normal' ? '1.5' : computedStyle.lineHeight;
-              }
-              el.style.display = 'flex';
-              el.style.alignItems = 'center';
-              el.style.flexWrap = 'wrap';
             }
           });
         }

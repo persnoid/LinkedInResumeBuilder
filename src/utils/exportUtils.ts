@@ -26,39 +26,42 @@ export const exportToPDF = async (elementId: string, filename: string = 'resume.
     // Wait for fonts and images to load
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    const canvas = await html2canvas(element, {
-      scale: 2, // Higher scale for better quality
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#ffffff',
-      width: A4_WIDTH_PX,
-      height: element.scrollHeight,
-      windowWidth: A4_WIDTH_PX,
-      windowHeight: element.scrollHeight,
-      scrollX: 0,
-      scrollY: 0,
-      x: 0,
-      y: 0,
-      logging: false,
-      removeContainer: true,
-      imageTimeout: 15000,
-      onclone: (clonedDoc) => {
-        // Ensure proper styling in cloned document
-        const clonedElement = clonedDoc.getElementById(elementId);
-        if (clonedElement) {
-          clonedElement.style.width = `${A4_WIDTH_PX}px`;
-          clonedElement.style.maxWidth = `${A4_WIDTH_PX}px`;
-          clonedElement.style.transform = 'scale(1)';
-          clonedElement.style.transformOrigin = 'top left';
-        }
+    // Clone content for page-by-page rendering
+    const clone = element.cloneNode(true) as HTMLElement;
+    clone.style.width = `${A4_WIDTH_PX}px`;
+    clone.style.maxWidth = `${A4_WIDTH_PX}px`;
+
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.top = '-100000px';
+    container.style.left = '0';
+    container.style.width = `${A4_WIDTH_PX}px`;
+    container.style.overflow = 'hidden';
+    container.appendChild(clone);
+    document.body.appendChild(container);
+
+    // Wait for fonts and images to load in the clone
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const PX_PER_MM = A4_HEIGHT_PX / A4_HEIGHT_MM;
+    const MARGIN_TOP_MM = 10;
+    const MARGIN_BOTTOM_MM = 10;
+    const marginTopPx = Math.round(MARGIN_TOP_MM * PX_PER_MM);
+    const marginBottomPx = Math.round(MARGIN_BOTTOM_MM * PX_PER_MM);
+    const pageHeightPx = A4_HEIGHT_PX - marginTopPx - marginBottomPx;
+
+    const breakPoints: number[] = [];
+    clone.querySelectorAll<HTMLElement>('*').forEach(node => {
+      const style = window.getComputedStyle(node);
+      if (style.pageBreakBefore === 'always') {
+        breakPoints.push(node.offsetTop);
+      }
+      if (style.pageBreakAfter === 'always') {
+        breakPoints.push(node.offsetTop + node.offsetHeight);
       }
     });
+    breakPoints.sort((a, b) => a - b);
 
-    // Restore original styles
-    element.style.width = originalWidth;
-    element.style.maxWidth = originalMaxWidth;
-
-    const imgData = canvas.toDataURL('image/png', 1.0);
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -66,24 +69,51 @@ export const exportToPDF = async (elementId: string, filename: string = 'resume.
       compress: true
     });
 
-    // Calculate dimensions
-    const imgWidth = A4_WIDTH_MM;
-    const imgHeight = (canvas.height * A4_WIDTH_MM) / canvas.width;
-    
-    let heightLeft = imgHeight;
-    let position = 0;
+    const SCALE = 3;
+    const totalHeight = clone.scrollHeight;
+    let offset = 0;
+    let pageIndex = 0;
 
-    // Add first page
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
-    heightLeft -= A4_HEIGHT_MM;
+    while (offset < totalHeight) {
+      let captureHeight = pageHeightPx;
+      for (const br of breakPoints) {
+        if (br > offset && br < offset + captureHeight) {
+          captureHeight = br - offset;
+          break;
+        }
+      }
 
-    // Add additional pages if content overflows
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
-      heightLeft -= A4_HEIGHT_MM;
+      const canvas = await html2canvas(clone, {
+        scale: SCALE,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        width: A4_WIDTH_PX,
+        height: captureHeight,
+        windowWidth: A4_WIDTH_PX,
+        windowHeight: captureHeight,
+        scrollX: 0,
+        scrollY: -offset,
+        logging: false,
+        removeContainer: true,
+        imageTimeout: 15000
+      });
+
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      const imgHeight = (canvas.height * A4_WIDTH_MM) / canvas.width;
+
+      if (pageIndex > 0) pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, MARGIN_TOP_MM, A4_WIDTH_MM, imgHeight, undefined, 'FAST');
+
+      offset += captureHeight;
+      pageIndex++;
     }
+
+    document.body.removeChild(container);
+
+    // Restore original styles
+    element.style.width = originalWidth;
+    element.style.maxWidth = originalMaxWidth;
 
     // Save the PDF
     pdf.save(filename);

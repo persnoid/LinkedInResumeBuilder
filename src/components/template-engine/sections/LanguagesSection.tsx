@@ -339,7 +339,7 @@ export const LanguagesSection: React.FC<LanguagesSectionProps> = ({
             paddingBottom: '4px',
           }}
         >
-          <Globe className="w-4 h-4 mr-2" />
+          <Globe className="w-3 h-3 mr-2" />
           {config.name || 'Languages'}
         </h3>
         {editMode && (

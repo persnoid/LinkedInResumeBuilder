@@ -505,7 +505,7 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                 {exp.position}
               </h4>
               <div className="flex items-center gap-2 mt-1">
-                <Building className="w-4 h-4" style={{ color: styles.colors.accent }} />
+                <Building className="w-3 h-3" style={{ color: styles.colors.accent }} />
                 <span 
                   className="company font-medium"
                   style={{ 
@@ -521,8 +521,8 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                   <Calendar 
                     className="mr-1" 
                     style={{ 
-                      width: '16px', 
-                      height: '16px',
+                      width: '12px', 
+                      height: '12px',
                       fontSize: styles.typography.fontSize.small 
                     }} 
                   />
@@ -535,8 +535,8 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                     <MapPin 
                       className="mr-1" 
                       style={{ 
-                        width: '16px', 
-                        height: '16px',
+                        width: '12px', 
+                        height: '12px',
                         fontSize: styles.typography.fontSize.small 
                       }} 
                     />
@@ -629,8 +629,8 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                 <Calendar 
                   className="mr-1" 
                   style={{ 
-                    width: '16px', 
-                    height: '16px',
+                    width: '12px', 
+                    height: '12px',
                     fontSize: styles.typography.fontSize.small 
                   }} 
                 />
@@ -643,8 +643,8 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                   <MapPin 
                     className="mr-1" 
                     style={{ 
-                      width: '16px', 
-                      height: '16px',
+                      width: '12px', 
+                      height: '12px',
                       fontSize: styles.typography.fontSize.small 
                     }} 
                   />
@@ -705,7 +705,7 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
             fontWeight: sectionStyles?.fontWeight ? styles.typography.fontWeight[sectionStyles.fontWeight] : styles.typography.fontWeight.bold
           }}
         >
-          <Briefcase className="w-4 h-4 mr-2" />
+          <Briefcase className="w-3 h-3 mr-2" />
           {config.name || 'Experience'}
         </h3>
         {editMode && (

@@ -605,10 +605,10 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
 
   const getDisplayIcon = () => {
     switch (sectionStyles?.display) {
-      case 'tags': return <Tag className="w-4 h-4" />;
-      case 'grid': return <Grid className="w-4 h-4" />;
-      case 'cards': return <Grid className="w-4 h-4" />;
-      default: return <List className="w-4 h-4" />;
+      case 'tags': return <Tag className="w-3 h-3" />;
+      case 'grid': return <Grid className="w-3 h-3" />;
+      case 'cards': return <Grid className="w-3 h-3" />;
+      default: return <List className="w-3 h-3" />;
     }
   };
 

@@ -303,7 +303,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
       <div className="contact-info space-y-3">
         {contactItems.map((item, index) => (
           <div key={index} className="contact-item flex items-center">
-            <item.icon className="w-4 h-4 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
+            <item.icon className="w-3 h-3 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
             <EditableText
               value={item.value}
               field={item.field}
@@ -357,7 +357,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
             {contactItems.map((item, index) => (
               <div key={index} className="contact-item flex items-center">
                 <item.icon 
-                  className="w-4 h-4 mr-1" 
+                  className="w-3 h-3 mr-1" 
                   style={{ color: styles.colors.background }} 
                 />
                 <EditableText

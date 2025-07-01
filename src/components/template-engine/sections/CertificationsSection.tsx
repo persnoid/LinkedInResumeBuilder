@@ -331,7 +331,7 @@ export const CertificationsSection: React.FC<CertificationsSectionProps> = ({
             paddingBottom: '4px',
           }}
         >
-          <Award className="w-4 h-4 mr-2" />
+          <Award className="w-3 h-3 mr-2" />
           {config.name || 'Certifications'}
         </h3>
         {editMode && (

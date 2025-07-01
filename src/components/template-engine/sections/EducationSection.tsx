@@ -399,7 +399,7 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
             paddingBottom: '4px',
           }}
         >
-          <GraduationCap className="w-4 h-4 mr-2" />
+          <GraduationCap className="w-3 h-3 mr-2" />
           {config.name || 'Education'}
         </h3>
         {editMode && (
@@ -477,8 +477,8 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
                 <Calendar 
                   className="mr-1" 
                   style={{ 
-                    width: '16px', 
-                    height: '16px',
+                    width: '12px', 
+                    height: '12px',
                     fontSize: styles.typography.fontSize.small 
                   }} 
                 />
@@ -491,8 +491,8 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
                   <MapPin 
                     className="mr-1" 
                     style={{ 
-                      width: '16px', 
-                      height: '16px',
+                      width: '12px', 
+                      height: '12px',
                       fontSize: styles.typography.fontSize.small 
                     }} 
                   />

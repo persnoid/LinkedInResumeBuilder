@@ -16,24 +16,43 @@ export const exportToPDF = async (elementId: string, filename: string = 'resume.
     const A4_HEIGHT_MM = 297;
     const A4_WIDTH_PX = 794; // A4 width in pixels at 96 DPI
     const A4_HEIGHT_PX = 1123; // A4 height in pixels at 96 DPI
+    
+    // Define margins in mm
+    const MARGIN_TOP_MM = 15;
+    const MARGIN_BOTTOM_MM = 15;
+    const MARGIN_LEFT_MM = 15;
+    const MARGIN_RIGHT_MM = 15;
+    
+    // Calculate printable area
+    const PRINTABLE_WIDTH_MM = A4_WIDTH_MM - MARGIN_LEFT_MM - MARGIN_RIGHT_MM;
+    const PRINTABLE_HEIGHT_MM = A4_HEIGHT_MM - MARGIN_TOP_MM - MARGIN_BOTTOM_MM;
+    const PRINTABLE_WIDTH_PX = A4_WIDTH_PX - (MARGIN_LEFT_MM * A4_WIDTH_PX / A4_WIDTH_MM) - (MARGIN_RIGHT_MM * A4_WIDTH_PX / A4_WIDTH_MM);
 
     // Temporarily set element width for consistent rendering
     const originalWidth = element.style.width;
     const originalMaxWidth = element.style.maxWidth;
-    element.style.width = `${A4_WIDTH_PX}px`;
-    element.style.maxWidth = `${A4_WIDTH_PX}px`;
+    const originalMinHeight = element.style.minHeight;
+    const originalPadding = element.style.padding;
+    
+    // Set consistent dimensions
+    element.style.width = `${PRINTABLE_WIDTH_PX}px`;
+    element.style.maxWidth = `${PRINTABLE_WIDTH_PX}px`;
+    element.style.minHeight = 'auto';
+    element.style.padding = '20px'; // Internal padding
+    element.style.boxSizing = 'border-box';
 
-    // Wait for fonts and images to load
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Wait for layout reflow and fonts to load
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
+    // Capture the element with proper settings
     const canvas = await html2canvas(element, {
       scale: 2, // Higher scale for better quality
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
-      width: A4_WIDTH_PX,
+      width: PRINTABLE_WIDTH_PX,
       height: element.scrollHeight,
-      windowWidth: A4_WIDTH_PX,
+      windowWidth: PRINTABLE_WIDTH_PX,
       windowHeight: element.scrollHeight,
       scrollX: 0,
       scrollY: 0,
@@ -46,10 +65,25 @@ export const exportToPDF = async (elementId: string, filename: string = 'resume.
         // Ensure proper styling in cloned document
         const clonedElement = clonedDoc.getElementById(elementId);
         if (clonedElement) {
-          clonedElement.style.width = `${A4_WIDTH_PX}px`;
-          clonedElement.style.maxWidth = `${A4_WIDTH_PX}px`;
+          clonedElement.style.width = `${PRINTABLE_WIDTH_PX}px`;
+          clonedElement.style.maxWidth = `${PRINTABLE_WIDTH_PX}px`;
+          clonedElement.style.minHeight = 'auto';
+          clonedElement.style.padding = '20px';
+          clonedElement.style.boxSizing = 'border-box';
           clonedElement.style.transform = 'scale(1)';
           clonedElement.style.transformOrigin = 'top left';
+          
+          // Ensure all icons and images are properly sized
+          const icons = clonedElement.querySelectorAll('svg, img');
+          icons.forEach((icon: any) => {
+            if (icon.style.width && icon.style.height) {
+              // Preserve existing dimensions
+            } else {
+              // Set default icon size if not specified
+              icon.style.width = '16px';
+              icon.style.height = '16px';
+            }
+          });
         }
       }
     });
@@ -57,6 +91,8 @@ export const exportToPDF = async (elementId: string, filename: string = 'resume.
     // Restore original styles
     element.style.width = originalWidth;
     element.style.maxWidth = originalMaxWidth;
+    element.style.minHeight = originalMinHeight;
+    element.style.padding = originalPadding;
 
     const imgData = canvas.toDataURL('image/png', 1.0);
     const pdf = new jsPDF({
@@ -66,27 +102,69 @@ export const exportToPDF = async (elementId: string, filename: string = 'resume.
       compress: true
     });
 
-    // Calculate dimensions
-    const imgWidth = A4_WIDTH_MM;
-    const imgHeight = (canvas.height * A4_WIDTH_MM) / canvas.width;
+    // Calculate scaling for the printable area
+    const imgWidth = PRINTABLE_WIDTH_MM;
+    const imgHeight = (canvas.height * PRINTABLE_WIDTH_MM) / canvas.width;
     
-    let heightLeft = imgHeight;
-    let position = 0;
+    // Calculate how many pages we need
+    const pageHeight = PRINTABLE_HEIGHT_MM;
+    const totalPages = Math.ceil(imgHeight / pageHeight);
+    
+    console.log(`PDF Export: Creating ${totalPages} pages`);
+    console.log(`Canvas dimensions: ${canvas.width}x${canvas.height}`);
+    console.log(`Image dimensions in PDF: ${imgWidth}mm x ${imgHeight}mm`);
+    console.log(`Page dimensions: ${PRINTABLE_WIDTH_MM}mm x ${pageHeight}mm`);
 
-    // Add first page
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
-    heightLeft -= A4_HEIGHT_MM;
+    // Generate each page
+    for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+      if (pageIndex > 0) {
+        pdf.addPage();
+      }
 
-    // Add additional pages if content overflows
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
-      heightLeft -= A4_HEIGHT_MM;
+      // Calculate the Y position for this page slice
+      const yOffset = -(pageIndex * pageHeight);
+      
+      // Add the image slice for this page with proper margins
+      pdf.addImage(
+        imgData, 
+        'PNG', 
+        MARGIN_LEFT_MM, // X position with left margin
+        MARGIN_TOP_MM + yOffset, // Y position with top margin and offset
+        imgWidth, 
+        imgHeight, 
+        undefined, 
+        'FAST'
+      );
+
+      // Add page number in footer
+      const pageNumberText = `Page ${pageIndex + 1} of ${totalPages}`;
+      pdf.setFontSize(8);
+      pdf.setTextColor(128, 128, 128); // Gray color
+      
+      // Calculate footer position
+      const footerY = A4_HEIGHT_MM - 8; // 8mm from bottom
+      const textWidth = pdf.getTextWidth(pageNumberText);
+      const footerX = (A4_WIDTH_MM - textWidth) / 2; // Centered
+      
+      pdf.text(pageNumberText, footerX, footerY);
+      
+      // Reset text color for next page
+      pdf.setTextColor(0, 0, 0);
     }
+
+    // Add metadata
+    pdf.setProperties({
+      title: filename.replace('.pdf', ''),
+      subject: 'Professional Resume',
+      author: 'LinkedIn Resume Generator',
+      creator: 'LinkedIn Resume Generator',
+      producer: 'jsPDF'
+    });
 
     // Save the PDF
     pdf.save(filename);
+    
+    console.log(`PDF exported successfully: ${filename}`);
   } catch (error) {
     console.error('Error generating PDF:', error);
     throw new Error('Failed to export PDF. Please try again.');

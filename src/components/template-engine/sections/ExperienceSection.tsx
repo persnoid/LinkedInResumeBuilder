@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, Plus, Trash2, Briefcase, Building, Edit3, Save, X } from 'lucide-react';
+import { Calendar, Plus, Trash2, Briefcase, Edit3, Save, X } from 'lucide-react';
 
 interface ExperienceSectionProps {
   data: any;
@@ -504,19 +504,16 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
               >
                 {exp.position}
               </h4>
-              <div className="flex items-center gap-2 mt-1">
-                <Building className="w-3 h-3" style={{ color: styles.colors.accent }} />
-                <span 
-                  className="company font-medium"
-                  style={{ 
-                    fontSize: styles.typography.fontSize.base,
-                    color: styles.colors.accent,
-                  }}
-                >
-                  {exp.company}
-                </span>
-              </div>
-              <div className="experience-meta flex items-center gap-4 mt-2" style={{ color: styles.colors.secondary }}>
+              <span 
+                className="company font-medium block mt-1"
+                style={{ 
+                  fontSize: styles.typography.fontSize.base,
+                  color: styles.colors.accent,
+                }}
+              >
+                {exp.company}
+              </span>
+              <div className="experience-meta flex items-center mt-2" style={{ color: styles.colors.secondary }}>
                 <div className="date-range flex items-center">
                   <Calendar 
                     className="mr-1" 
@@ -530,21 +527,6 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                     {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
                   </span>
                 </div>
-                {exp.location && (
-                  <div className="location flex items-center">
-                    <MapPin 
-                      className="mr-1" 
-                      style={{ 
-                        width: '12px', 
-                        height: '12px',
-                        fontSize: styles.typography.fontSize.small 
-                      }} 
-                    />
-                    <span style={{ fontSize: styles.typography.fontSize.small }}>
-                      {exp.location}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
             
@@ -616,7 +598,7 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
               {exp.position}
             </h4>
             <span 
-              className="company font-medium"
+              className="company font-medium block"
               style={{ 
                 fontSize: styles.typography.fontSize.base,
                 color: styles.colors.accent,
@@ -624,7 +606,7 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
             >
               {exp.company}
             </span>
-            <div className="experience-meta flex items-center gap-4 mt-1" style={{ color: styles.colors.secondary }}>
+            <div className="experience-meta flex items-center mt-1" style={{ color: styles.colors.secondary }}>
               <div className="date-range flex items-center">
                 <Calendar 
                   className="mr-1" 
@@ -638,21 +620,6 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                   {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
                 </span>
               </div>
-              {exp.location && (
-                <div className="location flex items-center">
-                  <MapPin 
-                    className="mr-1" 
-                    style={{ 
-                      width: '12px', 
-                      height: '12px',
-                      fontSize: styles.typography.fontSize.small 
-                    }} 
-                  />
-                  <span style={{ fontSize: styles.typography.fontSize.small }}>
-                    {exp.location}
-                  </span>
-                </div>
-              )}
             </div>
           </div>
           

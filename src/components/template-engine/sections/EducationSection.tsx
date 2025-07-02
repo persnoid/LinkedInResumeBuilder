@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, Plus, Trash2, GraduationCap, Edit3, Save, X } from 'lucide-react';
+import { Plus, Trash2, GraduationCap, Edit3, Save, X } from 'lucide-react';
 
 interface EducationSectionProps {
   data: any;
@@ -436,71 +436,58 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
               </div>
             )}
             
-            <EditableText
-              value={edu.degree || 'Degree and Field of Study'}
-              onSave={(value) => {
-                if (onDataUpdate) {
-                  const updatedEducation = displayEducation.map((e: any) => 
-                    e.id === edu.id ? { ...e, degree: value } : e
-                  );
-                  onDataUpdate('education', updatedEducation);
-                }
-              }}
-              className="degree font-bold block"
-              style={{ 
-                fontSize: styles.typography.fontSize.heading3,
-                color: styles.colors.text,
-              }}
-              placeholder="Degree and Field of Study"
-            />
-            
-            <EditableText
-              value={edu.school || 'School or University'}
-              onSave={(value) => {
-                if (onDataUpdate) {
-                  const updatedEducation = displayEducation.map((e: any) => 
-                    e.id === edu.id ? { ...e, school: value } : e
-                  );
-                  onDataUpdate('education', updatedEducation);
-                }
-              }}
-              className="school font-medium block"
-              style={{ 
-                fontSize: styles.typography.fontSize.base,
-                color: styles.colors.accent,
-              }}
-              placeholder="School or University"
-            />
-            
-            <div className="education-meta flex items-center gap-4 mt-1" style={{ color: styles.colors.secondary }}>
-              <div className="date-range flex items-center">
-                <Calendar 
-                  className="mr-1" 
+            {/* Date and Title Row */}
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex-1">
+                <EditableText
+                  value={edu.degree || 'Degree and Field of Study'}
+                  onSave={(value) => {
+                    if (onDataUpdate) {
+                      const updatedEducation = displayEducation.map((e: any) => 
+                        e.id === edu.id ? { ...e, degree: value } : e
+                      );
+                      onDataUpdate('education', updatedEducation);
+                    }
+                  }}
+                  className="degree font-bold block"
                   style={{ 
-                    width: '12px', 
-                    height: '12px',
-                    fontSize: styles.typography.fontSize.small 
-                  }} 
+                    fontSize: styles.typography.fontSize.heading3,
+                    color: styles.colors.text,
+                  }}
+                  placeholder="Degree and Field of Study"
                 />
-                <span style={{ fontSize: styles.typography.fontSize.small }}>
+                
+                <EditableText
+                  value={edu.school || 'School or University'}
+                  onSave={(value) => {
+                    if (onDataUpdate) {
+                      const updatedEducation = displayEducation.map((e: any) => 
+                        e.id === edu.id ? { ...e, school: value } : e
+                      );
+                      onDataUpdate('education', updatedEducation);
+                    }
+                  }}
+                  className="school font-medium block mt-1"
+                  style={{ 
+                    fontSize: styles.typography.fontSize.base,
+                    color: styles.colors.accent,
+                  }}
+                  placeholder="School or University"
+                />
+              </div>
+              
+              {/* Right-aligned date without icon */}
+              <div className="text-right ml-4">
+                <span 
+                  className="date-range"
+                  style={{ 
+                    fontSize: styles.typography.fontSize.small,
+                    color: styles.colors.secondary 
+                  }}
+                >
                   {edu.startDate || 'Start'} - {edu.endDate || 'End'}
                 </span>
               </div>
-              {edu.location && (
-                <div className="location flex items-center">
-                  <MapPin 
-                    className="mr-1" 
-                    style={{ 
-                      width: '12px', 
-                      height: '12px',
-                      fontSize: styles.typography.fontSize.small 
-                    }} 
-                  />
-                  <span style={{ fontSize: styles.typography.fontSize.small }}>
-                    {edu.location}
-                  </span>
-                </div>
-              )}
             </div>
             
             {edu.gpa && (

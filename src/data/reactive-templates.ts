@@ -1481,7 +1481,7 @@ export const reactiveTemplates: TemplateConfig[] = [
             spacing: 'relaxed',
             headerStyle: 'background',
             backgroundColor: '#f1f5f9',
-            padding: '24px',
+            padding: '12px',
             borderRadius: 'lg'
           }
         },

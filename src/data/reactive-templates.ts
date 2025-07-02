@@ -1464,7 +1464,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           styles: { 
             alignment: 'center',
             backgroundColor: '#1e293b',
-            padding: '24px',
+            padding: '2px',
             borderRadius: 'none'
           }
         },

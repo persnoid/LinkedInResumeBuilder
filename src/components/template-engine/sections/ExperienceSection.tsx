@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Plus, Trash2, Briefcase, Edit3, Save, X } from 'lucide-react';
+import { Plus, Trash2, Briefcase, Edit3, Save, X } from 'lucide-react';
 
 interface ExperienceSectionProps {
   data: any;
@@ -495,35 +495,38 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
             )}
             
             <div className="experience-header mb-3">
-              <h4 
-                className="position font-bold"
-                style={{ 
-                  fontSize: styles.typography.fontSize.heading3,
-                  color: styles.colors.text,
-                }}
-              >
-                {exp.position}
-              </h4>
-              <span 
-                className="company font-medium block mt-1"
-                style={{ 
-                  fontSize: styles.typography.fontSize.base,
-                  color: styles.colors.accent,
-                }}
-              >
-                {exp.company}
-              </span>
-              <div className="experience-meta flex items-center mt-2" style={{ color: styles.colors.secondary }}>
-                <div className="date-range flex items-center">
-                  <Calendar 
-                    className="mr-1" 
+              {/* Date and Title Row */}
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1">
+                  <h4 
+                    className="position font-bold"
                     style={{ 
-                      width: '12px', 
-                      height: '12px',
-                      fontSize: styles.typography.fontSize.small 
-                    }} 
-                  />
-                  <span style={{ fontSize: styles.typography.fontSize.small }}>
+                      fontSize: styles.typography.fontSize.heading3,
+                      color: styles.colors.text,
+                    }}
+                  >
+                    {exp.position}
+                  </h4>
+                  <span 
+                    className="company font-medium block mt-1"
+                    style={{ 
+                      fontSize: styles.typography.fontSize.base,
+                      color: styles.colors.accent,
+                    }}
+                  >
+                    {exp.company}
+                  </span>
+                </div>
+                
+                {/* Right-aligned date without icon */}
+                <div className="text-right ml-4">
+                  <span 
+                    className="date-range"
+                    style={{ 
+                      fontSize: styles.typography.fontSize.small,
+                      color: styles.colors.secondary 
+                    }}
+                  >
                     {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
                   </span>
                 </div>
@@ -587,39 +590,40 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
             </div>
           )}
           
-          <div className="experience-header mb-2">
-            <h4 
-              className="position font-bold"
-              style={{ 
-                fontSize: styles.typography.fontSize.heading3,
-                color: styles.colors.text,
-              }}
-            >
-              {exp.position}
-            </h4>
-            <span 
-              className="company font-medium block"
-              style={{ 
-                fontSize: styles.typography.fontSize.base,
-                color: styles.colors.accent,
-              }}
-            >
-              {exp.company}
-            </span>
-            <div className="experience-meta flex items-center mt-1" style={{ color: styles.colors.secondary }}>
-              <div className="date-range flex items-center">
-                <Calendar 
-                  className="mr-1" 
-                  style={{ 
-                    width: '12px', 
-                    height: '12px',
-                    fontSize: styles.typography.fontSize.small 
-                  }} 
-                />
-                <span style={{ fontSize: styles.typography.fontSize.small }}>
-                  {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
-                </span>
-              </div>
+          {/* Date and Title Row */}
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1">
+              <h4 
+                className="position font-bold"
+                style={{ 
+                  fontSize: styles.typography.fontSize.heading3,
+                  color: styles.colors.text,
+                }}
+              >
+                {exp.position}
+              </h4>
+              <span 
+                className="company font-medium block mt-1"
+                style={{ 
+                  fontSize: styles.typography.fontSize.base,
+                  color: styles.colors.accent,
+                }}
+              >
+                {exp.company}
+              </span>
+            </div>
+            
+            {/* Right-aligned date without icon */}
+            <div className="text-right ml-4">
+              <span 
+                className="date-range"
+                style={{ 
+                  fontSize: styles.typography.fontSize.small,
+                  color: styles.colors.secondary 
+                }}
+              >
+                {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+              </span>
             </div>
           </div>
           

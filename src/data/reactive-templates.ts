@@ -34,7 +34,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           styles: { 
             alignment: 'center',
             displayParts: ['photo', 'name', 'title'],
-            photoSize: '20', // 80px (20 * 4)
+            photoSize: '32', // 80px (20 * 4)
             divider: true,
             padding: '24px 16px',
             spacing: 'relaxed',
@@ -679,7 +679,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           styles: { 
             alignment: 'center',
             displayParts: ['photo', 'name', 'title'],
-            photoSize: '24',
+            photoSize: '32',
             spacing: 'relaxed',
             headerStyle: 'background',
             backgroundColor: '#0f172a',
@@ -937,7 +937,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           styles: { 
             alignment: 'center',
             displayParts: ['photo'],
-            photoSize: '28',
+            photoSize: '32',
             spacing: 'relaxed',
             backgroundColor: '#faf5ff',
             padding: '24px',
@@ -1102,7 +1102,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           styles: { 
             alignment: 'center',
             displayParts: ['photo', 'name', 'title', 'contact'],
-            photoSize: '20',
+            photoSize: '32',
             spacing: 'relaxed',
             headerStyle: 'background',
             backgroundColor: '#0f172a',
@@ -1464,6 +1464,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           styles: { 
             alignment: 'center',
             backgroundColor: '#1e293b',
+            photoSize: '32',
             padding: '24px',
             borderRadius: 'none'
           }
@@ -2072,7 +2073,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           visible: true,
           order: 1,
           columns: 0, // HEADER SECTION ONLY
-          styles: { alignment: 'left' }
+          styles: { alignment: 'left',photoSize: '36'}
         },
         {
           id: 'summary',
@@ -2317,7 +2318,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           styles: { 
             alignment: 'left',
             displayParts: ['photo', 'contact'],
-            photoSize: '24'
+            photoSize: '32'
           }
         },
         {

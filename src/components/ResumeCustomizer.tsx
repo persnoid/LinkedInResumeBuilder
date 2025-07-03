@@ -4,6 +4,8 @@ import { ResumeData } from '../types/resume';
 import { reactiveTemplates } from '../data/reactive-templates';
 import { TemplateRenderer } from './template-engine/TemplateRenderer';
 import { ResumePreview } from './ResumePreview';
+import { ConfirmationDialog } from './ConfirmationDialog';
+import { useConfirmation } from '../hooks/useConfirmation';
 
 interface ResumeCustomizerProps {
   resumeData: ResumeData;
@@ -30,6 +32,12 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [editableResumeData, setEditableResumeData] = useState<ResumeData>(resumeData);
   const [isEditMode, setIsEditMode] = useState(false);
+
+  // CRITICAL FIX: Local confirmation dialog hook for this component
+  const { confirmation, showConfirmation } = useConfirmation();
+
+  console.log('ResumeCustomizer - Received resumeData:', resumeData); // Debug log
+  console.log('ResumeCustomizer - showConfirmation available:', !!showConfirmation); // Debug log
 
   const fonts = [
     { name: 'Inter', value: 'Inter, sans-serif', category: 'Modern' },
@@ -84,6 +92,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
 
   // Handle resume data updates from editable components
   const handleResumeDataUpdate = (updatedData: ResumeData) => {
+    console.log('ResumeCustomizer - Data updated:', updatedData); // Debug log
     setEditableResumeData(updatedData);
   };
 
@@ -346,12 +355,13 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
             {reactiveTemplate ? (
               <TemplateRenderer
                 context={{
-                  data: editableResumeData,
+                  data: editableResumeData, // Use the editable data that gets updated
                   config: reactiveTemplate,
                   customizations: {
                     ...customizations,
                     editMode: isEditMode,
-                    onDataUpdate: handleResumeDataUpdate
+                    onDataUpdate: handleResumeDataUpdate,
+                    showConfirmation: showConfirmation // CRITICAL: Pass the local showConfirmation
                   }
                 }}
               />
@@ -366,6 +376,18 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           </div>
         </div>
       </div>
+
+      {/* CRITICAL FIX: Local Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmation.isOpen}
+        title={confirmation.title}
+        message={confirmation.message}
+        confirmText={confirmation.confirmText}
+        cancelText={confirmation.cancelText}
+        type={confirmation.type}
+        onConfirm={confirmation.onConfirm}
+        onCancel={confirmation.onCancel}
+      />
     </div>
   );
 };

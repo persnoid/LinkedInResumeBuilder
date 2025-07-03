@@ -7,6 +7,8 @@ import { DraftManagerComponent } from './components/DraftManager';
 import { DraftSavePrompt } from './components/DraftSavePrompt';
 import { UserProfilePage } from './pages/UserProfilePage';
 import { ToastNotification, useToast } from './components/ToastNotification';
+import { ConfirmationDialog } from './components/ConfirmationDialog';
+import { useConfirmation } from './hooks/useConfirmation';
 import { sampleResumeData } from './data/sampleData';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
 import { DraftManager } from './utils/draftManager';
@@ -84,6 +86,9 @@ function App() {
 
   // Toast notification hook
   const { toast, showToast, hideToast } = useToast();
+
+  // Confirmation dialog hook
+  const { confirmation, showConfirmation } = useConfirmation();
 
   // Load current draft on app start
   useEffect(() => {
@@ -402,6 +407,7 @@ function App() {
         <UserProfilePage
           isOpen={showUserProfile}
           onClose={() => setShowUserProfile(false)}
+          showConfirmation={showConfirmation}
         />
 
         {/* Draft Manager Modal */}
@@ -415,6 +421,7 @@ function App() {
           currentStep={currentStep}
           currentDraftId={currentDraftId}
           showToast={showToast}
+          showConfirmation={showConfirmation}
         />
 
         {/* Save Draft Prompt */}
@@ -430,6 +437,18 @@ function App() {
         <ToastNotification
           toast={toast}
           onClose={hideToast}
+        />
+
+        {/* Unified Confirmation Dialog */}
+        <ConfirmationDialog
+          isOpen={confirmation.isOpen}
+          title={confirmation.title}
+          message={confirmation.message}
+          confirmText={confirmation.confirmText}
+          cancelText={confirmation.cancelText}
+          type={confirmation.type}
+          onConfirm={confirmation.onConfirm}
+          onCancel={confirmation.onCancel}
         />
       </div>
     </ErrorBoundary>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, Plus, Trash2, Briefcase, Building, Edit3, Save, X } from 'lucide-react';
+import { Plus, Trash2, Briefcase, Edit3, Save, X } from 'lucide-react';
 
 interface ExperienceSectionProps {
   data: any;
@@ -8,6 +8,13 @@ interface ExperienceSectionProps {
   config: any;
   editMode?: boolean;
   onDataUpdate?: (field: string, value: any) => void;
+  showConfirmation?: (options: {
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    type?: 'danger' | 'warning' | 'info';
+  }) => Promise<boolean>;
 }
 
 interface ExperienceEntry {
@@ -37,7 +44,8 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
   sectionStyles,
   config,
   editMode = false,
-  onDataUpdate
+  onDataUpdate,
+  showConfirmation
 }) => {
   const { experience } = data;
   
@@ -188,9 +196,24 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
     setEditingId(null);
   };
 
-  // Handle entry deletion
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this experience entry?')) {
+  // Handle entry deletion with unified confirmation
+  const handleDelete = async (id: string) => {
+    let confirmed = false;
+    
+    if (showConfirmation) {
+      confirmed = await showConfirmation({
+        title: 'Delete Experience Entry',
+        message: 'Are you sure you want to delete this experience entry? This action cannot be undone.',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        type: 'danger'
+      });
+    } else {
+      // Fallback to browser confirm if showConfirmation is not available
+      confirmed = confirm('Are you sure you want to delete this experience entry?');
+    }
+
+    if (confirmed) {
       const updatedExperience = displayExperience.filter((exp: ExperienceEntry) => exp.id !== id);
       if (onDataUpdate) {
         onDataUpdate('experience', updatedExperience);
@@ -472,56 +495,41 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
             )}
             
             <div className="experience-header mb-3">
-              <h4 
-                className="position font-bold"
-                style={{ 
-                  fontSize: styles.typography.fontSize.heading3,
-                  color: styles.colors.text,
-                }}
-              >
-                {exp.position}
-              </h4>
-              <div className="flex items-center gap-2 mt-1">
-                <Building className="w-4 h-4" style={{ color: styles.colors.accent }} />
-                <span 
-                  className="company font-medium"
-                  style={{ 
-                    fontSize: styles.typography.fontSize.base,
-                    color: styles.colors.accent,
-                  }}
-                >
-                  {exp.company}
-                </span>
-              </div>
-              <div className="experience-meta flex items-center gap-4 mt-2" style={{ color: styles.colors.secondary }}>
-                <div className="date-range flex items-center">
-                  <Calendar 
-                    className="mr-1" 
+              {/* Date and Title Row */}
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1">
+                  <h4 
+                    className="position font-bold"
                     style={{ 
-                      width: '16px', 
-                      height: '16px',
-                      fontSize: styles.typography.fontSize.small 
-                    }} 
-                  />
-                  <span style={{ fontSize: styles.typography.fontSize.small }}>
+                      fontSize: styles.typography.fontSize.heading3,
+                      color: styles.colors.text,
+                    }}
+                  >
+                    {exp.position}
+                  </h4>
+                  <span 
+                    className="company font-medium block mt-1"
+                    style={{ 
+                      fontSize: styles.typography.fontSize.base,
+                      color: styles.colors.accent,
+                    }}
+                  >
+                    {exp.company}
+                  </span>
+                </div>
+                
+                {/* Right-aligned date without icon */}
+                <div className="text-right ml-4">
+                  <span 
+                    className="date-range"
+                    style={{ 
+                      fontSize: styles.typography.fontSize.small,
+                      color: styles.colors.secondary 
+                    }}
+                  >
                     {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
                   </span>
                 </div>
-                {exp.location && (
-                  <div className="location flex items-center">
-                    <MapPin 
-                      className="mr-1" 
-                      style={{ 
-                        width: '16px', 
-                        height: '16px',
-                        fontSize: styles.typography.fontSize.small 
-                      }} 
-                    />
-                    <span style={{ fontSize: styles.typography.fontSize.small }}>
-                      {exp.location}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
             
@@ -582,54 +590,40 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
             </div>
           )}
           
-          <div className="experience-header mb-2">
-            <h4 
-              className="position font-bold"
-              style={{ 
-                fontSize: styles.typography.fontSize.heading3,
-                color: styles.colors.text,
-              }}
-            >
-              {exp.position}
-            </h4>
-            <span 
-              className="company font-medium"
-              style={{ 
-                fontSize: styles.typography.fontSize.base,
-                color: styles.colors.accent,
-              }}
-            >
-              {exp.company}
-            </span>
-            <div className="experience-meta flex items-center gap-4 mt-1" style={{ color: styles.colors.secondary }}>
-              <div className="date-range flex items-center">
-                <Calendar 
-                  className="mr-1" 
-                  style={{ 
-                    width: '16px', 
-                    height: '16px',
-                    fontSize: styles.typography.fontSize.small 
-                  }} 
-                />
-                <span style={{ fontSize: styles.typography.fontSize.small }}>
-                  {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
-                </span>
-              </div>
-              {exp.location && (
-                <div className="location flex items-center">
-                  <MapPin 
-                    className="mr-1" 
-                    style={{ 
-                      width: '16px', 
-                      height: '16px',
-                      fontSize: styles.typography.fontSize.small 
-                    }} 
-                  />
-                  <span style={{ fontSize: styles.typography.fontSize.small }}>
-                    {exp.location}
-                  </span>
-                </div>
-              )}
+          {/* Date and Title Row */}
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1">
+              <h4 
+                className="position font-bold"
+                style={{ 
+                  fontSize: styles.typography.fontSize.heading3,
+                  color: styles.colors.text,
+                }}
+              >
+                {exp.position}
+              </h4>
+              <span 
+                className="company font-medium block mt-1"
+                style={{ 
+                  fontSize: styles.typography.fontSize.base,
+                  color: styles.colors.accent,
+                }}
+              >
+                {exp.company}
+              </span>
+            </div>
+            
+            {/* Right-aligned date without icon */}
+            <div className="text-right ml-4">
+              <span 
+                className="date-range"
+                style={{ 
+                  fontSize: styles.typography.fontSize.small,
+                  color: styles.colors.secondary 
+                }}
+              >
+                {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+              </span>
             </div>
           </div>
           
@@ -682,7 +676,7 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
             fontWeight: sectionStyles?.fontWeight ? styles.typography.fontWeight[sectionStyles.fontWeight] : styles.typography.fontWeight.bold
           }}
         >
-          <Briefcase className="w-4 h-4 mr-2" />
+          <Briefcase className="w-3 h-3 mr-2" />
           {config.name || 'Experience'}
         </h3>
         {editMode && (

@@ -47,12 +47,19 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     spacing: { ...layout.styles.spacing, ...customizations.spacing },
   };
 
-  // Extract edit mode and data update handler from customizations
+  // Extract edit mode, data update handler, and confirmation function from customizations
   const editMode = customizations.editMode || false;
   const onDataUpdate = customizations.onDataUpdate;
+  const showConfirmation = customizations.showConfirmation;
+
+  console.log('TemplateRenderer - Edit mode:', editMode);
+  console.log('TemplateRenderer - Has onDataUpdate:', !!onDataUpdate);
+  console.log('TemplateRenderer - Has showConfirmation:', !!showConfirmation);
+  console.log('TemplateRenderer - showConfirmation type:', typeof showConfirmation);
 
   // Handle data updates from sections
   const handleSectionDataUpdate = (field: string, value: any) => {
+    console.log('TemplateRenderer - Section data update:', field, value);
     if (onDataUpdate) {
       // Create updated data object
       const updatedData = { ...data };
@@ -82,11 +89,20 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
       return null;
     }
 
+    // CRITICAL FIX: Pass the actual parsed data, not fallback data
     const sectionData = data;
     const sectionStyles = {
       ...section.styles,
       ...customizations.sections?.[section.id]?.styles,
     };
+
+    console.log(`TemplateRenderer - Rendering section ${section.id}:`, {
+      editMode,
+      hasOnDataUpdate: !!onDataUpdate,
+      hasShowConfirmation: !!showConfirmation,
+      sectionComponent: section.component,
+      showConfirmationFunction: showConfirmation
+    });
 
     return (
       <div
@@ -104,6 +120,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
           config={section}
           editMode={editMode}
           onDataUpdate={handleSectionDataUpdate}
+          showConfirmation={showConfirmation}
         />
         {sectionStyles?.divider && (
           <div

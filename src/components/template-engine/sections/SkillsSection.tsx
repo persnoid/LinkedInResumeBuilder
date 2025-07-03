@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Grid, List, Tag } from 'lucide-react';
+import { Plus, Trash2, Grid, List, Tag, Edit3, Save, X } from 'lucide-react';
 
 interface SkillsSectionProps {
   data: any;
@@ -8,6 +8,24 @@ interface SkillsSectionProps {
   config: any;
   editMode?: boolean;
   onDataUpdate?: (field: string, value: any) => void;
+  showConfirmation?: (options: {
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    type?: 'danger' | 'warning' | 'info';
+  }) => Promise<boolean>;
+}
+
+interface SkillEntry {
+  id: string;
+  name: string;
+  level?: string;
+}
+
+interface SkillFormData {
+  name: string;
+  level: string;
 }
 
 export const SkillsSection: React.FC<SkillsSectionProps> = ({
@@ -16,9 +34,18 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
   sectionStyles,
   config,
   editMode = false,
-  onDataUpdate
+  onDataUpdate,
+  showConfirmation
 }) => {
   const { skills } = data;
+  
+  console.log('SkillsSection - Props received:', {
+    editMode,
+    hasOnDataUpdate: !!onDataUpdate,
+    hasShowConfirmation: !!showConfirmation,
+    skillsCount: skills?.length || 0,
+    showConfirmationType: typeof showConfirmation
+  });
   
   // Provide meaningful fallback skills data
   const displaySkills = skills && skills.length > 0 ? skills : [
@@ -32,31 +59,139 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
     { id: '8', name: 'MongoDB', level: 'Intermediate' }
   ];
 
-  const handleSkillEdit = (skillId: string, field: string, value: any) => {
-    if (onDataUpdate) {
-      const updatedSkills = displaySkills.map((skill: any) => 
-        skill.id === skillId ? { ...skill, [field]: value } : skill
+  // Form state management
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState<SkillFormData>({
+    name: '',
+    level: 'Intermediate'
+  });
+
+  // Skill levels
+  const skillLevels = [
+    'Beginner',
+    'Intermediate', 
+    'Advanced',
+    'Expert'
+  ];
+
+  // Initialize form for new entry
+  const initializeNewForm = () => {
+    console.log('SkillsSection - Initialize new form clicked');
+    setFormData({
+      name: '',
+      level: 'Intermediate'
+    });
+    setEditingId(null);
+    setShowForm(true);
+  };
+
+  // Initialize form for editing existing entry
+  const initializeEditForm = (skill: SkillEntry) => {
+    console.log('SkillsSection - Initialize edit form clicked for skill:', skill.id);
+    setFormData({
+      name: skill.name,
+      level: skill.level || 'Intermediate'
+    });
+    setEditingId(skill.id);
+    setShowForm(true);
+  };
+
+  // Handle form field changes
+  const handleFormChange = (field: keyof SkillFormData, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Handle form submission
+  const handleFormSubmit = () => {
+    console.log('SkillsSection - Form submit clicked');
+    if (!formData.name.trim()) {
+      alert('Please enter a skill name.');
+      return;
+    }
+
+    const newEntry: SkillEntry = {
+      id: editingId || Date.now().toString(),
+      name: formData.name.trim(),
+      level: formData.level
+    };
+
+    let updatedSkills;
+    if (editingId) {
+      // Update existing entry
+      updatedSkills = displaySkills.map((skill: SkillEntry) => 
+        skill.id === editingId ? newEntry : skill
       );
+    } else {
+      // Add new entry
+      updatedSkills = [...displaySkills, newEntry];
+    }
+
+    if (onDataUpdate) {
+      console.log('SkillsSection - Calling onDataUpdate with:', updatedSkills);
       onDataUpdate('skills', updatedSkills);
+    }
+
+    // Reset form
+    setShowForm(false);
+    setEditingId(null);
+  };
+
+  // Handle entry deletion with unified confirmation - FIXED ASYNC HANDLING
+  const handleDelete = async (id: string) => {
+    console.log('SkillsSection - Delete button clicked for skill ID:', id);
+    console.log('SkillsSection - showConfirmation available:', !!showConfirmation);
+    console.log('SkillsSection - showConfirmation function:', showConfirmation);
+    console.log('SkillsSection - showConfirmation type:', typeof showConfirmation);
+    
+    let confirmed = false;
+    
+    if (showConfirmation && typeof showConfirmation === 'function') {
+      console.log('SkillsSection - Calling showConfirmation...');
+      try {
+        // CRITICAL FIX: Properly await the confirmation dialog
+        confirmed = await showConfirmation({
+          title: 'Delete Skill',
+          message: 'Are you sure you want to delete this skill? This action cannot be undone.',
+          confirmText: 'Delete',
+          cancelText: 'Cancel',
+          type: 'danger'
+        });
+        console.log('SkillsSection - Confirmation dialog result:', confirmed);
+      } catch (error) {
+        console.error('SkillsSection - Error with confirmation dialog:', error);
+        // Fallback to browser confirm if there's an error
+        confirmed = window.confirm('Are you sure you want to delete this skill?');
+      }
+    } else {
+      console.log('SkillsSection - Using browser confirm fallback');
+      confirmed = window.confirm('Are you sure you want to delete this skill?');
+    }
+
+    console.log('SkillsSection - Final confirmation result:', confirmed);
+
+    if (confirmed) {
+      console.log('SkillsSection - User confirmed deletion, proceeding...');
+      const updatedSkills = displaySkills.filter((skill: SkillEntry) => skill.id !== id);
+      if (onDataUpdate) {
+        console.log('SkillsSection - Calling onDataUpdate for deletion with:', updatedSkills);
+        onDataUpdate('skills', updatedSkills);
+      } else {
+        console.error('SkillsSection - onDataUpdate not available for deletion');
+      }
+    } else {
+      console.log('SkillsSection - User cancelled deletion');
     }
   };
 
-  const addSkill = () => {
-    if (onDataUpdate) {
-      const newSkill = {
-        id: Date.now().toString(),
-        name: 'New Skill',
-        level: 'Intermediate'
-      };
-      onDataUpdate('skills', [...displaySkills, newSkill]);
-    }
-  };
-
-  const removeSkill = (skillId: string) => {
-    if (onDataUpdate) {
-      const updatedSkills = displaySkills.filter((skill: any) => skill.id !== skillId);
-      onDataUpdate('skills', updatedSkills);
-    }
+  // Cancel form
+  const handleCancel = () => {
+    console.log('SkillsSection - Form cancel clicked');
+    setShowForm(false);
+    setEditingId(null);
   };
 
   const EditableText: React.FC<{
@@ -112,6 +247,80 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
     );
   };
 
+  // Skill Form Component
+  const SkillForm = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+        {/* Form Header */}
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">
+            {editingId ? 'Edit Skill' : 'Add New Skill'}
+          </h3>
+          <button
+            onClick={handleCancel}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Form Content */}
+        <div className="p-6">
+          <div className="space-y-4">
+            {/* Skill Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Skill Name *
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleFormChange('name', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., JavaScript"
+              />
+            </div>
+
+            {/* Skill Level */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Proficiency Level
+              </label>
+              <select
+                value={formData.level}
+                onChange={(e) => handleFormChange('level', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {skillLevels.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Form Footer */}
+        <div className="p-6 border-t border-gray-200 flex items-center justify-end space-x-3">
+          <button
+            onClick={handleCancel}
+            className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleFormSubmit}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors flex items-center"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            {editingId ? 'Update' : 'Add'} Skill
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderSkillsList = () => (
     <div className="skills-list space-y-2">
       {displaySkills.map((skill: any) => (
@@ -119,7 +328,14 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
           <div className="skill-content flex-1">
             <EditableText
               value={skill.name}
-              onSave={(value) => handleSkillEdit(skill.id, 'name', value)}
+              onSave={(value) => {
+                if (onDataUpdate) {
+                  const updatedSkills = displaySkills.map((s: any) => 
+                    s.id === skill.id ? { ...s, name: value } : s
+                  );
+                  onDataUpdate('skills', updatedSkills);
+                }
+              }}
               style={{ 
                 fontSize: styles.typography.fontSize.base,
                 color: styles.colors.text,
@@ -137,7 +353,14 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
                 (
                 <EditableText
                   value={skill.level}
-                  onSave={(value) => handleSkillEdit(skill.id, 'level', value)}
+                  onSave={(value) => {
+                    if (onDataUpdate) {
+                      const updatedSkills = displaySkills.map((s: any) => 
+                        s.id === skill.id ? { ...s, level: value } : s
+                      );
+                      onDataUpdate('skills', updatedSkills);
+                    }
+                  }}
                   placeholder="Level"
                 />
                 )
@@ -145,13 +368,33 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
             )}
           </div>
           {editMode && (
-            <button
-              onClick={() => removeSkill(skill.id)}
-              className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity ml-2"
-              title="Remove skill"
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1 ml-2">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('SkillsSection - Edit button clicked for skill:', skill.id);
+                  initializeEditForm(skill);
+                }}
+                className="text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50"
+                title="Edit skill"
+              >
+                <Edit3 className="w-3 h-3" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('SkillsSection - Delete button clicked for skill:', skill.id);
+                  // CRITICAL: Call handleDelete directly without wrapping in another function
+                  handleDelete(skill.id);
+                }}
+                className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
+                title="Remove skill"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
           )}
         </div>
       ))}
@@ -174,18 +417,44 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
           >
             <EditableText
               value={skill.name}
-              onSave={(value) => handleSkillEdit(skill.id, 'name', value)}
+              onSave={(value) => {
+                if (onDataUpdate) {
+                  const updatedSkills = displaySkills.map((s: any) => 
+                    s.id === skill.id ? { ...s, name: value } : s
+                  );
+                  onDataUpdate('skills', updatedSkills);
+                }
+              }}
               placeholder="Skill"
             />
           </span>
           {editMode && (
-            <button
-              onClick={() => removeSkill(skill.id)}
-              className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-              title="Remove skill"
-            >
-              <Trash2 className="w-2 h-2" />
-            </button>
+            <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('SkillsSection - Edit button clicked for skill:', skill.id);
+                  initializeEditForm(skill);
+                }}
+                className="bg-blue-500 text-white rounded-full p-0.5 hover:bg-blue-600"
+                title="Edit skill"
+              >
+                <Edit3 className="w-2 h-2" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('SkillsSection - Delete button clicked for skill:', skill.id);
+                  handleDelete(skill.id);
+                }}
+                className="bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
+                title="Remove skill"
+              >
+                <Trash2 className="w-2 h-2" />
+              </button>
+            </div>
           )}
         </div>
       ))}
@@ -204,7 +473,14 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
         <div key={skill.id} className="skill-item flex items-center justify-between group p-2 rounded transition-colors hover:bg-gray-50">
           <EditableText
             value={skill.name}
-            onSave={(value) => handleSkillEdit(skill.id, 'name', value)}
+            onSave={(value) => {
+              if (onDataUpdate) {
+                const updatedSkills = displaySkills.map((s: any) => 
+                  s.id === skill.id ? { ...s, name: value } : s
+                );
+                onDataUpdate('skills', updatedSkills);
+              }
+            }}
             style={{ 
               fontSize: styles.typography.fontSize.small,
               color: styles.colors.text 
@@ -212,13 +488,32 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
             placeholder="Skill name"
           />
           {editMode && (
-            <button
-              onClick={() => removeSkill(skill.id)}
-              className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity ml-1"
-              title="Remove skill"
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1 ml-1">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('SkillsSection - Edit button clicked for skill:', skill.id);
+                  initializeEditForm(skill);
+                }}
+                className="text-blue-500 hover:text-blue-700"
+                title="Edit skill"
+              >
+                <Edit3 className="w-3 h-3" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('SkillsSection - Delete button clicked for skill:', skill.id);
+                  handleDelete(skill.id);
+                }}
+                className="text-red-500 hover:text-red-700"
+                title="Remove skill"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
           )}
         </div>
       ))}
@@ -240,7 +535,14 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
           <div className="flex items-center justify-between">
             <EditableText
               value={skill.name}
-              onSave={(value) => handleSkillEdit(skill.id, 'name', value)}
+              onSave={(value) => {
+                if (onDataUpdate) {
+                  const updatedSkills = displaySkills.map((s: any) => 
+                    s.id === skill.id ? { ...s, name: value } : s
+                  );
+                  onDataUpdate('skills', updatedSkills);
+                }
+              }}
               className="font-medium"
               style={{ 
                 fontSize: styles.typography.fontSize.base,
@@ -249,19 +551,45 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
               placeholder="Skill name"
             />
             {editMode && (
-              <button
-                onClick={() => removeSkill(skill.id)}
-                className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                title="Remove skill"
-              >
-                <Trash2 className="w-3 h-3" />
-              </button>
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('SkillsSection - Edit button clicked for skill:', skill.id);
+                    initializeEditForm(skill);
+                  }}
+                  className="text-blue-500 hover:text-blue-700"
+                  title="Edit skill"
+                >
+                  <Edit3 className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('SkillsSection - Delete button clicked for skill:', skill.id);
+                    handleDelete(skill.id);
+                  }}
+                  className="text-red-500 hover:text-red-700"
+                  title="Remove skill"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
             )}
           </div>
           {skill.level && (
             <EditableText
               value={skill.level}
-              onSave={(value) => handleSkillEdit(skill.id, 'level', value)}
+              onSave={(value) => {
+                if (onDataUpdate) {
+                  const updatedSkills = displaySkills.map((s: any) => 
+                    s.id === skill.id ? { ...s, level: value } : s
+                  );
+                  onDataUpdate('skills', updatedSkills);
+                }
+              }}
               className="block mt-1"
               style={{ 
                 fontSize: styles.typography.fontSize.small,
@@ -277,12 +605,14 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
 
   const getDisplayIcon = () => {
     switch (sectionStyles?.display) {
-      case 'tags': return <Tag className="w-4 h-4" />;
-      case 'grid': return <Grid className="w-4 h-4" />;
-      case 'cards': return <Grid className="w-4 h-4" />;
-      default: return <List className="w-4 h-4" />;
+      case 'tags': return <Tag className="w-3 h-3" />;
+      case 'grid': return <Grid className="w-3 h-3" />;
+      case 'cards': return <Grid className="w-3 h-3" />;
+      default: return <List className="w-3 h-3" />;
     }
   };
+
+  console.log('SkillsSection - Rendering with editMode:', editMode);
 
   return (
     <div className="skills-section">
@@ -305,13 +635,17 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
         </h3>
         {editMode && (
           <button
-            onClick={addSkill}
-            className="text-green-600 hover:text-green-700 flex items-center"
-            style={{ fontSize: styles.typography.fontSize.small }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('SkillsSection - Add new skill button clicked');
+              initializeNewForm();
+            }}
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center text-sm transition-colors"
             title="Add new skill"
           >
             <Plus className="w-4 h-4 mr-1" />
-            Add
+            Add Skill
           </button>
         )}
       </div>
@@ -331,6 +665,9 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
          sectionStyles?.display === 'cards' ? renderSkillsCards() :
          renderSkillsList()}
       </div>
+
+      {/* Skill Form Modal */}
+      {showForm && <SkillForm />}
     </div>
   );
 };

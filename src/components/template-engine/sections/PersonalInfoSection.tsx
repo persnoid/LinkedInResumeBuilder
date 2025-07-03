@@ -200,7 +200,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
 
   const PhotoUpload: React.FC<{ className?: string }> = ({ className = '' }) => (
     <div 
-      className={`${className} relative group`}
+      className={`${className} relative group aspect-square`}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >

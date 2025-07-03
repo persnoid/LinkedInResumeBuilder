@@ -335,8 +335,12 @@ export const LanguagesSection: React.FC<LanguagesSectionProps> = ({
           style={{ 
             fontSize: styles.typography.fontSize.heading3,
             color: styles.colors.primary,
-            borderBottom: `2px solid ${styles.colors.primary}`,
-            paddingBottom: '4px',
+            borderBottom: sectionStyles?.headerStyle === 'underline' ? `2px solid ${styles.colors.primary}` : 'none',
+            backgroundColor: sectionStyles?.headerStyle === 'background' ? `${styles.colors.primary}10` : 'transparent',
+            padding: sectionStyles?.headerStyle === 'background' ? '8px 12px' : '0 0 4px 0',
+            borderRadius: sectionStyles?.headerStyle === 'background' ? '6px' : '0',
+            textTransform: sectionStyles?.textTransform || 'uppercase',
+            fontWeight: sectionStyles?.fontWeight ? styles.typography.fontWeight[sectionStyles.fontWeight] : styles.typography.fontWeight.bold
           }}
         >
           <Globe className="w-3 h-3 mr-2" />
@@ -354,81 +358,92 @@ export const LanguagesSection: React.FC<LanguagesSectionProps> = ({
         )}
       </div>
       
-      <div className="languages-list space-y-3">
-        {displayLanguages.map((language: any) => (
-          <div key={language.id} className="language-item flex justify-between items-center group">
-            <EditableText
-              value={language.name}
-              onSave={(value) => {
-                if (onDataUpdate) {
-                  const updatedLanguages = displayLanguages.map((l: any) => 
-                    l.id === language.id ? { ...l, name: value } : l
-                  );
-                  onDataUpdate('languages', updatedLanguages);
-                }
-              }}
-              className="language-name font-medium"
-              style={{ 
-                fontSize: styles.typography.fontSize.base,
-                color: styles.colors.text,
-              }}
-              placeholder="Language name"
-            />
-            
-            <div className="language-level flex items-center">
+      <div 
+        style={{
+          padding: sectionStyles?.padding || '0',
+          margin: sectionStyles?.margin || '0',
+          backgroundColor: sectionStyles?.backgroundColor || 'transparent',
+          borderRadius: sectionStyles?.borderRadius ? styles.effects?.borderRadius?.[sectionStyles.borderRadius] || '0' : '0',
+          border: sectionStyles?.borderWidth ? `${sectionStyles.borderWidth} ${sectionStyles.borderStyle || 'solid'} ${sectionStyles.borderColor || styles.colors.border}` : 'none',
+          boxShadow: sectionStyles?.shadow ? styles.effects?.shadow?.[sectionStyles.shadow] || 'none' : 'none'
+        }}
+      >
+        <div className="languages-list space-y-3">
+          {displayLanguages.map((language: any) => (
+            <div key={language.id} className="language-item flex justify-between items-center group">
               <EditableText
-                value={language.level}
+                value={language.name}
                 onSave={(value) => {
                   if (onDataUpdate) {
                     const updatedLanguages = displayLanguages.map((l: any) => 
-                      l.id === language.id ? { ...l, level: value } : l
+                      l.id === language.id ? { ...l, name: value } : l
                     );
                     onDataUpdate('languages', updatedLanguages);
                   }
                 }}
-                className="level-text mr-3"
+                className="language-name font-medium"
                 style={{ 
-                  fontSize: styles.typography.fontSize.small,
-                  color: styles.colors.secondary 
+                  fontSize: styles.typography.fontSize.base,
+                  color: styles.colors.text,
                 }}
-                placeholder="Proficiency level"
+                placeholder="Language name"
               />
               
-              <div className="level-dots flex space-x-0.5">
-                {[1, 2, 3, 4, 5].map((dot) => (
-                  <div
-                    key={dot}
-                    className="w-1.5 h-1.5 rounded-full"
-                    style={{
-                      backgroundColor: dot <= getLevelDots(language.level) 
-                        ? styles.colors.primary 
-                        : styles.colors.muted || '#E5E7EB'
-                    }}
-                  />
-                ))}
-              </div>
-              
-              {editMode && (
-                <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
-                  <button
-                    onClick={() => initializeEditForm(language)}
-                    className="text-blue-500 hover:text-blue-700"
-                    title="Edit language"
-                  >
-                    <Edit3 className="w-3 h-3" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(language.id)}
-                    className="text-red-500 hover:text-red-700"
-                    title="Remove language"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
+              <div className="language-level flex items-center">
+                <EditableText
+                  value={language.level}
+                  onSave={(value) => {
+                    if (onDataUpdate) {
+                      const updatedLanguages = displayLanguages.map((l: any) => 
+                        l.id === language.id ? { ...l, level: value } : l
+                      );
+                      onDataUpdate('languages', updatedLanguages);
+                    }
+                  }}
+                  className="level-text mr-3"
+                  style={{ 
+                    fontSize: styles.typography.fontSize.small,
+                    color: styles.colors.secondary 
+                  }}
+                  placeholder="Proficiency level"
+                />
+                
+                <div className="level-dots flex space-x-0.5">
+                  {[1, 2, 3, 4, 5].map((dot) => (
+                    <div
+                      key={dot}
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{
+                        backgroundColor: dot <= getLevelDots(language.level) 
+                          ? styles.colors.primary 
+                          : styles.colors.muted || '#E5E7EB'
+                      }}
+                    />
+                  ))}
                 </div>
-              )}
+                
+                {editMode && (
+                  <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                    <button
+                      onClick={() => initializeEditForm(language)}
+                      className="text-blue-500 hover:text-blue-700"
+                      title="Edit language"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(language.id)}
+                      className="text-red-500 hover:text-red-700"
+                      title="Remove language"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Language Form Modal */}

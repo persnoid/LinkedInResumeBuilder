@@ -327,8 +327,12 @@ export const CertificationsSection: React.FC<CertificationsSectionProps> = ({
           style={{ 
             fontSize: styles.typography.fontSize.heading3,
             color: styles.colors.primary,
-            borderBottom: `2px solid ${styles.colors.primary}`,
-            paddingBottom: '4px',
+            borderBottom: sectionStyles?.headerStyle === 'underline' ? `2px solid ${styles.colors.primary}` : 'none',
+            backgroundColor: sectionStyles?.headerStyle === 'background' ? `${styles.colors.primary}10` : 'transparent',
+            padding: sectionStyles?.headerStyle === 'background' ? '8px 12px' : '0 0 4px 0',
+            borderRadius: sectionStyles?.headerStyle === 'background' ? '6px' : '0',
+            textTransform: sectionStyles?.textTransform || 'uppercase',
+            fontWeight: sectionStyles?.fontWeight ? styles.typography.fontWeight[sectionStyles.fontWeight] : styles.typography.fontWeight.bold
           }}
         >
           <Award className="w-3 h-3 mr-2" />
@@ -346,94 +350,105 @@ export const CertificationsSection: React.FC<CertificationsSectionProps> = ({
         )}
       </div>
       
-      <div className="certifications-list space-y-3">
-        {displayCertifications.map((cert: any) => (
-          <div key={cert.id} className="certification-item relative group">
-            {editMode && (
-              <div className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
-                <button
-                  onClick={() => initializeEditForm(cert)}
-                  className="bg-blue-500 text-white rounded-full p-1 hover:bg-blue-600"
-                  title="Edit certification"
-                >
-                  <Edit3 className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={() => handleDelete(cert.id)}
-                  className="bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                  title="Delete certification"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            )}
-            
-            <div className="certification-header flex items-start justify-between">
-              <div className="certification-info flex-1">
-                <h4 
-                  className="certification-name font-bold flex items-center"
-                  style={{ 
-                    fontSize: styles.typography.fontSize.base,
-                    color: styles.colors.text,
-                  }}
-                >
+      <div 
+        style={{
+          padding: sectionStyles?.padding || '0',
+          margin: sectionStyles?.margin || '0',
+          backgroundColor: sectionStyles?.backgroundColor || 'transparent',
+          borderRadius: sectionStyles?.borderRadius ? styles.effects?.borderRadius?.[sectionStyles.borderRadius] || '0' : '0',
+          border: sectionStyles?.borderWidth ? `${sectionStyles.borderWidth} ${sectionStyles.borderStyle || 'solid'} ${sectionStyles.borderColor || styles.colors.border}` : 'none',
+          boxShadow: sectionStyles?.shadow ? styles.effects?.shadow?.[sectionStyles.shadow] || 'none' : 'none'
+        }}
+      >
+        <div className="certifications-list space-y-3">
+          {displayCertifications.map((cert: any) => (
+            <div key={cert.id} className="certification-item relative group">
+              {editMode && (
+                <div className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                  <button
+                    onClick={() => initializeEditForm(cert)}
+                    className="bg-blue-500 text-white rounded-full p-1 hover:bg-blue-600"
+                    title="Edit certification"
+                  >
+                    <Edit3 className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(cert.id)}
+                    className="bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    title="Delete certification"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+              
+              <div className="certification-header flex items-start justify-between">
+                <div className="certification-info flex-1">
+                  <h4 
+                    className="certification-name font-bold flex items-center"
+                    style={{ 
+                      fontSize: styles.typography.fontSize.base,
+                      color: styles.colors.text,
+                    }}
+                  >
+                    <EditableText
+                      value={cert.name}
+                      onSave={(value) => {
+                        if (onDataUpdate) {
+                          const updatedCertifications = displayCertifications.map((c: any) => 
+                            c.id === cert.id ? { ...c, name: value } : c
+                          );
+                          onDataUpdate('certifications', updatedCertifications);
+                        }
+                      }}
+                      placeholder="Certification name"
+                    />
+                    {cert.url && (
+                      <ExternalLink 
+                        className="w-3 h-3 ml-1" 
+                        style={{ color: styles.colors.accent }}
+                      />
+                    )}
+                  </h4>
+                  
                   <EditableText
-                    value={cert.name}
+                    value={cert.issuer}
                     onSave={(value) => {
                       if (onDataUpdate) {
                         const updatedCertifications = displayCertifications.map((c: any) => 
-                          c.id === cert.id ? { ...c, name: value } : c
+                          c.id === cert.id ? { ...c, issuer: value } : c
                         );
                         onDataUpdate('certifications', updatedCertifications);
                       }
                     }}
-                    placeholder="Certification name"
-                  />
-                  {cert.url && (
-                    <ExternalLink 
-                      className="w-3 h-3 ml-1" 
-                      style={{ color: styles.colors.accent }}
-                    />
-                  )}
-                </h4>
-                
-                <EditableText
-                  value={cert.issuer}
-                  onSave={(value) => {
-                    if (onDataUpdate) {
-                      const updatedCertifications = displayCertifications.map((c: any) => 
-                        c.id === cert.id ? { ...c, issuer: value } : c
-                      );
-                      onDataUpdate('certifications', updatedCertifications);
-                    }
-                  }}
-                  className="certification-issuer block"
-                  style={{ 
-                    fontSize: styles.typography.fontSize.small,
-                    color: styles.colors.accent,
-                  }}
-                  placeholder="Issuing organization"
-                />
-              </div>
-              
-              {cert.date && (
-                <div className="certification-date flex items-center" style={{ color: styles.colors.secondary }}>
-                  <Calendar 
-                    className="mr-1" 
+                    className="certification-issuer block"
                     style={{ 
-                      width: '12px', 
-                      height: '12px',
-                      fontSize: styles.typography.fontSize.small 
-                    }} 
+                      fontSize: styles.typography.fontSize.small,
+                      color: styles.colors.accent,
+                    }}
+                    placeholder="Issuing organization"
                   />
-                  <span style={{ fontSize: styles.typography.fontSize.small }}>
-                    {cert.date}
-                  </span>
                 </div>
-              )}
+                
+                {cert.date && (
+                  <div className="certification-date flex items-center" style={{ color: styles.colors.secondary }}>
+                    <Calendar 
+                      className="mr-1" 
+                      style={{ 
+                        width: '12px', 
+                        height: '12px',
+                        fontSize: styles.typography.fontSize.small 
+                      }} 
+                    />
+                    <span style={{ fontSize: styles.typography.fontSize.small }}>
+                      {cert.date}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Certification Form Modal */}

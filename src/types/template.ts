@@ -26,6 +26,8 @@ export interface TemplateSection {
     headerStyle?: 'underline' | 'background' | 'border' | 'minimal';
     textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
     fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold';
+    // Photo size control for PersonalInfo sections
+    photoSize?: string;
     // Layout-specific options
     columns?: number;
     gap?: string;

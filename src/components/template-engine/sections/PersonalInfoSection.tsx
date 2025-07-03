@@ -374,7 +374,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
           </div>
         </div>
         <div className="photo-container ml-8 flex-shrink-0">
-          <PhotoUpload className="w-20 h-20" />
+          <PhotoUpload className={`w-${photoSize} h-${photoSize}`} />
         </div>
       </div>
     );

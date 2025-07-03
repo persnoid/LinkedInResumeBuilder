@@ -42,6 +42,9 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   const displayParts = sectionStyles?.displayParts || ['photo', 'name', 'title', 'contact'];
   const photoSize = sectionStyles?.photoSize || '24'; // Default to 96px (24 * 4)
 
+  // Convert photoSize to pixels - Tailwind uses 4px per unit (w-24 = 96px)
+  const photoSizePx = parseInt(photoSize) * 4;
+
   const contactItems = [
     { icon: Mail, value: displayEmail, label: 'Email', field: 'email' },
     { icon: Phone, value: displayPhone, label: 'Phone', field: 'phone' },
@@ -198,9 +201,13 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     );
   };
 
-  const PhotoUpload: React.FC<{ className?: string }> = ({ className = '' }) => (
+  const PhotoUpload: React.FC<{ className?: string; customStyle?: React.CSSProperties }> = ({ 
+    className = '', 
+    customStyle = {} 
+  }) => (
     <div 
-      className={`${className} relative group aspect-square`}
+      className={`${className} relative group`}
+      style={customStyle}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
@@ -254,7 +261,13 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   // Render components based on displayParts
   const renderPhoto = () => displayParts.includes('photo') && (
     <div className="photo-container mb-6 flex justify-center">
-      <PhotoUpload className={`w-${photoSize} h-${photoSize}`} />
+      <PhotoUpload 
+        customStyle={{
+          width: `${photoSizePx}px`,
+          height: `${photoSizePx}px`,
+          aspectRatio: '1'
+        }}
+      />
     </div>
   );
 
@@ -374,7 +387,13 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
           </div>
         </div>
         <div className="photo-container ml-8 flex-shrink-0">
-          <PhotoUpload className={`w-${photoSize} h-${photoSize}`} />
+          <PhotoUpload 
+            customStyle={{
+              width: `${photoSizePx}px`,
+              height: `${photoSizePx}px`,
+              aspectRatio: '1'
+            }}
+          />
         </div>
       </div>
     );

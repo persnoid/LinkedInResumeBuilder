@@ -395,8 +395,12 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
           style={{ 
             fontSize: styles.typography.fontSize.heading3,
             color: styles.colors.primary,
-            borderBottom: `2px solid ${styles.colors.primary}`,
-            paddingBottom: '4px',
+            borderBottom: sectionStyles?.headerStyle === 'underline' ? `2px solid ${styles.colors.primary}` : 'none',
+            backgroundColor: sectionStyles?.headerStyle === 'background' ? `${styles.colors.primary}10` : 'transparent',
+            padding: sectionStyles?.headerStyle === 'background' ? '8px 12px' : '0 0 4px 0',
+            borderRadius: sectionStyles?.headerStyle === 'background' ? '6px' : '0',
+            textTransform: sectionStyles?.textTransform || 'uppercase',
+            fontWeight: sectionStyles?.fontWeight ? styles.typography.fontWeight[sectionStyles.fontWeight] : styles.typography.fontWeight.bold
           }}
         >
           <GraduationCap className="w-3 h-3 mr-2" />
@@ -414,103 +418,114 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
         )}
       </div>
       
-      <div className="education-list space-y-4">
-        {displayEducation.map((edu: any) => (
-          <div key={edu.id} className="education-item relative group">
-            {editMode && (
-              <div className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
-                <button
-                  onClick={() => initializeEditForm(edu)}
-                  className="bg-blue-500 text-white rounded-full p-1 hover:bg-blue-600"
-                  title="Edit education"
-                >
-                  <Edit3 className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={() => handleDelete(edu.id)}
-                  className="bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                  title="Delete education"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            )}
-            
-            {/* Date and Title Row */}
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex-1">
-                <EditableText
-                  value={edu.degree || 'Degree and Field of Study'}
-                  onSave={(value) => {
-                    if (onDataUpdate) {
-                      const updatedEducation = displayEducation.map((e: any) => 
-                        e.id === edu.id ? { ...e, degree: value } : e
-                      );
-                      onDataUpdate('education', updatedEducation);
-                    }
-                  }}
-                  className="degree font-bold block"
-                  style={{ 
-                    fontSize: styles.typography.fontSize.heading3,
-                    color: styles.colors.text,
-                  }}
-                  placeholder="Degree and Field of Study"
-                />
+      <div 
+        style={{
+          padding: sectionStyles?.padding || '0',
+          margin: sectionStyles?.margin || '0',
+          backgroundColor: sectionStyles?.backgroundColor || 'transparent',
+          borderRadius: sectionStyles?.borderRadius ? styles.effects?.borderRadius?.[sectionStyles.borderRadius] || '0' : '0',
+          border: sectionStyles?.borderWidth ? `${sectionStyles.borderWidth} ${sectionStyles.borderStyle || 'solid'} ${sectionStyles.borderColor || styles.colors.border}` : 'none',
+          boxShadow: sectionStyles?.shadow ? styles.effects?.shadow?.[sectionStyles.shadow] || 'none' : 'none'
+        }}
+      >
+        <div className="education-list space-y-4">
+          {displayEducation.map((edu: any) => (
+            <div key={edu.id} className="education-item relative group">
+              {editMode && (
+                <div className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                  <button
+                    onClick={() => initializeEditForm(edu)}
+                    className="bg-blue-500 text-white rounded-full p-1 hover:bg-blue-600"
+                    title="Edit education"
+                  >
+                    <Edit3 className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(edu.id)}
+                    className="bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    title="Delete education"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+              
+              {/* Date and Title Row */}
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1">
+                  <EditableText
+                    value={edu.degree || 'Degree and Field of Study'}
+                    onSave={(value) => {
+                      if (onDataUpdate) {
+                        const updatedEducation = displayEducation.map((e: any) => 
+                          e.id === edu.id ? { ...e, degree: value } : e
+                        );
+                        onDataUpdate('education', updatedEducation);
+                      }
+                    }}
+                    className="degree font-bold block"
+                    style={{ 
+                      fontSize: styles.typography.fontSize.heading3,
+                      color: styles.colors.text,
+                    }}
+                    placeholder="Degree and Field of Study"
+                  />
+                  
+                  <EditableText
+                    value={edu.school || 'School or University'}
+                    onSave={(value) => {
+                      if (onDataUpdate) {
+                        const updatedEducation = displayEducation.map((e: any) => 
+                          e.id === edu.id ? { ...e, school: value } : e
+                        );
+                        onDataUpdate('education', updatedEducation);
+                      }
+                    }}
+                    className="school font-medium block mt-1"
+                    style={{ 
+                      fontSize: styles.typography.fontSize.base,
+                      color: styles.colors.accent,
+                    }}
+                    placeholder="School or University"
+                  />
+                </div>
                 
-                <EditableText
-                  value={edu.school || 'School or University'}
-                  onSave={(value) => {
-                    if (onDataUpdate) {
-                      const updatedEducation = displayEducation.map((e: any) => 
-                        e.id === edu.id ? { ...e, school: value } : e
-                      );
-                      onDataUpdate('education', updatedEducation);
-                    }
-                  }}
-                  className="school font-medium block mt-1"
-                  style={{ 
-                    fontSize: styles.typography.fontSize.base,
-                    color: styles.colors.accent,
-                  }}
-                  placeholder="School or University"
-                />
+                {/* Right-aligned date without icon */}
+                <div className="text-right ml-4">
+                  <span 
+                    className="date-range"
+                    style={{ 
+                      fontSize: styles.typography.fontSize.small,
+                      color: styles.colors.secondary 
+                    }}
+                  >
+                    {edu.startDate || 'Start'} - {edu.endDate || 'End'}
+                  </span>
+                </div>
               </div>
               
-              {/* Right-aligned date without icon */}
-              <div className="text-right ml-4">
-                <span 
-                  className="date-range"
+              {edu.gpa && (
+                <div className="gpa mt-1" style={{ color: styles.colors.secondary }}>
+                  <span style={{ fontSize: styles.typography.fontSize.small }}>
+                    GPA: {edu.gpa}
+                  </span>
+                </div>
+              )}
+              
+              {edu.description && (
+                <p 
+                  className="education-description mt-2"
                   style={{ 
                     fontSize: styles.typography.fontSize.small,
-                    color: styles.colors.secondary 
+                    color: styles.colors.text,
                   }}
                 >
-                  {edu.startDate || 'Start'} - {edu.endDate || 'End'}
-                </span>
-              </div>
+                  {edu.description}
+                </p>
+              )}
             </div>
-            
-            {edu.gpa && (
-              <div className="gpa mt-1" style={{ color: styles.colors.secondary }}>
-                <span style={{ fontSize: styles.typography.fontSize.small }}>
-                  GPA: {edu.gpa}
-                </span>
-              </div>
-            )}
-            
-            {edu.description && (
-              <p 
-                className="education-description mt-2"
-                style={{ 
-                  fontSize: styles.typography.fontSize.small,
-                  color: styles.colors.text,
-                }}
-              >
-                {edu.description}
-              </p>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Education Form Modal */}

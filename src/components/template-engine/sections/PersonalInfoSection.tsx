@@ -41,7 +41,6 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   // Get display parts from sectionStyles, defaulting to all parts
   const displayParts = sectionStyles?.displayParts || ['photo', 'name', 'title', 'contact'];
   const photoSize = sectionStyles?.photoSize || '24'; // Default to 96px (24 * 4)
-  const contactLayout = sectionStyles?.contactLayout || 'column'; // Default to column layout
 
   // Convert photoSize to pixels - Tailwind uses 4px per unit (w-24 = 96px)
   const photoSizePx = parseInt(photoSize) * 4;
@@ -314,13 +313,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         Contact Information
       </h4>
       
-      <div 
-        className={`contact-info ${
-          contactLayout === 'row' 
-            ? 'flex flex-wrap gap-x-6 gap-y-2' 
-            : 'space-y-3'
-        }`}
-      >
+      <div className="contact-info space-y-3">
         {contactItems.map((item, index) => (
           <div key={index} className="contact-item flex items-center">
             <item.icon className="w-3 h-3 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
@@ -424,15 +417,34 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     );
   }
 
-  // For main content (columns: 1) - Use displayParts for flexible rendering
+  // For main content (columns: 1) - NAME AND TITLE ONLY
   if (config.columns === 1) {
     return (
       <div className="personal-info-main-content mb-6">
         <div className="text-left">
-          {renderPhoto()}
-          {renderName()}
-          {renderTitle() && <div className="mt-2">{renderTitle()}</div>}
-          {renderContact() && <div className="mt-6">{renderContact()}</div>}
+          <EditableText
+            value={displayName}
+            field="name"
+            className="name font-bold block"
+            style={{ 
+              fontSize: styles.typography.fontSize.heading1,
+              color: styles.colors.text,
+              lineHeight: styles.typography.lineHeight.tight,
+            }}
+            placeholder="Your Name"
+          />
+          <div className="mt-2">
+            <EditableText
+              value={displayTitle}
+              field="title"
+              className="title block"
+              style={{ 
+                fontSize: styles.typography.fontSize.heading2,
+                color: styles.colors.secondary,
+              }}
+              placeholder="Your Professional Title"
+            />
+          </div>
         </div>
       </div>
     );

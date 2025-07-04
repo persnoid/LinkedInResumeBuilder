@@ -2,8 +2,8 @@ import { TemplateConfig } from '../types/template';
 
 export const reactiveTemplates: TemplateConfig[] = [
   {
-    id: 'azurill-enhanced',
-    name: 'Azurill Enhanced',
+    id: 'profile-enhanced',
+    name: 'Profile Enhanced',
     description: 'A clean, modern template with professional sidebar layout and prominent personal information display',
     category: 'modern',
     preview: '/templates/azurill.jpg',
@@ -19,8 +19,8 @@ export const reactiveTemplates: TemplateConfig[] = [
       effects: true,
     },
     layout: {
-      id: 'azurill-enhanced-layout',
-      name: 'Azurill Enhanced Layout',
+      id: 'profile-enhanced-layout',
+      name: 'Profile Enhanced Layout',
       type: 'sidebar',
       sections: [
         // SIDEBAR SECTIONS (LEFT COLUMN) - columns: 2
@@ -266,6 +266,7 @@ export const reactiveTemplates: TemplateConfig[] = [
             spacing: 'relaxed',
             headerStyle: 'minimal',
             contactLayout:'row',
+            photoSize: '32', // 80px (20 * 4)
             hideContactHeader :true,
             divider: true
           }
@@ -1094,6 +1095,7 @@ export const reactiveTemplates: TemplateConfig[] = [
             spacing: 'relaxed',
             headerStyle: 'background',
             backgroundColor: '#0f172a',
+            contactLayout: 'row',
             padding: '32px',
             borderRadius: 'lg',
             divider: true
@@ -2055,8 +2057,8 @@ export const reactiveTemplates: TemplateConfig[] = [
     }
   },
   {
-    id: 'bronzor',
-    name: 'Bronzor',
+    id: 'professional',
+    name: 'Professional',
     description: 'Professional template with header layout and clean typography',
     category: 'professional',
     preview: '/templates/bronzor.jpg',

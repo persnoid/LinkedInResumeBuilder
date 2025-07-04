@@ -18,11 +18,11 @@ export const exportToPDF = async (elementId: string, filename: string = 'resume.
     const A4_HEIGHT_PX = 1123; // A4 height in pixels at 96 DPI
 
     // Define margins in mm
-    const MARGIN_MM = 20; // 20mm margins on all sides
+    const MARGIN_MM = 5; // 20mm margins on all sides
     
     // Calculate printable area in mm
     const PRINTABLE_WIDTH_MM = A4_WIDTH_MM - (2 * MARGIN_MM);
-    const PRINTABLE_HEIGHT_MM = A4_HEIGHT_MM - (2 * MARGIN_MM);
+    const PRINTABLE_HEIGHT_MM = A4_HEIGHT_MM - (5 * MARGIN_MM);
     
     // Convert to pixels
     const PRINTABLE_WIDTH_PX = (PRINTABLE_WIDTH_MM / A4_WIDTH_MM) * A4_WIDTH_PX;
@@ -95,8 +95,8 @@ export const exportToPDF = async (elementId: string, filename: string = 'resume.
               icon.style.height = currentHeight.includes('px') ? currentHeight : `${currentHeight}px`;
             } else {
               // Default icon size
-              icon.style.width = '16px';
-              icon.style.height = '16px';
+              icon.style.width = '8px';
+              icon.style.height = '8px';
             }
             icon.style.flexShrink = '0';
           });

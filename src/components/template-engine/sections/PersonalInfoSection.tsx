@@ -41,6 +41,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   // Get display parts from sectionStyles, defaulting to all parts
   const displayParts = sectionStyles?.displayParts || ['photo', 'name', 'title', 'contact'];
   const photoSize = sectionStyles?.photoSize || '24'; // Default to 96px (24 * 4)
+  const contactLayout = sectionStyles?.contactLayout || 'column'; // Default to column layout
 
   // Convert photoSize to pixels - Tailwind uses 4px per unit (w-24 = 96px)
   const photoSizePx = parseInt(photoSize) * 4;
@@ -313,7 +314,13 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         Contact Information
       </h4>
       
-      <div className="contact-info space-y-3">
+      <div className={`contact-info ${
+        contactLayout === 'row' 
+          ? 'flex flex-wrap gap-x-6 gap-y-2' 
+          : contactLayout === 'grid'
+          ? 'grid grid-cols-2 gap-3'
+          : 'space-y-3'
+      }`}>
         {contactItems.map((item, index) => (
           <div key={index} className="contact-item flex items-center">
             <item.icon className="w-3 h-3 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
@@ -417,7 +424,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     );
   }
 
-  // For main content (columns: 1) - NAME AND TITLE ONLY
+  // For main content (columns: 1) - NAME, TITLE, AND CONTACT INFO
   if (config.columns === 1) {
     return (
       <div className="personal-info-main-content mb-6">
@@ -445,6 +452,33 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
               placeholder="Your Professional Title"
             />
           </div>
+          
+          {/* RENDER CONTACT INFO FOR MAIN CONTENT - Support row layout */}
+          {displayParts.includes('contact') && (
+            <div className={`contact-info mt-4 ${
+              contactLayout === 'row' 
+                ? 'flex flex-wrap gap-x-6 gap-y-2' 
+                : contactLayout === 'grid'
+                ? 'grid grid-cols-2 gap-3'
+                : 'space-y-3'
+            }`}>
+              {contactItems.map((item, index) => (
+                <div key={index} className="contact-item flex items-center">
+                  <item.icon className="w-3 h-3 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
+                  <EditableText
+                    value={item.value}
+                    field={item.field}
+                    className="break-all"
+                    style={{
+                      fontSize: styles.typography.fontSize.contactInfo || styles.typography.fontSize.small,
+                      color: styles.colors.text
+                    }}
+                    placeholder={`Your ${item.label}`}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );

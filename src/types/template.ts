@@ -28,8 +28,12 @@ export interface TemplateSection {
     fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold';
     // Photo size control for PersonalInfo sections
     photoSize?: string;
+    
+    hideContactHeader?: boolean;
     // Display parts control for PersonalInfo sections
     displayParts?: string[];
+    // Contact layout control for PersonalInfo sections
+    contactLayout?: 'row' | 'column';
     // Layout-specific options
     columns?: number;
     gap?: string;

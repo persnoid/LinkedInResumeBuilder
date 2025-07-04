@@ -259,12 +259,14 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'PersonalInfo',
           visible: true,
           order: 1,
-          columns: 1,
+          //columns: 1,
           styles: { 
             alignment: 'center',
-            displayParts: ['name', 'title'],
+            displayParts: ['name', 'title','contact','photo'],
             spacing: 'relaxed',
             headerStyle: 'minimal',
+            contactLayout:'row',
+            hideContactHeader :true,
             divider: true
           }
         },
@@ -323,20 +325,6 @@ export const reactiveTemplates: TemplateConfig[] = [
             spacing: 'normal',
             headerStyle: 'minimal',
             divider: true
-          }
-        },
-        {
-          id: 'contact',
-          name: 'Contact Information',
-          component: 'PersonalInfo',
-          visible: true,
-          order: 6,
-          columns: 1,
-          styles: { 
-            alignment: 'center',
-            displayParts: ['contact'],
-            spacing: 'compact',
-            headerStyle: 'minimal'
           }
         }
       ],

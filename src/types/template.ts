@@ -30,8 +30,6 @@ export interface TemplateSection {
     photoSize?: string;
     // Display parts control for PersonalInfo sections
     displayParts?: string[];
-    // Contact layout control for PersonalInfo sections
-    contactLayout?: 'column' | 'row' | 'grid';
     // Layout-specific options
     columns?: number;
     gap?: string;

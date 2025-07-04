@@ -1273,7 +1273,8 @@ export const reactiveTemplates: TemplateConfig[] = [
             spacing: 'relaxed',
             headerStyle: 'background',
             backgroundColor: '#1e293b',
-            padding: '40px',
+            hideContactHeader: true,
+            contactLayout:'row',
             borderRadius: 'none',
             divider: true
           }
@@ -1659,6 +1660,7 @@ export const reactiveTemplates: TemplateConfig[] = [
           columns: 1,
           styles: { 
             alignment: 'left',
+            displayParts: ['name', 'title','photo'],
             backgroundColor: '#0f172a',
             padding: '24px',
             borderRadius: 'lg'
@@ -1694,6 +1696,23 @@ export const reactiveTemplates: TemplateConfig[] = [
         },
         
         // RIGHT COLUMN - columns: 2
+          {
+          id: 'contact',
+          name: 'Contact Info',
+          component: 'PersonalInfo',
+          visible: true,
+          order: 3,
+          columns: 2,
+          styles: { 
+            alignment: 'left',
+            displayParts: ['contact'],
+            spacing: 'compact',
+            headerStyle: 'background',
+            padding: '20px',
+            borderRadius: 'lg',
+            divider: true
+          }
+        },
         {
           id: 'skills',
           name: 'Skills',
@@ -1860,10 +1879,13 @@ export const reactiveTemplates: TemplateConfig[] = [
           component: 'PersonalInfo',
           visible: true,
           order: 1,
-          columns: 1,
+        //  columns: 1,
           styles: { 
+            displayParts: ['name', 'title','contact'],
+            contactLayout:'row',
+            hideContactHeader :true,
             alignment: 'center',
-            spacing: 'relaxed',
+            spacing: 'compact',
             headerStyle: 'minimal'
           }
         },

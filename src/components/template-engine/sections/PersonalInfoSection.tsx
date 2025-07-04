@@ -429,7 +429,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   if (config.columns === 1) {
     return (
       <div className="personal-info-main-content mb-6">
-        <div className="text-left">
+        <div >
           {renderPhoto()}
           {renderName()}
           {renderTitle() && <div className="mt-2">{renderTitle()}</div>}
@@ -451,7 +451,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
       {renderPhoto()}
       {renderName()}
       {renderTitle() && <div className="mt-2">{renderTitle()}</div>}
-      {renderContact() && <div className="mt-6">{renderContact()}</div>}
+      {renderContact() && <div className="mt-2">{renderContact()}</div>}
     </div>
   );
 };

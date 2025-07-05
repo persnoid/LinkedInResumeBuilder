@@ -19,7 +19,7 @@ interface ResumeCustomizerProps {
   onExport: (format: 'pdf' | 'docx') => void;
   onBack: () => void;
   onSaveDraft: () => void;
-  currentDraftId?: string | null;
+  currentDraftId?: string | undefined;
 }
 
 export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({

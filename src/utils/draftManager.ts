@@ -118,12 +118,12 @@ export class DraftManager {
     }
   }
 
-  static getCurrentDraftId(): string | null {
+  static getCurrentDraftId(): string | undefined {
     try {
-      return localStorage.getItem(CURRENT_DRAFT_KEY);
+      return localStorage.getItem(CURRENT_DRAFT_KEY) || undefined;
     } catch (error) {
       console.error('Error getting current draft ID:', error);
-      return null;
+      return undefined;
     }
   }
 

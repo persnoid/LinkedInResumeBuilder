@@ -6,7 +6,7 @@ interface ProgressIndicatorProps {
   totalSteps: number;
   steps: string[];
   onOpenDraftManager?: () => void;
-  currentDraftId?: string | null;
+  currentDraftId?: string | undefined;
 }
 
 export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({

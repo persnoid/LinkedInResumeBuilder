@@ -13,6 +13,7 @@ interface DraftManagerProps {
   currentCustomizations?: any;
   currentStep?: number;
   currentDraftId?: string | null;
+  currentDraftId?: string | undefined;
   showToast: (message: string, type: 'success' | 'error' | 'info' | 'warning', duration?: number) => void;
   showConfirmation: (options: {
     title: string;

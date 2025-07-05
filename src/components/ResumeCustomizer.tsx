@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { Palette, Type, Download, FileText, FileType, Save, Eye, EyeOff, Layout, Plus, Trash2, ToggleLeft, ToggleRight, X } from 'lucide-react';
+import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { ResumeData } from '../types/resume';
 import { reactiveTemplates } from '../data/reactive-templates';
 import { TemplateRenderer } from './template-engine/TemplateRenderer';
@@ -39,6 +42,16 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
 
   // CRITICAL FIX: Local confirmation dialog hook for this component
   const { confirmation, showConfirmation } = useConfirmation();
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor)
+  );
 
   console.log('ResumeCustomizer - Received resumeData:', resumeData); // Debug log
   console.log('ResumeCustomizer - showConfirmation available:', !!showConfirmation); // Debug log
@@ -238,6 +251,45 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
 
   const isDefaultSection = (sectionId: string) => {
     return reactiveTemplate?.layout.sections.some(s => s.id === sectionId) || false;
+  };
+
+  // Handle drag end for section reordering
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const allSections = getAllSections();
+    const oldIndex = allSections.findIndex(section => section.id === active.id);
+    const newIndex = allSections.findIndex(section => section.id === over.id);
+    
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Create new array with reordered sections
+    const reorderedSections = [...allSections];
+    const [removed] = reorderedSections.splice(oldIndex, 1);
+    reorderedSections.splice(newIndex, 0, removed);
+
+    // Update order numbers for all sections
+    const updatedSections = { ...customizations.sections };
+    
+    reorderedSections.forEach((section, index) => {
+      const newOrder = index;
+      updatedSections[section.id] = {
+        ...updatedSections[section.id],
+        id: section.id,
+        name: section.name,
+        component: section.component,
+        visible: section.visible,
+        order: newOrder,
+        columns: section.columns,
+        styles: section.styles || {}
+      };
+    });
+
+    handleCustomizationChange('sections', updatedSections);
   };
 
   // Get current colors for display
@@ -464,49 +516,27 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
               </div>
 
               <div className="space-y-3">
-                {getAllSections().map((section) => (
-                  <div
-                    key={section.id}
-                    className={`p-3 border rounded-lg transition-colors ${
-                      section.visible ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50'
-                    }`}
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={getAllSections().map(section => section.id)}
+                    strategy={verticalListSortingStrategy}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <h4 className={`font-medium text-sm ${section.visible ? 'text-gray-900' : 'text-gray-500'}`}>
-                          {section.name}
-                        </h4>
-                        {!isDefaultSection(section.id) && (
-                          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
-                            Custom
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleSectionToggle(section.id, !section.visible)}
-                          className={`p-1 rounded transition-colors ${
-                            section.visible ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100'
-                          }`}
-                          title={section.visible ? 'Hide section' : 'Show section'}
-                        >
-                          {section.visible ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
-                        </button>
-                        <button
-                          onClick={() => handleSectionDelete(section.id)}
-                          className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors"
-                          title={isDefaultSection(section.id) ? 'Hide section' : 'Delete section'}
-                        >
-                          {isDefaultSection(section.id) ? <EyeOff className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-500 flex items-center justify-between">
-                      <span>Type: {section.component}</span>
-                      <span>Placement: {getColumnName(section.columns || 1)}</span>
-                    </div>
-                  </div>
-                ))}
+                    {getAllSections().map((section) => (
+                      <SortableSection
+                        key={section.id}
+                        section={section}
+                        isDefaultSection={isDefaultSection(section.id)}
+                        onToggle={(visible) => handleSectionToggle(section.id, visible)}
+                        onDelete={() => handleSectionDelete(section.id)}
+                        getColumnName={getColumnName}
+                      />
+                    ))}
+                  </SortableContext>
+                </DndContext>
               </div>
 
               {getAllSections().length === 0 && (
@@ -687,6 +717,101 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
         onConfirm={confirmation.onConfirm}
         onCancel={confirmation.onCancel}
       />
+    </div>
+  );
+};
+
+// Sortable Section Component
+interface SortableSectionProps {
+  section: any;
+  isDefaultSection: boolean;
+  onToggle: (visible: boolean) => void;
+  onDelete: () => void;
+  getColumnName: (columns: number) => string;
+}
+
+const SortableSection: React.FC<SortableSectionProps> = ({
+  section,
+  isDefaultSection,
+  onToggle,
+  onDelete,
+  getColumnName
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: section.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`p-3 border rounded-lg transition-colors cursor-move ${
+        section.visible ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50'
+      } ${isDragging ? 'shadow-lg z-10' : ''}`}
+      {...attributes}
+      {...listeners}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center space-x-2">
+          {/* Drag Handle */}
+          <div className="flex flex-col space-y-0.5 text-gray-400 cursor-grab active:cursor-grabbing">
+            <div className="w-1 h-1 bg-current rounded-full"></div>
+            <div className="w-1 h-1 bg-current rounded-full"></div>
+            <div className="w-1 h-1 bg-current rounded-full"></div>
+            <div className="w-1 h-1 bg-current rounded-full"></div>
+            <div className="w-1 h-1 bg-current rounded-full"></div>
+            <div className="w-1 h-1 bg-current rounded-full"></div>
+          </div>
+          
+          <h4 className={`font-medium text-sm ${section.visible ? 'text-gray-900' : 'text-gray-500'}`}>
+            {section.name}
+          </h4>
+          {!isDefaultSection && (
+            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
+              Custom
+            </span>
+          )}
+        </div>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle(!section.visible);
+            }}
+            className={`p-1 rounded transition-colors ${
+              section.visible ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100'
+            }`}
+            title={section.visible ? 'Hide section' : 'Show section'}
+          >
+            {section.visible ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors"
+            title={isDefaultSection ? 'Hide section' : 'Delete section'}
+          >
+            {isDefaultSection ? <EyeOff className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+      <div className="text-xs text-gray-500 flex items-center justify-between">
+        <span>Type: {section.component}</span>
+        <span>Placement: {getColumnName(section.columns || 1)}</span>
+      </div>
     </div>
   );
 };

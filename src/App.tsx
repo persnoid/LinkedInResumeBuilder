@@ -9,7 +9,6 @@ import { UserProfilePage } from './pages/UserProfilePage';
 import { ToastNotification, useToast } from './components/ToastNotification';
 import { ConfirmationDialog } from './components/ConfirmationDialog';
 import { useConfirmation } from './hooks/useConfirmation';
-import { sampleResumeData } from './data/sampleData';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
 import { DraftManager } from './utils/draftManager';
 import { ResumeData, DraftResume, Customizations } from './types/resume';
@@ -77,7 +76,7 @@ function App() {
     spacing: {},
     sections: {}
   });
-  const [linkedinData, setLinkedinData] = useState(null);
+  const [linkedinData, setLinkedinData] = useState<ResumeData | null>(null);
   const [currentDraftId, setCurrentDraftId] = useState<string | undefined>(undefined);
   const [showDraftManager, setShowDraftManager] = useState(false);
   const [showSavePrompt, setShowSavePrompt] = useState(false);

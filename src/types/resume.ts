@@ -59,6 +59,10 @@ export interface ResumeData {
   skills: Skill[];
   certifications: Certification[];
   languages?: Language[];
+  customSections?: Record<string, {
+    title: string;
+    content: string;
+  }>;
 }
 
 // Re-export template types
@@ -79,7 +83,15 @@ export interface DraftResume {
       fontFamily?: string;
     };
     spacing?: any;
-    sections?: any;
+    sections?: Record<string, {
+      id: string;
+      name: string;
+      component: string;
+      visible: boolean;
+      order: number;
+      columns?: number;
+      styles?: any;
+    }>;
   };
   createdAt: string;
   updatedAt: string;
@@ -100,6 +112,14 @@ export interface AppState {
       fontFamily?: string;
     };
     spacing?: any;
-    sections?: any;
+    sections?: Record<string, {
+      id: string;
+      name: string;
+      component: string;
+      visible: boolean;
+      order: number;
+      columns?: number;
+      styles?: any;
+    }>;
   };
 }

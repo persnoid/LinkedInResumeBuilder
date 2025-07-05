@@ -7,6 +7,7 @@ import { EducationSection } from './sections/EducationSection';
 import { SkillsSection } from './sections/SkillsSection';
 import { LanguagesSection } from './sections/LanguagesSection';
 import { CertificationsSection } from './sections/CertificationsSection';
+import { CustomTextSection } from './sections/CustomTextSection';
 
 interface TemplateRendererProps {
   context: TemplateContext;
@@ -21,6 +22,7 @@ const sectionComponents = {
   Skills: SkillsSection,
   Languages: LanguagesSection,
   Certifications: CertificationsSection,
+  CustomText: CustomTextSection,
 };
 
 export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
@@ -76,10 +78,52 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     }
   };
 
-  // Sort sections by order and filter visible ones
-  const sortedSections = layout.sections
-    .filter(section => section.visible)
-    .sort((a, b) => a.order - b.order);
+  // Combine base sections with custom sections and apply customizations
+  const getAllSections = () => {
+    const baseSections = layout.sections || [];
+    const sectionCustomizations = customizations.sections || {};
+    
+    // Start with base sections
+    const allSections = [...baseSections];
+    
+    // Add custom sections that don't exist in base
+    Object.values(sectionCustomizations).forEach((customSection: any) => {
+      const existsInBase = baseSections.some(base => base.id === customSection.id);
+      if (!existsInBase && customSection.visible !== false) {
+        allSections.push({
+          id: customSection.id,
+          name: customSection.name,
+          component: customSection.component,
+          visible: true,
+          order: customSection.order,
+          columns: customSection.columns,
+          styles: customSection.styles || {}
+        });
+      }
+    });
+    
+    // Apply customizations to all sections and filter
+    return allSections
+      .map(section => {
+        const customization = sectionCustomizations[section.id];
+        if (customization) {
+          return {
+            ...section,
+            name: customization.name || section.name,
+            component: customization.component || section.component,
+            visible: customization.visible !== undefined ? customization.visible : section.visible,
+            order: customization.order !== undefined ? customization.order : section.order,
+            columns: customization.columns !== undefined ? customization.columns : section.columns,
+            styles: { ...section.styles, ...customization.styles }
+          };
+        }
+        return section;
+      })
+      .filter(section => section.visible !== false)
+      .sort((a, b) => a.order - b.order);
+  };
+
+  const sortedSections = getAllSections();
 
   const renderSection = (section: any) => {
     const SectionComponent = sectionComponents[section.component as keyof typeof sectionComponents];

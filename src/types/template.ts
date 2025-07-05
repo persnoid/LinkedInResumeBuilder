@@ -167,6 +167,7 @@ export type SectionComponent =
   | 'Portfolio'
   | 'Publications'
   | 'Volunteer'
+  | 'CustomText'
   | 'Custom';
 
 // Template rendering context
@@ -187,8 +188,11 @@ export interface TemplateContext {
 // New interfaces for advanced customization
 export interface SectionCustomization {
   id: string;
+  name: string;
+  component: string;
   visible: boolean;
   order: number;
+  columns?: number;
   styles: Partial<TemplateSection['styles']>;
 }
 

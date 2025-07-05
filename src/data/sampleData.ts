@@ -73,5 +73,11 @@ export const sampleResumeData: ResumeData = {
       date: '2023-06',
       url: 'https://aws.amazon.com/certification/'
     }
-  ]
+  ],
+  customSections: {
+    'custom_projects': {
+      title: 'Notable Projects',
+      content: 'Led the development of a real-time analytics dashboard that increased user engagement by 45%. Built using React, Node.js, and MongoDB with real-time updates via WebSocket connections.'
+    }
+  }
 };

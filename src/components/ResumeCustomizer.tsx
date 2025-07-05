@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Palette, Type, Download, FileText, FileType, Save, Eye, EyeOff } from 'lucide-react';
+import { Palette, Type, Download, FileText, FileType, Save, Eye, EyeOff, Layout, Plus, Trash2, ToggleLeft, ToggleRight, X } from 'lucide-react';
 import { ResumeData } from '../types/resume';
 import { reactiveTemplates } from '../data/reactive-templates';
 import { TemplateRenderer } from './template-engine/TemplateRenderer';
@@ -28,10 +28,14 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   onSaveDraft,
   currentDraftId
 }) => {
-  const [activeTab, setActiveTab] = useState<'colors' | 'fonts'>('colors');
+  const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'sections'>('colors');
   const [isExporting, setIsExporting] = useState(false);
   const [editableResumeData, setEditableResumeData] = useState<ResumeData>(resumeData);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [showAddSectionModal, setShowAddSectionModal] = useState(false);
+  const [newSectionName, setNewSectionName] = useState('');
+  const [newSectionComponent, setNewSectionComponent] = useState('CustomText');
+  const [newSectionColumn, setNewSectionColumn] = useState(1);
 
   // CRITICAL FIX: Local confirmation dialog hook for this component
   const { confirmation, showConfirmation } = useConfirmation();
@@ -61,8 +65,58 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     { name: 'Elegant Rose', primary: '#E11D48', secondary: '#BE185D', accent: '#8B5CF6', surface: '#FFF1F2', muted: '#FECDD3' }
   ];
 
+  // Available section types for adding new sections
+  const availableSectionTypes = [
+    { value: 'CustomText', label: 'Custom Text Section', description: 'Add any custom text content' },
+    { value: 'Summary', label: 'Additional Summary', description: 'Another summary or objective section' },
+    { value: 'Skills', label: 'Additional Skills', description: 'Another skills section with different categorization' },
+    { value: 'Experience', label: 'Additional Experience', description: 'For projects, volunteer work, etc.' },
+    { value: 'Education', label: 'Additional Education', description: 'For certifications, courses, etc.' },
+    { value: 'Certifications', label: 'Additional Certifications', description: 'Another certifications section' },
+    { value: 'Languages', label: 'Additional Languages', description: 'Another languages section' }
+  ];
+
   // Get current template config
   const reactiveTemplate = reactiveTemplates.find(t => t.id === selectedTemplate);
+
+  // Get all sections (base + custom)
+  const getAllSections = () => {
+    const baseSections = reactiveTemplate?.layout.sections || [];
+    const customSections = customizations.sections || {};
+    
+    const allSections = [...baseSections];
+    
+    // Add custom sections that don't exist in base
+    Object.values(customSections).forEach((customSection: any) => {
+      const existsInBase = baseSections.some(base => base.id === customSection.id);
+      if (!existsInBase) {
+        allSections.push(customSection);
+      }
+    });
+    
+    // Apply customizations to all sections
+    return allSections.map(section => {
+      const customization = customSections[section.id];
+      if (customization) {
+        return {
+          ...section,
+          ...customization,
+          styles: { ...section.styles, ...customization.styles }
+        };
+      }
+      return section;
+    }).sort((a, b) => a.order - b.order);
+  };
+
+  const getColumnName = (columns: number) => {
+    switch (columns) {
+      case 0: return 'Header';
+      case 1: return 'Main Content';
+      case 2: return 'Sidebar';
+      case 3: return 'Footer';
+      default: return 'Main Content';
+    }
+  };
 
   const handleExport = async (format: 'pdf' | 'docx') => {
     setIsExporting(true);
@@ -88,6 +142,87 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     }
     
     onCustomizationsUpdate(newCustomizations);
+  };
+
+  // Section management functions
+  const handleAddSection = () => {
+    if (!newSectionName.trim()) return;
+    
+    const sectionId = `custom_${Date.now()}`;
+    const newSection = {
+      id: sectionId,
+      name: newSectionName.trim(),
+      component: newSectionComponent,
+      visible: true,
+      order: getAllSections().length + 1,
+      columns: newSectionColumn,
+      styles: {}
+    };
+    
+    const updatedSections = {
+      ...customizations.sections,
+      [sectionId]: newSection
+    };
+    
+    handleCustomizationChange('sections', updatedSections);
+    
+    // Reset form
+    setNewSectionName('');
+    setNewSectionComponent('CustomText');
+    setNewSectionColumn(1);
+    setShowAddSectionModal(false);
+  };
+
+  const handleToggleSectionVisibility = (sectionId: string) => {
+    const sections = customizations.sections || {};
+    const currentSection = sections[sectionId];
+    const baseSections = reactiveTemplate?.layout.sections || [];
+    const baseSection = baseSections.find(s => s.id === sectionId);
+    
+    const updatedSection = {
+      id: sectionId,
+      name: currentSection?.name || baseSection?.name || 'Section',
+      component: currentSection?.component || baseSection?.component || 'CustomText',
+      visible: !(currentSection?.visible ?? baseSection?.visible ?? true),
+      order: currentSection?.order || baseSection?.order || 999,
+      columns: currentSection?.columns ?? baseSection?.columns ?? 1,
+      styles: { ...baseSection?.styles, ...currentSection?.styles }
+    };
+    
+    const updatedSections = {
+      ...sections,
+      [sectionId]: updatedSection
+    };
+    
+    handleCustomizationChange('sections', updatedSections);
+  };
+
+  const handleDeleteSection = async (sectionId: string) => {
+    const sections = customizations.sections || {};
+    const baseSections = reactiveTemplate?.layout.sections || [];
+    const isCustomSection = !baseSections.some(s => s.id === sectionId);
+    
+    const confirmed = await showConfirmation({
+      title: 'Delete Section',
+      message: isCustomSection 
+        ? 'Are you sure you want to delete this custom section? This action cannot be undone.'
+        : 'Are you sure you want to hide this section? You can show it again later.',
+      confirmText: isCustomSection ? 'Delete' : 'Hide',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
+
+    if (confirmed) {
+      if (isCustomSection) {
+        // Actually remove custom sections
+        const updatedSections = { ...sections };
+        delete updatedSections[sectionId];
+        handleCustomizationChange('sections', updatedSections);
+      } else {
+        // Just hide default sections
+        handleToggleSectionVisibility(sectionId);
+      }
+    }
   };
 
   // Handle resume data updates from editable components
@@ -142,12 +277,13 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           </p>
         </div>
 
-        {/* Simplified Tabs - Only Colors and Fonts */}
+        {/* Tabs - Colors, Fonts, and Sections */}
         <div className="border-b border-gray-200">
           <nav className="flex">
             {[
               { key: 'colors', label: 'Colors', icon: Palette },
-              { key: 'fonts', label: 'Fonts', icon: Type }
+              { key: 'fonts', label: 'Fonts', icon: Type },
+              { key: 'sections', label: 'Sections', icon: Layout }
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -241,6 +377,88 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
             </div>
           )}
 
+          {activeTab === 'sections' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-900">Manage Sections</h3>
+                <button
+                  onClick={() => setShowAddSectionModal(true)}
+                  className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm flex items-center transition-colors"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  Add Section
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {getAllSections().map((section) => {
+                  const isCustomSection = section.id.startsWith('custom_');
+                  const isVisible = section.visible !== false;
+                  
+                  return (
+                    <div
+                      key={section.id}
+                      className={`border rounded-lg p-3 transition-colors ${
+                        isVisible ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2">
+                            <h4 className={`font-medium text-sm ${isVisible ? 'text-gray-900' : 'text-gray-500'}`}>
+                              {section.name}
+                            </h4>
+                            {isCustomSection && (
+                              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
+                                Custom
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {getColumnName(section.columns || 1)} • {section.component}
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          {/* Visibility Toggle */}
+                          <button
+                            onClick={() => handleToggleSectionVisibility(section.id)}
+                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                            title={isVisible ? 'Hide section' : 'Show section'}
+                          >
+                            {isVisible ? (
+                              <ToggleRight className="w-4 h-4 text-green-500" />
+                            ) : (
+                              <ToggleLeft className="w-4 h-4" />
+                            )}
+                          </button>
+                          
+                          {/* Delete/Hide Button */}
+                          <button
+                            onClick={() => handleDeleteSection(section.id)}
+                            className="text-red-400 hover:text-red-600 transition-colors"
+                            title={isCustomSection ? 'Delete section' : 'Hide section'}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-blue-900 mb-2">Section Management Tips:</h4>
+                <ul className="text-xs text-blue-700 space-y-1">
+                  <li>• Toggle sections on/off without losing their content</li>
+                  <li>• Add custom sections for projects, awards, or any other content</li>
+                  <li>• Custom sections can be placed in main content or sidebar</li>
+                  <li>• Default sections can be hidden but not permanently deleted</li>
+                </ul>
+              </div>
+            </div>
+          )}
           {activeTab === 'fonts' && (
             <div className="space-y-6">
               <div>
@@ -377,6 +595,87 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
         </div>
       </div>
 
+      {/* Add Section Modal */}
+      {showAddSectionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Add New Section</h3>
+              <button
+                onClick={() => setShowAddSectionModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Section Name *
+                </label>
+                <input
+                  type="text"
+                  value={newSectionName}
+                  onChange={(e) => setNewSectionName(e.target.value)}
+                  placeholder="e.g., Projects, Awards, Publications"
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Section Type
+                </label>
+                <select
+                  value={newSectionComponent}
+                  onChange={(e) => setNewSectionComponent(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {availableSectionTypes.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  {availableSectionTypes.find(t => t.value === newSectionComponent)?.description}
+                </p>
+              </div>
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Placement
+                </label>
+                <select
+                  value={newSectionColumn}
+                  onChange={(e) => setNewSectionColumn(parseInt(e.target.value))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value={1}>Main Content</option>
+                  <option value={2}>Sidebar</option>
+                  <option value={0}>Header</option>
+                  <option value={3}>Footer</option>
+                </select>
+              </div>
+            </div>
+                />
+            <div className="p-6 border-t border-gray-200 flex items-center justify-end space-x-3">
+              <button
+                onClick={() => setShowAddSectionModal(false)}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddSection}
+                disabled={!newSectionName.trim()}
+                className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white px-6 py-2 rounded-lg transition-colors flex items-center"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Section
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+              </div>
       {/* CRITICAL FIX: Local Confirmation Dialog */}
       <ConfirmationDialog
         isOpen={confirmation.isOpen}

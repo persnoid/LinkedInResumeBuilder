@@ -77,7 +77,7 @@ function App() {
     sections: {}
   });
   const [linkedinData, setLinkedinData] = useState<ResumeData | null>(null);
-  const [currentDraftId, setCurrentDraftId] = useState<string | undefined>(undefined);
+  const [currentDraftId, setCurrentDraftId] = useState<string | null | undefined>(undefined);
   const [showDraftManager, setShowDraftManager] = useState(false);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
@@ -91,7 +91,7 @@ function App() {
 
   // Load current draft on app start
   useEffect(() => {
-    const draftId = DraftManager.getCurrentDraftId() || undefined;
+    const draftId = DraftManager.getCurrentDraftId();
     if (draftId) {
       const draft = DraftManager.getDraft(draftId);
       if (draft) {
@@ -183,7 +183,7 @@ function App() {
   const handleLinkedInData = (data: ResumeData) => {
     setLinkedinData(data);
     setResumeData(data);
-    setCurrentDraftId(undefined); // Clear current draft when new data is loaded
+    setCurrentDraftId(null); // Clear current draft when new data is loaded
     DraftManager.clearCurrentDraft();
     
     // Automatically move to template selection after data is parsed

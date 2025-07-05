@@ -15,6 +15,7 @@ interface ResumeCustomizerProps {
   selectedTemplate: string;
   customizations: Customizations;
   onCustomizationsUpdate: (customizations: Customizations) => void;
+  onResumeDataUpdate: (data: ResumeData) => void;
   onExport: (format: 'pdf' | 'docx') => void;
   onBack: () => void;
   onSaveDraft: () => void;
@@ -26,6 +27,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   selectedTemplate,
   customizations,
   onCustomizationsUpdate,
+  onResumeDataUpdate,
   onExport,
   onBack,
   onSaveDraft,
@@ -121,6 +123,8 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   const handleResumeDataUpdate = (updatedData: ResumeData) => {
     console.log('ResumeCustomizer - Data updated:', updatedData); // Debug log
     setEditableResumeData(updatedData);
+    // Also update the parent component's data
+    onResumeDataUpdate(updatedData);
   };
 
   // Section management functions

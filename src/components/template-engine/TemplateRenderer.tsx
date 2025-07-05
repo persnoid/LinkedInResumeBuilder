@@ -74,7 +74,8 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         updatedData[field] = value;
       }
       
-      onDataUpdate(updatedData);
+      // Ensure we're passing the correctly typed data
+      onDataUpdate(updatedData as ResumeData);
     }
   };
 

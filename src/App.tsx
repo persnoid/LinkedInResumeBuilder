@@ -195,6 +195,11 @@ function App() {
     setSelectedTemplate(templateId);
   };
 
+  const handleResumeDataUpdate = (updatedData: ResumeData) => {
+    console.log('App - Resume data updated:', updatedData);
+    setResumeData(updatedData);
+  };
+
   const handleCustomizationsUpdate = (newCustomizations: Customizations) => {
     console.log('Updating customizations:', newCustomizations);
     setCustomizations(newCustomizations);
@@ -356,6 +361,7 @@ function App() {
               selectedTemplate={selectedTemplate}
               customizations={customizations}
               onCustomizationsUpdate={handleCustomizationsUpdate}
+              onResumeDataUpdate={handleResumeDataUpdate}
               onExport={handleExport}
               onBack={prevStep}
               onSaveDraft={() => setShowSavePrompt(true)}

@@ -159,6 +159,10 @@ export interface ResumeData {
     title: string;
     content: string;
   }>;
+  customSections?: Record<string, {
+    title: string;
+    content: string;
+  }>;
 }
 
 // Re-export template types

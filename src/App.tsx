@@ -12,7 +12,7 @@ import { useConfirmation } from './hooks/useConfirmation';
 import { sampleResumeData } from './data/sampleData';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
 import { DraftManager } from './utils/draftManager';
-import { ResumeData, DraftResume } from './types/resume';
+import { ResumeData, DraftResume, Customizations } from './types/resume';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component<
@@ -71,7 +71,7 @@ function App() {
   const [currentStep, setCurrentStep] = useState(0);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState('azurill');
-  const [customizations, setCustomizations] = useState({
+  const [customizations, setCustomizations] = useState<Customizations>({
     colors: { primary: '#1f2937', secondary: '#6b7280', accent: '#3b82f6' },
     typography: { fontFamily: 'Inter, sans-serif' },
     spacing: {},
@@ -195,7 +195,7 @@ function App() {
     setSelectedTemplate(templateId);
   };
 
-  const handleCustomizationsUpdate = (newCustomizations: any) => {
+  const handleCustomizationsUpdate = (newCustomizations: Customizations) => {
     console.log('Updating customizations:', newCustomizations);
     setCustomizations(newCustomizations);
   };

@@ -3,7 +3,7 @@ import { Palette, Type, Download, FileText, FileType, Save, Eye, EyeOff, Layout,
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ResumeData } from '../types/resume';
+import { ResumeData, Customizations } from '../types/resume';
 import { reactiveTemplates } from '../data/reactive-templates';
 import { TemplateRenderer } from './template-engine/TemplateRenderer';
 import { ResumePreview } from './ResumePreview';
@@ -13,8 +13,8 @@ import { useConfirmation } from '../hooks/useConfirmation';
 interface ResumeCustomizerProps {
   resumeData: ResumeData;
   selectedTemplate: string;
-  customizations: any;
-  onCustomizationsUpdate: (customizations: any) => void;
+  customizations: Customizations;
+  onCustomizationsUpdate: (customizations: Customizations) => void;
   onExport: (format: 'pdf' | 'docx') => void;
   onBack: () => void;
   onSaveDraft: () => void;
@@ -101,17 +101,17 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   };
 
   const handleCustomizationChange = (field: string, value: any) => {
-    const newCustomizations = { ...customizations };
+    const newCustomizations: Customizations = { ...customizations };
     if (field.includes('.')) {
       const parts = field.split('.');
-      let current = newCustomizations;
+      let current: any = newCustomizations;
       for (let i = 0; i < parts.length - 1; i++) {
         if (!current[parts[i]]) current[parts[i]] = {};
         current = current[parts[i]];
       }
       current[parts[parts.length - 1]] = value;
     } else {
-      newCustomizations[field] = value;
+      (newCustomizations as any)[field] = value;
     }
     
     onCustomizationsUpdate(newCustomizations);

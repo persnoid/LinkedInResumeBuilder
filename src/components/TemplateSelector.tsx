@@ -94,11 +94,11 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-purple-200 py-8 border-4 border-purple-500">
       <div className="max-w-7xl mx-auto px-6">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">Choose Your Template</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">🐛 DEBUG: Choose Your Template</h2>
             <p className="text-gray-600 text-lg">Select from our collection of professionally designed resume layouts. Your parsed data will automatically fill the templates.</p>
           </div>
           

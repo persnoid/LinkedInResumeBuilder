@@ -308,9 +308,17 @@ function App() {
 
   const renderCurrentStep = () => {
     console.log('Rendering step:', currentStep, 'Has data:', !!resumeData, 'Is transitioning:', isTransitioning);
+    console.log('🏠 App - renderCurrentStep called with:', {
+      currentStep,
+      hasResumeData: !!resumeData,
+      isTransitioning,
+      selectedTemplate,
+      currentDraftId
+    });
     
     // Show loading state during transition
     if (isTransitioning) {
+      console.log('🏠 App - Showing transition loading state');
       return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
@@ -323,6 +331,7 @@ function App() {
     
     switch (currentStep) {
       case 0:
+        console.log('🏠 App - Rendering LinkedIn Input (step 0)');
         return (
           <ErrorBoundary>
             <LinkedInInput
@@ -333,6 +342,7 @@ function App() {
           </ErrorBoundary>
         );
       case 1:
+        console.log('🏠 App - Rendering Template Selector (step 1), hasData:', !!resumeData);
         return resumeData ? (
           <ErrorBoundary>
             <TemplateSelector
@@ -346,14 +356,20 @@ function App() {
             />
           </ErrorBoundary>
         ) : (
+          (() => {
+            console.log('🏠 App - Step 1 but no resumeData, showing loading');
+            return (
           <div className="min-h-screen bg-gray-50 flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
               <p className="text-gray-600">Loading your data...</p>
             </div>
           </div>
+            );
+          })()
         );
       case 2:
+        console.log('🏠 App - Rendering Resume Customizer (step 2), hasData:', !!resumeData);
         return resumeData ? (
           <ErrorBoundary>
             <ResumeCustomizer
@@ -369,14 +385,20 @@ function App() {
             />
           </ErrorBoundary>
         ) : (
+          (() => {
+            console.log('🏠 App - Step 2 but no resumeData, showing loading');
+            return (
           <div className="min-h-screen bg-gray-50 flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
               <p className="text-gray-600">Loading resume data...</p>
             </div>
           </div>
+            );
+          })()
         );
       default:
+        console.log('🏠 App - Unknown step:', currentStep);
         return <div>Step not found</div>;
     }
   };

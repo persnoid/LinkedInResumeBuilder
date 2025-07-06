@@ -222,8 +222,18 @@ export const useRequireAuth = () => {
   const { user, loading } = useAuth();
   const [isChecking, setIsChecking] = useState(true);
 
+  // DEBUG: Log auth state changes
+  console.log('🔐 useRequireAuth - State:', {
+    user: user?.email || 'null',
+    loading,
+    isChecking,
+    isAuthenticated: !!user
+  });
+
   useEffect(() => {
+    console.log('🔐 useRequireAuth - useEffect triggered, loading:', loading);
     if (!loading) {
+      console.log('🔐 useRequireAuth - Loading complete, setting isChecking to false');
       setIsChecking(false);
     }
   }, [loading]);

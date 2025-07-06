@@ -17,9 +17,19 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const [authModalInitialMode, setAuthModalInitialMode] = useState<'signin' | 'signup'>('signin');
   const [loadingProgress, setLoadingProgress] = useState(0);
 
+  // DEBUG: Log all state changes
+  console.log('🔒 ProtectedRoute - State:', {
+    user: user?.email || 'null',
+    loading,
+    isAuthenticated,
+    showAuthModal,
+    loadingProgress: Math.round(loadingProgress)
+  });
+
   // Animated loading progress
   useEffect(() => {
     if (loading) {
+      console.log('🔒 ProtectedRoute - Starting loading animation');
       const interval = setInterval(() => {
         setLoadingProgress(prev => {
           if (prev >= 90) return prev;
@@ -29,11 +39,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
       return () => clearInterval(interval);
     } else {
+      console.log('🔒 ProtectedRoute - Loading complete, setting progress to 100%');
       setLoadingProgress(100);
     }
   }, [loading]);
 
   if (loading) {
+    console.log('🔒 ProtectedRoute - Rendering loading screen');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center relative overflow-hidden">
         {/* Animated background elements */}
@@ -114,10 +126,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!isAuthenticated) {
+    console.log('🔒 ProtectedRoute - User not authenticated, showing auth interface');
     if (fallback) {
+      console.log('🔒 ProtectedRoute - Rendering custom fallback component');
       return <>{fallback}</>;
     }
 
+    console.log('🔒 ProtectedRoute - Rendering default auth interface');
     return (
       <>
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-6 relative overflow-hidden">
@@ -219,5 +234,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
+  console.log('🔒 ProtectedRoute - User authenticated, rendering children');
   return <>{children}</>;
 };

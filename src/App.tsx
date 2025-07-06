@@ -6,6 +6,7 @@ import { ResumeCustomizer } from './components/ResumeCustomizer';
 import { DraftManagerComponent } from './components/DraftManager';
 import { DraftSavePrompt } from './components/DraftSavePrompt';
 import { UserProfilePage } from './pages/UserProfilePage';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { ToastNotification, useToast } from './components/ToastNotification';
 import { ConfirmationDialog } from './components/ConfirmationDialog';
 import { useConfirmation } from './hooks/useConfirmation';
@@ -383,17 +384,19 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-50">
-        {currentStep > 0 && !isTransitioning && (
-          <ProgressIndicator
-            currentStep={currentStep}
-            totalSteps={STEPS.length}
-            steps={STEPS}
-            onOpenDraftManager={() => setShowDraftManager(true)}
-            currentDraftId={currentDraftId}
-          />
-        )}
-        
-        {renderCurrentStep()}
+        <ProtectedRoute>
+          {currentStep > 0 && !isTransitioning && (
+            <ProgressIndicator
+              currentStep={currentStep}
+              totalSteps={STEPS.length}
+              steps={STEPS}
+              onOpenDraftManager={() => setShowDraftManager(true)}
+              currentDraftId={currentDraftId}
+            />
+          )}
+          
+          {renderCurrentStep()}
+        </ProtectedRoute>
 
         {/* User Profile Button - Fixed position */}
         {!showUserProfile && (

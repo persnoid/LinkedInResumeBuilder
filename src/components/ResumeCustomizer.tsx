@@ -300,9 +300,9 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   const currentColors = customizations.colors || {};
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="h-screen bg-gray-50 flex">
       {/* Enhanced Sidebar */}
-      <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
+      <div className="w-96 bg-white border-r border-gray-200 flex flex-col h-full">
         {/* Header */}
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <div>

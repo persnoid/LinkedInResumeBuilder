@@ -310,23 +310,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <>
                 <p className="text-sm text-gray-600">
                   Don't have an account?{' '}
-                  <button
+                  <a
+                    href="#"
                     onClick={() => handleModeChange('signup')}
-                    className="text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-blue-600 hover:text-blue-700 font-medium underline decoration-2 underline-offset-4 hover:decoration-blue-700 transition-all duration-200 cursor-pointer"
                     disabled={isSubmitting}
                   >
                     Sign up
-                  </button>
+                  </a>
                 </p>
                 <p className="text-sm text-gray-600">
                   Forgot your password?{' '}
-                  <button
+                  <a
+                    href="#"
                     onClick={() => handleModeChange('reset')}
-                    className="text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-blue-600 hover:text-blue-700 font-medium underline decoration-2 underline-offset-4 hover:decoration-blue-700 transition-all duration-200 cursor-pointer"
                     disabled={isSubmitting}
                   >
                     Reset it
-                  </button>
+                  </a>
                 </p>
               </>
             )}
@@ -334,26 +336,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {mode === 'signup' && (
               <p className="text-sm text-gray-600">
                 Already have an account?{' '}
-                <button
+                <a
+                  href="#"
                   onClick={() => handleModeChange('signin')}
-                  className="text-blue-600 hover:text-blue-700 font-medium"
+                  className="text-blue-600 hover:text-blue-700 font-medium underline decoration-2 underline-offset-4 hover:decoration-blue-700 transition-all duration-200 cursor-pointer"
                   disabled={isSubmitting}
                 >
                   Sign in
-                </button>
+                </a>
               </p>
             )}
 
             {mode === 'reset' && (
               <p className="text-sm text-gray-600">
                 Remember your password?{' '}
-                <button
+                <a
+                  href="#"
                   onClick={() => handleModeChange('signin')}
-                  className="text-blue-600 hover:text-blue-700 font-medium"
+                  className="text-blue-600 hover:text-blue-700 font-medium underline decoration-2 underline-offset-4 hover:decoration-blue-700 transition-all duration-200 cursor-pointer"
                   disabled={isSubmitting}
                 >
                   Sign in
-                </button>
+                </a>
               </p>
             )}
           </div>

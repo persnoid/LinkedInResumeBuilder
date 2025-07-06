@@ -396,27 +396,27 @@ function App() {
           )}
           
           {renderCurrentStep()}
+          
+          {/* User Profile Button - Fixed position - Only for authenticated users */}
+          {!showUserProfile && (
+            <button
+              onClick={() => setShowUserProfile(true)}
+              className="fixed top-6 right-6 bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl z-40"
+              title="User Profile"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </button>
+          )}
+
+          {/* User Profile Modal - Only for authenticated users */}
+          <UserProfilePage
+            isOpen={showUserProfile}
+            onClose={() => setShowUserProfile(false)}
+            showConfirmation={showConfirmation}
+          />
         </ProtectedRoute>
-
-        {/* User Profile Button - Fixed position */}
-        {!showUserProfile && (
-          <button
-            onClick={() => setShowUserProfile(true)}
-            className="fixed top-6 right-6 bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl z-40"
-            title="User Profile"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </button>
-        )}
-
-        {/* User Profile Modal */}
-        <UserProfilePage
-          isOpen={showUserProfile}
-          onClose={() => setShowUserProfile(false)}
-          showConfirmation={showConfirmation}
-        />
 
         {/* Draft Manager Modal */}
         <DraftManagerComponent

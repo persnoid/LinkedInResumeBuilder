@@ -222,25 +222,45 @@ export const useRequireAuth = () => {
   const { user, loading } = useAuth();
   const [isChecking, setIsChecking] = useState(true);
 
-  // DEBUG: Log auth state changes
-  console.log('🔐 useRequireAuth - State:', {
+  // DEBUG: Log auth state changes - Add more detailed logging
+  console.log('🔐 useRequireAuth - Detailed State:', {
     user: user?.email || 'null',
-    loading,
+    authLoading: loading,
     isChecking,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
+    userExists: user !== null,
+    userUndefined: user === undefined,
+    timestamp: new Date().toISOString()
   });
 
   useEffect(() => {
-    console.log('🔐 useRequireAuth - useEffect triggered, loading:', loading);
+    console.log('🔐 useRequireAuth - useEffect triggered:', {
+      authLoading: loading,
+      currentIsChecking: isChecking,
+      user: user?.email || 'null'
+    });
+    
     if (!loading) {
-      console.log('🔐 useRequireAuth - Loading complete, setting isChecking to false');
+      console.log('🔐 useRequireAuth - Auth loading complete, setting isChecking to false');
       setIsChecking(false);
+    } else {
+      console.log('🔐 useRequireAuth - Auth still loading, keeping isChecking true');
     }
   }, [loading]);
+  
+  // Additional useEffect to track user changes
+  useEffect(() => {
+    console.log('🔐 useRequireAuth - User changed:', {
+      user: user?.email || 'null',
+      isAuthenticated: !!user,
+      authLoading: loading,
+      isChecking
+    });
+  }, [user]);
 
   return {
     user,
-    loading: isChecking,
+    loading: isChecking, // This controls the loading state for ProtectedRoute
     isAuthenticated: !!user
   };
 };

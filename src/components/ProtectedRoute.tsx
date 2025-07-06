@@ -16,19 +16,28 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalInitialMode, setAuthModalInitialMode] = useState<'signin' | 'signup'>('signin');
   const [loadingProgress, setLoadingProgress] = useState(0);
+  
+  // TEMPORARY DEBUG: Force bypass loading if user exists
+  const shouldBypassLoading = user !== null;
+  const effectiveLoading = shouldBypassLoading ? false : loading;
+  const effectiveIsAuthenticated = shouldBypassLoading ? true : isAuthenticated;
 
   // DEBUG: Log all state changes
-  console.log('🔒 ProtectedRoute - State:', {
+  console.log('🔒 ProtectedRoute - Detailed State:', {
     user: user?.email || 'null',
-    loading,
-    isAuthenticated,
+    originalLoading: loading,
+    effectiveLoading,
+    originalIsAuthenticated: isAuthenticated,
+    effectiveIsAuthenticated,
+    shouldBypassLoading,
     showAuthModal,
-    loadingProgress: Math.round(loadingProgress)
+    loadingProgress: Math.round(loadingProgress),
+    timestamp: new Date().toISOString().split('T')[1]
   });
 
   // Animated loading progress
   useEffect(() => {
-    if (loading) {
+    if (effectiveLoading) {
       console.log('🔒 ProtectedRoute - Starting loading animation');
       const interval = setInterval(() => {
         setLoadingProgress(prev => {
@@ -39,13 +48,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
       return () => clearInterval(interval);
     } else {
-      console.log('🔒 ProtectedRoute - Loading complete, setting progress to 100%');
+      console.log('🔒 ProtectedRoute - Effective loading complete, setting progress to 100%');
       setLoadingProgress(100);
     }
-  }, [loading]);
+  }, [effectiveLoading]);
 
-  if (loading) {
-    console.log('🔒 ProtectedRoute - Rendering loading screen');
+  if (effectiveLoading) {
+    console.log('🔒 ProtectedRoute - Rendering loading screen (effectiveLoading=true)');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center relative overflow-hidden">
         {/* Animated background elements */}
@@ -125,8 +134,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  if (!isAuthenticated) {
-    console.log('🔒 ProtectedRoute - User not authenticated, showing auth interface');
+  if (!effectiveIsAuthenticated) {
+    console.log('🔒 ProtectedRoute - User not effectively authenticated, showing auth interface');
     if (fallback) {
       console.log('🔒 ProtectedRoute - Rendering custom fallback component');
       return <>{fallback}</>;
@@ -234,6 +243,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  console.log('🔒 ProtectedRoute - User authenticated, rendering children');
+  console.log('🔒 ProtectedRoute - User effectively authenticated, rendering children');
   return <>{children}</>;
 };

@@ -55,8 +55,17 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   ].filter(item => item.value);
 
   const handleTextEdit = (field: string, value: string) => {
+    console.log('🖼️ PersonalInfoSection - handleTextEdit called:', {
+      field,
+      value: value?.substring(0, 50) + (value?.length > 50 ? '...' : ''),
+      onDataUpdateAvailable: !!onDataUpdate
+    });
+    
     if (onDataUpdate) {
       onDataUpdate(`personalInfo.${field}`, value);
+      console.log('🖼️ PersonalInfoSection - Text edit onDataUpdate called successfully');
+    } else {
+      console.error('🖼️ PersonalInfoSection - onDataUpdate not available for text edit');
     }
   };
 
@@ -87,52 +96,86 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    console.log('🖼️ PersonalInfoSection - handlePhotoUpload triggered:', {
+      hasFile: !!file,
+      fileName: file?.name,
+      fileSize: file?.size,
+      fileType: file?.type,
+      timestamp: new Date().toISOString()
+    });
+    
     if (!file) return;
 
     setUploadStatus('uploading');
     setUploadMessage('Validating image...');
+    console.log('🖼️ PersonalInfoSection - Upload status set to uploading');
 
     // Validate the file
     const validation = validateImageFile(file);
+    console.log('🖼️ PersonalInfoSection - File validation result:', validation);
     
     if (!validation.isValid) {
       setUploadStatus('error');
       setUploadMessage(validation.message);
+      console.log('🖼️ PersonalInfoSection - File validation failed:', validation.message);
       // Clear the input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
+        console.log('🖼️ PersonalInfoSection - File input cleared due to validation failure');
       }
       // Reset status after 3 seconds
       setTimeout(() => {
         setUploadStatus('idle');
         setUploadMessage('');
+        console.log('🖼️ PersonalInfoSection - Upload status reset to idle after validation failure');
       }, 3000);
       return;
     }
 
+    console.log('🖼️ PersonalInfoSection - File validation passed, proceeding with FileReader');
+    console.log('🖼️ PersonalInfoSection - onDataUpdate function available:', !!onDataUpdate);
+    
     if (onDataUpdate) {
       const reader = new FileReader();
       reader.onload = (e) => {
+        console.log('🖼️ PersonalInfoSection - FileReader onload triggered');
         const photoUrl = e.target?.result as string;
+        console.log('🖼️ PersonalInfoSection - Photo URL generated:', {
+          urlLength: photoUrl?.length,
+          urlPrefix: photoUrl?.substring(0, 50) + '...',
+          isDataUrl: photoUrl?.startsWith('data:')
+        });
+        
+        console.log('🖼️ PersonalInfoSection - Calling onDataUpdate with photo data');
         onDataUpdate('personalInfo.photo', photoUrl);
+        console.log('🖼️ PersonalInfoSection - onDataUpdate called successfully');
+        
         setUploadStatus('success');
         setUploadMessage(validation.message);
+        console.log('🖼️ PersonalInfoSection - Upload status set to success');
         
         // Reset status after 2 seconds
         setTimeout(() => {
           setUploadStatus('idle');
           setUploadMessage('');
+          console.log('🖼️ PersonalInfoSection - Upload status reset to idle after success');
         }, 2000);
       };
       reader.onerror = () => {
+        console.error('🖼️ PersonalInfoSection - FileReader error occurred');
         setUploadStatus('error');
         setUploadMessage('Failed to read the image file. Please try again.');
+        console.log('🖼️ PersonalInfoSection - Upload status set to error due to FileReader failure');
         setTimeout(() => {
           setUploadStatus('idle');
           setUploadMessage('');
+          console.log('🖼️ PersonalInfoSection - Upload status reset to idle after FileReader error');
         }, 3000);
       };
+      console.log('🖼️ PersonalInfoSection - Starting FileReader.readAsDataURL()');
       reader.readAsDataURL(file);
+    } else {
+      console.error('🖼️ PersonalInfoSection - onDataUpdate function not available!');
     }
   };
 

@@ -53,31 +53,71 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
 
   // Save profile data to localStorage whenever personalInfo changes
   useEffect(() => {
+    console.log('👤 UserProfilePage - personalInfo useEffect triggered:', {
+      hasPhoto: !!personalInfo.photo,
+      photoLength: personalInfo.photo?.length || 0,
+      name: personalInfo.name,
+      email: personalInfo.email,
+      hasAnyData: !!(personalInfo.name || personalInfo.email || personalInfo.photo)
+    });
+    
     if (personalInfo.name || personalInfo.email || personalInfo.photo) {
       try {
         localStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(personalInfo));
+        console.log('👤 UserProfilePage - Profile saved to localStorage successfully');
       } catch (error) {
         console.error('Error saving user profile:', error);
       }
+    } else {
+      console.log('👤 UserProfilePage - No data to save to localStorage');
     }
   }, [personalInfo]);
 
   const handlePersonalInfoUpdate = (field: string, value: any) => {
+    console.log('👤 UserProfilePage - handlePersonalInfoUpdate called:', {
+      field,
+      valueType: typeof value,
+      valueLength: typeof value === 'string' ? value.length : 'N/A',
+      isPhotoUpdate: field.includes('photo'),
+      valuePrefix: typeof value === 'string' ? value.substring(0, 50) + (value.length > 50 ? '...' : '') : value,
+      timestamp: new Date().toISOString()
+    });
+    
     setPersonalInfo(prev => {
+      console.log('👤 UserProfilePage - Current personalInfo before update:', {
+        hasPhoto: !!prev.photo,
+        photoLength: prev.photo?.length || 0,
+        name: prev.name,
+        email: prev.email
+      });
+      
       const updated = { ...prev };
       
       // Handle nested field updates (e.g., "personalInfo.name")
       if (field.includes('.')) {
         const [parent, child] = field.split('.');
+        console.log('👤 UserProfilePage - Processing nested field update:', { parent, child });
         if (parent === 'personalInfo') {
           updated[child as keyof PersonalInfo] = value;
+          console.log('👤 UserProfilePage - Updated nested field:', child, 'with value type:', typeof value);
         }
       } else {
         updated[field as keyof PersonalInfo] = value;
+        console.log('👤 UserProfilePage - Updated direct field:', field, 'with value type:', typeof value);
       }
+      
+      console.log('👤 UserProfilePage - Updated personalInfo:', {
+        hasPhoto: !!updated.photo,
+        photoLength: updated.photo?.length || 0,
+        photoChanged: prev.photo !== updated.photo,
+        name: updated.name,
+        email: updated.email
+      });
       
       return updated;
     });
+    
+    console.log('👤 UserProfilePage - setPersonalInfo called, state should update');
   };
 
   const handleSaveProfile = async () => {

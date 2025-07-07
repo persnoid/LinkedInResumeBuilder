@@ -14,7 +14,6 @@ interface DraftManagerProps {
   currentCustomizations?: any;
   currentStep?: number;
   currentDraftId?: string | null;
-  currentDraftId?: string | undefined;
   showToast: (message: string, type: 'success' | 'error' | 'info' | 'warning', duration?: number) => void;
   showConfirmation: (options: {
     title: string;
@@ -120,7 +119,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       // Fallback to local storage
       try {
         const draftId = DraftManager.saveDraft(
-          name,
+          saveName.trim(),
           currentResumeData,
           currentTemplate || 'modern-two-column',
           currentCustomizations || {
@@ -183,61 +182,8 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     }
   };
 
-  const handleRenameDraft = (id: string, newName: string) => {
-    const renameDraft = async () => {
-      const draft = drafts.find(d => d.id === id);
-      if (!draft || !newName.trim()) {
-        setError('Invalid draft or name');
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        await SupabaseDraftManager.saveDraft(
-          newName.trim(),
-          draft.resumeData,
-          draft.selectedTemplate,
-          draft.customizations,
-          draft.step,
-          id
-        );
-
-        setEditingId(null);
-        setEditingName('');
-        setError(null);
-        await loadDraftsFromSupabase();
-        showToast('Draft renamed successfully!', 'success');
-      } catch (err) {
-        console.error('Error renaming draft in Supabase:', err);
-        
-        // Fallback to local storage
-        try {
-          DraftManager.saveDraft(
-            newName.trim(),
-            draft.resumeData,
-            draft.selectedTemplate,
-            draft.customizations,
-            draft.step,
-            id
-          );
-          
-          setEditingId(null);
-          setEditingName('');
-          setError(null);
-          await loadDraftsFromSupabase(); // This will load local drafts as fallback
-          showToast('Draft renamed locally (cloud update failed)', 'warning');
-        } catch (localError) {
-          console.error('Error renaming draft locally:', localError);
-          setError('Failed to rename draft');
-          showToast('Failed to rename draft', 'error');
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    renameDraft();
-  };
+  const handleRenameDraft = async (id: string, newName: string) => {
+    const draft = drafts.find(d => d.id === id);
     if (!draft || !newName.trim()) {
       setError('Invalid draft or name');
       return;
@@ -245,7 +191,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
 
     try {
       setIsLoading(true);
-      DraftManager.saveDraft(
+      await SupabaseDraftManager.saveDraft(
         newName.trim(),
         draft.resumeData,
         draft.selectedTemplate,
@@ -257,12 +203,32 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       setEditingId(null);
       setEditingName('');
       setError(null);
-      loadDrafts();
+      await loadDraftsFromSupabase();
       showToast('Draft renamed successfully!', 'success');
     } catch (err) {
-      console.error('Error renaming draft:', err);
-      setError('Failed to rename draft');
-      showToast('Failed to rename draft', 'error');
+      console.error('Error renaming draft in Supabase:', err);
+      
+      // Fallback to local storage
+      try {
+        DraftManager.saveDraft(
+          newName.trim(),
+          draft.resumeData,
+          draft.selectedTemplate,
+          draft.customizations,
+          draft.step,
+          id
+        );
+        
+        setEditingId(null);
+        setEditingName('');
+        setError(null);
+        await loadDraftsFromSupabase(); // This will load local drafts as fallback
+        showToast('Draft renamed locally (cloud update failed)', 'warning');
+      } catch (localError) {
+        console.error('Error renaming draft locally:', localError);
+        setError('Failed to rename draft');
+        showToast('Failed to rename draft', 'error');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -287,7 +253,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     setIsLoading(true);
     DraftManager.importDraft(file)
       .then(() => {
-        loadDrafts();
+        loadDraftsFromSupabase();
         setError(null);
         showToast(t('draftManager.status.importedSuccessfully'), 'success');
       })

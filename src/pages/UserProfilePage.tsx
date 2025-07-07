@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, User, Settings, Camera, Mail, Phone, MapPin, Globe, Linkedin, LogOut, AlertTriangle } from 'lucide-react';
 import { PersonalInfoSection } from '../components/template-engine/sections/PersonalInfoSection';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import { PersonalInfo } from '../types/resume';
 
 interface UserProfilePageProps {
@@ -16,14 +17,12 @@ interface UserProfilePageProps {
   }) => Promise<boolean>;
 }
 
-const USER_PROFILE_STORAGE_KEY = 'linkedin_resume_user_profile';
-
 export const UserProfilePage: React.FC<UserProfilePageProps> = ({
   isOpen,
   onClose,
   showConfirmation
 }) => {
-  const { signOut, user } = useAuth();
+  const { signOut, user, updateProfile } = useAuth();
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
     name: '',
     title: '',
@@ -38,40 +37,47 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
   const [saveMessage, setSaveMessage] = useState('');
   const [isSigningOut, setIsSigningOut] = useState(false);
 
-  // Load profile data from localStorage on component mount
+  // Load profile data from Supabase on component mount
   useEffect(() => {
-    try {
-      const savedProfile = localStorage.getItem(USER_PROFILE_STORAGE_KEY);
-      if (savedProfile) {
-        const parsedProfile = JSON.parse(savedProfile);
-        setPersonalInfo(parsedProfile);
-      }
-    } catch (error) {
-      console.error('Error loading user profile:', error);
-    }
-  }, []);
-
-  // Save profile data to localStorage whenever personalInfo changes
-  useEffect(() => {
-    console.log('👤 UserProfilePage - personalInfo useEffect triggered:', {
-      hasPhoto: !!personalInfo.photo,
-      photoLength: personalInfo.photo?.length || 0,
-      name: personalInfo.name,
-      email: personalInfo.email,
-      hasAnyData: !!(personalInfo.name || personalInfo.email || personalInfo.photo)
-    });
-    
-    if (personalInfo.name || personalInfo.email || personalInfo.photo) {
+    const loadProfileFromSupabase = async () => {
+      if (!user) return;
+      
       try {
-        localStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(personalInfo));
-        console.log('👤 UserProfilePage - Profile saved to localStorage successfully');
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          if (error.code === 'PGRST116') {
+            console.log('No profile found in Supabase - user needs to create one');
+          } else {
+            console.error('Error loading profile from Supabase:', error);
+          }
+          return;
+        }
+
+        if (profile) {
+          console.log('Loaded profile from Supabase:', profile);
+          setPersonalInfo({
+            name: profile.full_name || '',
+            title: user.user_metadata?.title || '',
+            email: profile.email || '',
+            phone: user.user_metadata?.phone || '',
+            location: user.user_metadata?.location || '',
+            website: user.user_metadata?.website || '',
+            linkedin: user.user_metadata?.linkedin || '',
+            photo: profile.avatar_url || ''
+          });
+        }
       } catch (error) {
-        console.error('Error saving user profile:', error);
+        console.error('Error loading profile from Supabase:', error);
       }
-    } else {
-      console.log('👤 UserProfilePage - No data to save to localStorage');
-    }
-  }, [personalInfo]);
+    };
+
+    loadProfileFromSupabase();
+  }, [user]);
 
   const handlePersonalInfoUpdate = (field: string, value: any) => {
     console.log('👤 UserProfilePage - handlePersonalInfoUpdate called:', {
@@ -125,16 +131,27 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
     setSaveMessage('');
     
     try {
-      // Simulate save operation
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Save to Supabase using the auth context
+      const { error } = await updateProfile({
+        full_name: personalInfo.name,
+        avatar_url: personalInfo.photo,
+        title: personalInfo.title,
+        phone: personalInfo.phone,
+        location: personalInfo.location,
+        website: personalInfo.website,
+        linkedin: personalInfo.linkedin
+      });
       
-      localStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(personalInfo));
+      if (error) {
+        throw error;
+      }
+      
       setSaveMessage('Profile saved successfully!');
-      
       setTimeout(() => {
         setSaveMessage('');
       }, 3000);
     } catch (error) {
+      console.error('Error saving profile to Supabase:', error);
       setSaveMessage('Failed to save profile. Please try again.');
       setTimeout(() => {
         setSaveMessage('');
@@ -198,21 +215,44 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
     });
 
     if (confirmed) {
-      setPersonalInfo({
-        name: '',
-        title: '',
-        email: '',
-        phone: '',
-        location: '',
-        website: '',
-        linkedin: '',
-        photo: ''
-      });
-      localStorage.removeItem(USER_PROFILE_STORAGE_KEY);
-      setSaveMessage('Profile cleared successfully!');
-      setTimeout(() => {
-        setSaveMessage('');
-      }, 3000);
+      try {
+        // Clear profile in Supabase
+        const { error } = await updateProfile({
+          full_name: '',
+          avatar_url: '',
+          title: '',
+          phone: '',
+          location: '',
+          website: '',
+          linkedin: ''
+        });
+        
+        if (error) {
+          throw error;
+        }
+        
+        setPersonalInfo({
+          name: '',
+          title: '',
+          email: '',
+          phone: '',
+          location: '',
+          website: '',
+          linkedin: '',
+          photo: ''
+        });
+        
+        setSaveMessage('Profile cleared successfully!');
+        setTimeout(() => {
+          setSaveMessage('');
+        }, 3000);
+      } catch (error) {
+        console.error('Error clearing profile in Supabase:', error);
+        setSaveMessage('Failed to clear profile. Please try again.');
+        setTimeout(() => {
+          setSaveMessage('');
+        }, 3000);
+      }
     }
   };
 

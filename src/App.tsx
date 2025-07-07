@@ -12,6 +12,7 @@ import { ConfirmationDialog } from './components/ConfirmationDialog';
 import { useConfirmation } from './hooks/useConfirmation';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
 import { DraftManager } from './utils/draftManager';
+import { SupabaseDraftManager } from './utils/supabaseDraftManager';
 import { ResumeData, DraftResume, Customizations } from './types/resume';
 
 // Error Boundary Component
@@ -92,13 +93,45 @@ function App() {
 
   // Load current draft on app start
   useEffect(() => {
-    const draftId = DraftManager.getCurrentDraftId();
-    if (draftId) {
-      const draft = DraftManager.getDraft(draftId);
-      if (draft) {
-        loadDraftData(draft);
+    const initializeData = async () => {
+      // First check for local draft ID for continuity
+      const localDraftId = DraftManager.getCurrentDraftId();
+      
+      if (localDraftId) {
+        try {
+          // Try to load from Supabase first
+          const draft = await SupabaseDraftManager.getDraft(localDraftId);
+          if (draft) {
+            console.log('Loading draft from Supabase:', localDraftId);
+            loadDraftData(draft);
+            return;
+          }
+        } catch (error) {
+          console.warn('Failed to load draft from Supabase, trying local storage:', error);
+        }
+        
+        // Fallback to local storage
+        const localDraft = DraftManager.getDraft(localDraftId);
+        if (localDraft) {
+          console.log('Loading draft from local storage:', localDraftId);
+          loadDraftData(localDraft);
+          return;
+        }
       }
-    }
+      
+      // If no specific draft, try to load user's primary resume data
+      try {
+        const primaryResumeData = await SupabaseDraftManager.getResumeData();
+        if (primaryResumeData) {
+          console.log('Loading primary resume data from Supabase');
+          setResumeData(primaryResumeData);
+        }
+      } catch (error) {
+        console.warn('Failed to load primary resume data:', error);
+      }
+    };
+    
+    initializeData();
   }, []);
 
   const loadDraftData = async (draft: DraftResume) => {
@@ -127,15 +160,8 @@ function App() {
       // Set current draft ID
       setCurrentDraftId(draft.id);
       
-      // Update current draft in storage
-      DraftManager.saveDraft(
-        draft.name,
-        draft.resumeData,
-        draft.selectedTemplate,
-        draft.customizations,
-        draft.step,
-        draft.id
-      );
+      // Update current draft ID in local storage for continuity
+      localStorage.setItem('linkedin_resume_current_draft', draft.id);
       
       // Close draft manager
       setShowDraftManager(false);
@@ -184,8 +210,8 @@ function App() {
   const handleLinkedInData = (data: ResumeData) => {
     setLinkedinData(data);
     setResumeData(data);
-    setCurrentDraftId(null); // Clear current draft when new data is loaded
-    DraftManager.clearCurrentDraft();
+    setCurrentDraftId(null); // Clear current draft when new data is loaded - new data not yet associated with saved cloud draft
+    localStorage.removeItem('linkedin_resume_current_draft');
     
     // Automatically move to template selection after data is parsed
     setCurrentStep(1);
@@ -225,8 +251,115 @@ function App() {
   const saveDraft = (name: string) => {
     if (!resumeData) return;
 
-    try {
-      const draftId = DraftManager.saveDraft(
+    const saveDraftToSupabase = async () => {
+      try {
+        const draftId = await SupabaseDraftManager.saveDraft(
+          name,
+          resumeData,
+          selectedTemplate,
+          customizations,
+          currentStep,
+          currentDraftId
+        );
+
+        // Also save primary resume data as backup
+        await SupabaseDraftManager.saveResumeData(resumeData);
+
+        setCurrentDraftId(draftId);
+        setShowSavePrompt(false);
+        
+        // Update local storage for continuity
+        localStorage.setItem('linkedin_resume_current_draft', draftId);
+        
+        console.log('Draft saved to Supabase with ID:', draftId);
+        showToast('Draft saved successfully!', 'success');
+      } catch (error) {
+        console.error('Error saving draft to Supabase:', error);
+        
+        // Fallback to local storage
+        try {
+          const draftId = DraftManager.saveDraft(
+            name,
+            resumeData,
+            selectedTemplate,
+            customizations,
+            currentStep,
+            currentDraftId
+          );
+          
+          setCurrentDraftId(draftId);
+          setShowSavePrompt(false);
+          showToast('Draft saved locally (cloud save failed)', 'warning');
+        } catch (localError) {
+          console.error('Error saving draft locally:', localError);
+          showToast('Failed to save draft. Please try again.', 'error');
+        }
+      }
+    };
+
+    saveDraftToSupabase();
+  };
+
+  // Auto-save function for step transitions
+  const autoSaveDraft = async (step: number) => {
+    if (currentDraftId && resumeData) {
+      try {
+        // Try to get draft name from Supabase
+        const draft = await SupabaseDraftManager.getDraft(currentDraftId);
+        if (draft) {
+          await SupabaseDraftManager.saveDraft(
+            draft.name,
+            resumeData,
+            selectedTemplate,
+            customizations,
+            step,
+            currentDraftId
+          );
+          console.log('Auto-saved draft to Supabase');
+        }
+      } catch (error) {
+        console.warn('Auto-save to Supabase failed, trying local:', error);
+        // Fallback to local storage
+        const localDraft = DraftManager.getDraft(currentDraftId);
+        if (localDraft) {
+          DraftManager.saveDraft(
+            localDraft.name,
+            resumeData,
+            selectedTemplate,
+            customizations,
+            step,
+            currentDraftId
+          );
+        }
+      }
+    }
+  };
+
+  const nextStep = () => {
+    if (currentStep < STEPS.length - 1) {
+      // Show save prompt when moving from template selection step
+      if (currentStep === 1 && resumeData && !currentDraftId) {
+        setShowSavePrompt(true);
+        return;
+      }
+      
+      const newStep = currentStep + 1;
+      setCurrentStep(newStep);
+      
+      // Auto-save if we have a current draft
+      autoSaveDraft(newStep);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 0) {
+      const newStep = currentStep - 1;
+      setCurrentStep(newStep);
+      
+      // Auto-save if we have a current draft
+      autoSaveDraft(newStep);
+    }
+  };
         name,
         resumeData,
         selectedTemplate,

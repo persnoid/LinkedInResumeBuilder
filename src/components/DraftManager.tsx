@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, FolderOpen, Trash2, Download, Upload, Clock, FileText, X, Edit3, Check } from 'lucide-react';
 import { DraftManager } from '../utils/draftManager';
+import { SupabaseDraftManager } from '../utils/supabaseDraftManager';
 import { DraftResume, ResumeData } from '../types/resume';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -48,26 +49,39 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      loadDrafts();
+      loadDraftsFromSupabase();
     }
   }, [isOpen]);
 
-  const loadDrafts = () => {
+  const loadDraftsFromSupabase = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const allDrafts = DraftManager.getAllDrafts();
-      console.log('Loaded drafts:', allDrafts);
+      const allDrafts = await SupabaseDraftManager.getAllDrafts();
+      console.log('Loaded drafts from Supabase:', allDrafts);
       setDrafts(allDrafts);
     } catch (err) {
-      console.error('Error loading drafts:', err);
-      setError(t('draftManager.errors.loadFailed'));
+      console.error('Error loading drafts from Supabase:', err);
+      console.log('Falling back to local storage...');
+      
+      // Fallback to local storage
+      try {
+        const localDrafts = DraftManager.getAllDrafts();
+        console.log('Loaded drafts from local storage:', localDrafts);
+        setDrafts(localDrafts);
+        if (localDrafts.length > 0) {
+          setError('Showing local drafts (cloud sync unavailable)');
+        }
+      } catch (localError) {
+        console.error('Error loading local drafts:', localError);
+        setError(t('draftManager.errors.loadFailed'));
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSaveDraft = () => {
+  const handleSaveDraft = async () => {
     if (!currentResumeData || !saveName.trim()) {
       setError(t('draftManager.errors.invalidName'));
       return;
@@ -76,7 +90,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     try {
       setIsLoading(true);
       const name = saveName.trim();
-      const draftId = DraftManager.saveDraft(
+      const draftId = await SupabaseDraftManager.saveDraft(
         name,
         currentResumeData,
         currentTemplate || 'modern-two-column',
@@ -89,18 +103,45 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         currentDraftId || undefined
       );
 
+      // Also save primary resume data
+      await SupabaseDraftManager.saveResumeData(currentResumeData);
+
       setSaveName('');
       setShowSaveForm(false);
       setError(null);
-      loadDrafts();
+      await loadDraftsFromSupabase();
       
       // Show success toast
       const message = currentDraftId ? t('draftManager.status.updatedSuccessfully') : t('draftManager.status.savedSuccessfully');
       showToast(message, 'success');
     } catch (err) {
-      console.error('Error saving draft:', err);
-      setError(t('draftManager.errors.saveFailed'));
-      showToast(t('draftManager.errors.saveFailed'), 'error');
+      console.error('Error saving draft to Supabase:', err);
+      
+      // Fallback to local storage
+      try {
+        const draftId = DraftManager.saveDraft(
+          name,
+          currentResumeData,
+          currentTemplate || 'modern-two-column',
+          currentCustomizations || {
+            colors: { primary: '#2563EB', secondary: '#1E40AF', accent: '#3B82F6' },
+            font: 'Inter',
+            sectionOrder: ['summary', 'experience', 'education', 'skills', 'certifications']
+          },
+          currentStep || 1,
+          currentDraftId || undefined
+        );
+        
+        setSaveName('');
+        setShowSaveForm(false);
+        setError(null);
+        await loadDraftsFromSupabase(); // This will load local drafts as fallback
+        showToast('Draft saved locally (cloud save failed)', 'warning');
+      } catch (localError) {
+        console.error('Error saving draft locally:', localError);
+        setError(t('draftManager.errors.saveFailed'));
+        showToast(t('draftManager.errors.saveFailed'), 'error');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -118,14 +159,24 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     if (confirmed) {
       try {
         setIsLoading(true);
-        DraftManager.deleteDraft(id);
-        loadDrafts();
+        await SupabaseDraftManager.deleteDraft(id);
+        await loadDraftsFromSupabase();
         setError(null);
         showToast('Draft deleted successfully!', 'success');
       } catch (err) {
-        console.error('Error deleting draft:', err);
-        setError(t('draftManager.errors.deleteFailed'));
-        showToast(t('draftManager.errors.deleteFailed'), 'error');
+        console.error('Error deleting draft from Supabase:', err);
+        
+        // Fallback to local storage
+        try {
+          DraftManager.deleteDraft(id);
+          await loadDraftsFromSupabase(); // This will load local drafts as fallback
+          setError(null);
+          showToast('Draft deleted locally (cloud delete failed)', 'warning');
+        } catch (localError) {
+          console.error('Error deleting draft locally:', localError);
+          setError(t('draftManager.errors.deleteFailed'));
+          showToast(t('draftManager.errors.deleteFailed'), 'error');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -133,7 +184,60 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   };
 
   const handleRenameDraft = (id: string, newName: string) => {
-    const draft = DraftManager.getDraft(id);
+    const renameDraft = async () => {
+      const draft = drafts.find(d => d.id === id);
+      if (!draft || !newName.trim()) {
+        setError('Invalid draft or name');
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        await SupabaseDraftManager.saveDraft(
+          newName.trim(),
+          draft.resumeData,
+          draft.selectedTemplate,
+          draft.customizations,
+          draft.step,
+          id
+        );
+
+        setEditingId(null);
+        setEditingName('');
+        setError(null);
+        await loadDraftsFromSupabase();
+        showToast('Draft renamed successfully!', 'success');
+      } catch (err) {
+        console.error('Error renaming draft in Supabase:', err);
+        
+        // Fallback to local storage
+        try {
+          DraftManager.saveDraft(
+            newName.trim(),
+            draft.resumeData,
+            draft.selectedTemplate,
+            draft.customizations,
+            draft.step,
+            id
+          );
+          
+          setEditingId(null);
+          setEditingName('');
+          setError(null);
+          await loadDraftsFromSupabase(); // This will load local drafts as fallback
+          showToast('Draft renamed locally (cloud update failed)', 'warning');
+        } catch (localError) {
+          console.error('Error renaming draft locally:', localError);
+          setError('Failed to rename draft');
+          showToast('Failed to rename draft', 'error');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    renameDraft();
+  };
     if (!draft || !newName.trim()) {
       setError('Invalid draft or name');
       return;

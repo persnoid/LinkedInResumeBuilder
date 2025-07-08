@@ -49,12 +49,17 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   const [loadingDraftId, setLoadingDraftId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [dataSource, setDataSource] = useState<'supabase' | 'local' | 'none'>('none');
+  
+  // DEBUG: Log render state
+  console.log('🗂️ DraftManager: RENDER - isLoading:', isLoading, 'drafts.length:', drafts.length, 'dataSource:', dataSource, 'error:', error, 'warning:', warning);
 
   useEffect(() => {
     if (isOpen) {
+      console.log('🗂️ DraftManager: useEffect triggered - Modal opened, starting to load drafts...');
       console.log('🗂️ DraftManager: Modal opened, starting to load drafts...');
       loadDrafts();
     } else {
+      console.log('🗂️ DraftManager: useEffect triggered - Modal closed, resetting state...');
       // Reset state when modal closes
       setError(null);
       setWarning(null);
@@ -64,8 +69,10 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   }, [isOpen]);
 
   const loadDrafts = async () => {
+    console.log('🗂️ DraftManager: loadDrafts() START - isLoading before:', isLoading);
     try {
       setIsLoading(true);
+      console.log('🗂️ DraftManager: loadDrafts() - isLoading set to TRUE');
       setError(null);
       setWarning(null);
       console.log('🗂️ DraftManager: Starting draft loading process...');
@@ -83,11 +90,13 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       setError('Failed to load drafts');
     } finally {
       setIsLoading(false);
+      console.log('🗂️ DraftManager: loadDrafts() COMPLETE - isLoading set to FALSE, final drafts.length:', drafts.length);
       console.log('🗂️ DraftManager: Loading process completed');
     }
   };
 
   const loadDraftsFromSupabase = async () => {
+    console.log('🗂️ DraftManager: loadDraftsFromSupabase() START');
     try {
       console.log('🗂️ DraftManager: Attempting to load drafts from Supabase...');
       const supabaseDrafts = await SupabaseDraftManager.getAllDrafts();
@@ -96,55 +105,77 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       if (supabaseDrafts.length === 0) {
         console.log('🗂️ DraftManager: No drafts found in Supabase, checking local storage...');
         const localDrafts = DraftManager.getAllDrafts();
+        console.log('🗂️ DraftManager: Retrieved from local storage:', localDrafts.length, 'drafts');
         if (localDrafts.length > 0) {
           console.log('🗂️ DraftManager: Found', localDrafts.length, 'local drafts, loading them for display');
           setDrafts(localDrafts);
+          console.log('🗂️ DraftManager: setDrafts called with', localDrafts.length, 'local drafts');
           setDataSource('local');
+          console.log('🗂️ DraftManager: setDataSource set to LOCAL');
           setError(null);
           setWarning(`Showing ${localDrafts.length} local drafts. These can be synced to cloud storage by saving them again.`);
+          console.log('🗂️ DraftManager: setWarning set to local drafts message');
         } else {
           // No drafts anywhere
+          console.log('🗂️ DraftManager: No drafts found anywhere (cloud: 0, local: 0)');
           setDrafts([]);
+          console.log('🗂️ DraftManager: setDrafts called with empty array');
           setDataSource('supabase');
+          console.log('🗂️ DraftManager: setDataSource set to SUPABASE (no drafts)');
           setError(null);
           setWarning(null);
+          console.log('🗂️ DraftManager: Cleared error and warning');
         }
       } else {
         // Found cloud drafts
+        console.log('🗂️ DraftManager: Found', supabaseDrafts.length, 'cloud drafts, setting them');
         setDrafts(supabaseDrafts);
+        console.log('🗂️ DraftManager: setDrafts called with', supabaseDrafts.length, 'cloud drafts');
         setDataSource('supabase');
+        console.log('🗂️ DraftManager: setDataSource set to SUPABASE (with drafts)');
         setError(null);
         setWarning(null);
+        console.log('🗂️ DraftManager: Cleared error and warning');
       }
     } catch (supabaseError) {
       console.error('🗂️ DraftManager: Supabase loading failed:', supabaseError);
       console.log('🗂️ DraftManager: Falling back to local storage...');
       loadDraftsFromLocal();
     }
+    console.log('🗂️ DraftManager: loadDraftsFromSupabase() END');
   };
 
   const loadDraftsFromLocal = () => {
+    console.log('🗂️ DraftManager: loadDraftsFromLocal() START');
     try {
       console.log('🗂️ DraftManager: Loading drafts from local storage...');
       const localDrafts = DraftManager.getAllDrafts();
       console.log('🗂️ DraftManager: Successfully loaded', localDrafts.length, 'drafts from local storage');
       
       setDrafts(localDrafts);
+      console.log('🗂️ DraftManager: setDrafts called with', localDrafts.length, 'local drafts');
       setDataSource('local');
+      console.log('🗂️ DraftManager: setDataSource set to LOCAL');
       setError(null);
       
       if (localDrafts.length > 0) {
         setWarning(`Showing ${localDrafts.length} local drafts. ${user ? 'Cloud sync temporarily unavailable.' : 'Sign in to sync drafts to cloud.'}`);
+        console.log('🗂️ DraftManager: setWarning set to local drafts message');
       } else {
         setWarning(null);
+        console.log('🗂️ DraftManager: setWarning cleared (no local drafts)');
       }
     } catch (localError) {
       console.error('🗂️ DraftManager: Local storage loading failed:', localError);
       setDrafts([]);
+      console.log('🗂️ DraftManager: setDrafts called with empty array (local error)');
       setDataSource('none');
+      console.log('🗂️ DraftManager: setDataSource set to NONE');
       setWarning(null);
       setError('Failed to load drafts from both cloud and local storage');
+      console.log('🗂️ DraftManager: setError set to critical failure message');
     }
+    console.log('🗂️ DraftManager: loadDraftsFromLocal() END');
   };
 
   const refreshDrafts = async () => {

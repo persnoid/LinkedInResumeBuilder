@@ -64,15 +64,18 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
       console.error('Error loading recent drafts from Supabase:', error);
       console.log('Falling back to local storage...');
       
-      // Fallback to local storage
-      try {
-        const localRecent = DraftManager.getRecentDrafts(3);
-        console.log('Recent drafts loaded from local storage:', localRecent);
-        setRecentDrafts(localRecent);
-      } catch (localError) {
-        console.error('Error loading recent drafts from local storage:', localError);
-        setRecentDrafts([]);
-      }
+      loadRecentDraftsFromLocal();
+    }
+  };
+
+  const loadRecentDraftsFromLocal = () => {
+    try {
+      const localRecent = DraftManager.getRecentDrafts(3);
+      console.log('Recent drafts loaded from local storage:', localRecent);
+      setRecentDrafts(localRecent);
+    } catch (localError) {
+      console.error('Error loading recent drafts from local storage:', localError);
+      setRecentDrafts([]);
     }
   };
 

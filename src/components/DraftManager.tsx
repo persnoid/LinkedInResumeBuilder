@@ -63,18 +63,35 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       console.error('Error loading drafts from Supabase:', err);
       console.log('Falling back to local storage...');
       
-      // Fallback to local storage
-      try {
-        const localDrafts = DraftManager.getAllDrafts();
-        console.log('Loaded drafts from local storage:', localDrafts);
-        setDrafts(localDrafts);
-        if (localDrafts.length > 0) {
-          setError('Showing local drafts (cloud sync unavailable)');
-        }
-      } catch (localError) {
-        console.error('Error loading local drafts:', localError);
-        setError(t('draftManager.errors.loadFailed'));
+      loadDraftsFromLocal();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadDraftsFromLocal = () => {
+    try {
+      const localDrafts = DraftManager.getAllDrafts();
+      console.log('Loaded drafts from local storage:', localDrafts);
+      setDrafts(localDrafts);
+      if (localDrafts.length > 0) {
+        setError('Showing local drafts (cloud sync unavailable)');
       }
+    } catch (localError) {
+      console.error('Error loading local drafts:', localError);
+      setError(t('draftManager.errors.loadFailed'));
+    }
+  };
+
+  const refreshDrafts = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const allDrafts = await SupabaseDraftManager.getAllDrafts();
+      setDrafts(allDrafts);
+    } catch (err) {
+      console.error('Error refreshing drafts from Supabase:', err);
+      loadDraftsFromLocal();
     } finally {
       setIsLoading(false);
     }
@@ -108,7 +125,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       setSaveName('');
       setShowSaveForm(false);
       setError(null);
-      await loadDraftsFromSupabase();
+      await refreshDrafts();
       
       // Show success toast
       const message = currentDraftId ? t('draftManager.status.updatedSuccessfully') : t('draftManager.status.savedSuccessfully');
@@ -134,7 +151,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         setSaveName('');
         setShowSaveForm(false);
         setError(null);
-        await loadDraftsFromSupabase(); // This will load local drafts as fallback
+        loadDraftsFromLocal(); // Just refresh local drafts, don't try Supabase again
         showToast('Draft saved locally (cloud save failed)', 'warning');
       } catch (localError) {
         console.error('Error saving draft locally:', localError);
@@ -159,7 +176,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       try {
         setIsLoading(true);
         await SupabaseDraftManager.deleteDraft(id);
-        await loadDraftsFromSupabase();
+        await refreshDrafts();
         setError(null);
         showToast('Draft deleted successfully!', 'success');
       } catch (err) {
@@ -168,7 +185,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         // Fallback to local storage
         try {
           DraftManager.deleteDraft(id);
-          await loadDraftsFromSupabase(); // This will load local drafts as fallback
+          loadDraftsFromLocal(); // Just refresh local drafts, don't try Supabase again
           setError(null);
           showToast('Draft deleted locally (cloud delete failed)', 'warning');
         } catch (localError) {
@@ -203,7 +220,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       setEditingId(null);
       setEditingName('');
       setError(null);
-      await loadDraftsFromSupabase();
+      await refreshDrafts();
       showToast('Draft renamed successfully!', 'success');
     } catch (err) {
       console.error('Error renaming draft in Supabase:', err);
@@ -222,7 +239,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         setEditingId(null);
         setEditingName('');
         setError(null);
-        await loadDraftsFromSupabase(); // This will load local drafts as fallback
+        loadDraftsFromLocal(); // Just refresh local drafts, don't try Supabase again
         showToast('Draft renamed locally (cloud update failed)', 'warning');
       } catch (localError) {
         console.error('Error renaming draft locally:', localError);
@@ -253,7 +270,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     setIsLoading(true);
     DraftManager.importDraft(file)
       .then(() => {
-        loadDraftsFromSupabase();
+        refreshDrafts();
         setError(null);
         showToast(t('draftManager.status.importedSuccessfully'), 'success');
       })

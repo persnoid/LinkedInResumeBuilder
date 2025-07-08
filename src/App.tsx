@@ -401,7 +401,10 @@ function App() {
 
   const handleSavePromptSkip = () => {
     setShowSavePrompt(false);
-    setCurrentStep(currentStep + 1);
+    // Only advance if there's a next step available
+    if (currentStep < STEPS.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
   };
 
   const renderCurrentStep = () => {

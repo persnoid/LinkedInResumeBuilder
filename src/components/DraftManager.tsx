@@ -93,18 +93,28 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       const supabaseDrafts = await SupabaseDraftManager.getAllDrafts();
       console.log('🗂️ DraftManager: Successfully loaded', supabaseDrafts.length, 'drafts from Supabase');
       
-      setDrafts(supabaseDrafts);
-      setDataSource('supabase');
-      setError(null);
-      setWarning(null);
-      
       if (supabaseDrafts.length === 0) {
         console.log('🗂️ DraftManager: No drafts found in Supabase, checking local storage...');
         const localDrafts = DraftManager.getAllDrafts();
         if (localDrafts.length > 0) {
-          console.log('🗂️ DraftManager: Found', localDrafts.length, 'local drafts, showing hybrid message');
-          setWarning(`No cloud drafts found. You have ${localDrafts.length} local drafts that could be synced to cloud.`);
+          console.log('🗂️ DraftManager: Found', localDrafts.length, 'local drafts, loading them for display');
+          setDrafts(localDrafts);
+          setDataSource('local');
+          setError(null);
+          setWarning(`Showing ${localDrafts.length} local drafts. These can be synced to cloud storage by saving them again.`);
+        } else {
+          // No drafts anywhere
+          setDrafts([]);
+          setDataSource('supabase');
+          setError(null);
+          setWarning(null);
         }
+      } else {
+        // Found cloud drafts
+        setDrafts(supabaseDrafts);
+        setDataSource('supabase');
+        setError(null);
+        setWarning(null);
       }
     } catch (supabaseError) {
       console.error('🗂️ DraftManager: Supabase loading failed:', supabaseError);

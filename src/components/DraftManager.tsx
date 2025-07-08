@@ -41,10 +41,10 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   const [saveName, setSaveName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
-  const [showSaveForm, setShowSaveForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingDraftId, setLoadingDraftId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -97,69 +97,65 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     }
   };
 
-  const handleSaveDraft = async () => {
+  const handleQuickSave = async () => {
     if (!currentResumeData || !saveName.trim()) {
-      setError(t('draftManager.errors.invalidName'));
+      setError('Please enter a draft name');
       return;
     }
 
     try {
-      setIsLoading(true);
-      const name = saveName.trim();
-      const draftId = await SupabaseDraftManager.saveDraft(
-        name,
-        currentResumeData,
-        currentTemplate || 'modern-two-column',
-        currentCustomizations || {
-          colors: { primary: '#2563EB', secondary: '#1E40AF', accent: '#3B82F6' },
-          font: 'Inter',
-          sectionOrder: ['summary', 'experience', 'education', 'skills', 'certifications']
-        },
-        currentStep || 1,
-        currentDraftId || undefined
-      );
-
-      // Also save primary resume data
-      await SupabaseDraftManager.saveResumeData(currentResumeData);
-
-      setSaveName('');
-      setShowSaveForm(false);
+      setIsSaving(true);
       setError(null);
-      await refreshDrafts();
       
-      // Show success toast
-      const message = currentDraftId ? t('draftManager.status.updatedSuccessfully') : t('draftManager.status.savedSuccessfully');
-      showToast(message, 'success');
-    } catch (err) {
-      console.error('Error saving draft to Supabase:', err);
+      const name = saveName.trim();
+      let draftId: string;
       
-      // Fallback to local storage
       try {
-        const draftId = DraftManager.saveDraft(
-          saveName.trim(),
+        // Try Supabase first
+        draftId = await SupabaseDraftManager.saveDraft(
+          name,
           currentResumeData,
-          currentTemplate || 'modern-two-column',
+          currentTemplate || 'azurill',
           currentCustomizations || {
             colors: { primary: '#2563EB', secondary: '#1E40AF', accent: '#3B82F6' },
-            font: 'Inter',
+            typography: { fontFamily: 'Inter, sans-serif' },
+            sectionOrder: ['summary', 'experience', 'education', 'skills', 'certifications']
+          },
+          currentStep || 1,
+          currentDraftId || undefined
+        );
+
+        // Also save primary resume data
+        await SupabaseDraftManager.saveResumeData(currentResumeData);
+        showToast('Draft saved to cloud successfully!', 'success');
+      } catch (supabaseError) {
+        console.error('Error saving draft to Supabase:', supabaseError);
+        
+        // Fallback to local storage
+        draftId = DraftManager.saveDraft(
+          name,
+          currentResumeData,
+          currentTemplate || 'azurill',
+          currentCustomizations || {
+            colors: { primary: '#2563EB', secondary: '#1E40AF', accent: '#3B82F6' },
+            typography: { fontFamily: 'Inter, sans-serif' },
             sectionOrder: ['summary', 'experience', 'education', 'skills', 'certifications']
           },
           currentStep || 1,
           currentDraftId || undefined
         );
         
-        setSaveName('');
-        setShowSaveForm(false);
-        setError(null);
-        loadDraftsFromLocal(); // Just refresh local drafts, don't try Supabase again
-        showToast('Draft saved locally (cloud save failed)', 'warning');
-      } catch (localError) {
-        console.error('Error saving draft locally:', localError);
-        setError(t('draftManager.errors.saveFailed'));
-        showToast(t('draftManager.errors.saveFailed'), 'error');
+        showToast('Draft saved locally (cloud sync unavailable)', 'warning');
       }
+      
+      setSaveName('');
+      await refreshDrafts();
+    } catch (err) {
+      console.error('Critical error saving draft:', err);
+      setError('Failed to save draft');
+      showToast('Failed to save draft. Please try again.', 'error');
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -398,52 +394,48 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
 
           {/* Save Current Draft */}
           {currentResumeData && (
-            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-blue-900">{t('draftManager.saveProgress.title')}</h3>
-                <button
-                  onClick={() => setShowSaveForm(!showSaveForm)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center text-sm transition-colors"
-                  disabled={isLoading}
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {currentDraftId ? t('draftManager.buttons.updateDraft') : t('draftManager.buttons.saveDraft')}
-                </button>
-              </div>
-
-              {showSaveForm && (
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    value={saveName}
-                    onChange={(e) => setSaveName(e.target.value)}
-                    placeholder={currentDraftId ? t('draftManager.saveProgress.updatePlaceholder') : t('draftManager.saveProgress.namePlaceholder')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    onKeyPress={(e) => e.key === 'Enter' && handleSaveDraft()}
-                    disabled={isLoading}
-                  />
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={handleSaveDraft}
-                      disabled={!saveName.trim() || isLoading}
-                      className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white px-4 py-2 rounded-md text-sm transition-colors"
-                    >
-                      {isLoading ? t('app.status.saving') : (currentDraftId ? t('app.buttons.update') : t('app.buttons.save'))}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowSaveForm(false);
-                        setSaveName('');
-                        setError(null);
-                      }}
-                      className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm transition-colors"
-                      disabled={isLoading}
-                    >
-                      {t('app.buttons.cancel')}
-                    </button>
-                  </div>
+            <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+              <h3 className="font-semibold text-green-900 mb-4">Quick Save Current Work</h3>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={saveName}
+                  onChange={(e) => setSaveName(e.target.value)}
+                  placeholder={currentDraftId ? 'Update draft name...' : 'Enter name for your draft...'}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  onKeyPress={(e) => e.key === 'Enter' && handleQuickSave()}
+                  disabled={isSaving}
+                />
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleQuickSave}
+                    disabled={!saveName.trim() || isSaving}
+                    className="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white px-4 py-2 rounded-md text-sm transition-colors flex items-center"
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        {currentDraftId ? 'Update Draft' : 'Save Draft'}
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSaveName('');
+                      setError(null);
+                    }}
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm transition-colors"
+                    disabled={isSaving}
+                  >
+                    Clear
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
           )}
 

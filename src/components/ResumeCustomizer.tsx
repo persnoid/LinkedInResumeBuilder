@@ -313,7 +313,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           {/* Save Draft Button */}
           <button
             onClick={onSaveDraft}
-            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm flex items-center transition-colors"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center transition-colors"
           >
             <Save className="w-3 h-3 mr-1" />
             {currentDraftId ? 'Update' : 'Save'}

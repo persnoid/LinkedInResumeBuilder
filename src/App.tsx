@@ -251,34 +251,36 @@ function App() {
   const saveDraft = (name: string) => {
     if (!resumeData) return;
 
-    const saveDraftToSupabase = async () => {
+    // Don't create async function inside, handle async directly
+    const performSave = async () => {
+      setShowSavePrompt(false); // Close the prompt immediately
+
       try {
-        const draftId = await SupabaseDraftManager.saveDraft(
-          name,
-          resumeData,
-          selectedTemplate,
-          customizations,
-          currentStep,
-          currentDraftId
-        );
-
-        // Also save primary resume data as backup
-        await SupabaseDraftManager.saveResumeData(resumeData);
-
-        setCurrentDraftId(draftId);
-        setShowSavePrompt(false);
+        showToast('Saving draft...', 'info', 2000);
         
-        // Update local storage for continuity
-        localStorage.setItem('linkedin_resume_current_draft', draftId);
+        let draftId: string;
         
-        console.log('Draft saved to Supabase with ID:', draftId);
-        showToast('Draft saved successfully!', 'success');
-      } catch (error) {
-        console.error('Error saving draft to Supabase:', error);
-        
-        // Fallback to local storage
         try {
-          const draftId = DraftManager.saveDraft(
+          // Try Supabase first
+          draftId = await SupabaseDraftManager.saveDraft(
+            name,
+            resumeData,
+            selectedTemplate,
+            customizations,
+            currentStep,
+            currentDraftId
+          );
+
+          // Also save primary resume data as backup
+          await SupabaseDraftManager.saveResumeData(resumeData);
+          
+          console.log('Draft saved to Supabase with ID:', draftId);
+          showToast('Draft saved to cloud successfully!', 'success');
+        } catch (supabaseError) {
+          console.error('Error saving draft to Supabase:', supabaseError);
+          
+          // Fallback to local storage
+          draftId = DraftManager.saveDraft(
             name,
             resumeData,
             selectedTemplate,
@@ -287,17 +289,21 @@ function App() {
             currentDraftId
           );
           
-          setCurrentDraftId(draftId);
-          setShowSavePrompt(false);
-          showToast('Draft saved locally (cloud save failed)', 'warning');
-        } catch (localError) {
-          console.error('Error saving draft locally:', localError);
-          showToast('Failed to save draft. Please try again.', 'error');
+          showToast('Draft saved locally (cloud sync unavailable)', 'warning');
         }
+
+        // Update state with the new draft ID
+        setCurrentDraftId(draftId);
+        
+        // Update local storage for continuity
+        localStorage.setItem('linkedin_resume_current_draft', draftId);
+      } catch (error) {
+        console.error('Critical error saving draft:', error);
+        showToast('Failed to save draft. Please try again.', 'error');
       }
     };
 
-    saveDraftToSupabase();
+    performSave();
   };
 
   // Auto-save function for step transitions

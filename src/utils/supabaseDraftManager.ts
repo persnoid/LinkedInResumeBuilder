@@ -2,6 +2,19 @@ import { supabase } from '../lib/supabase';
 import { DraftResume, ResumeData } from '../types/resume';
 
 export class SupabaseDraftManager {
+  // Check if user is authenticated before operations
+  private static async checkAuth() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) {
+      console.error('Auth check error:', error);
+      throw new Error('Authentication failed');
+    }
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    return user;
+  }
+
   static async saveDraft(
     name: string,
     resumeData: ResumeData,
@@ -11,11 +24,8 @@ export class SupabaseDraftManager {
     draftId?: string
   ): Promise<string> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
+      console.log('📤 SupabaseDraftManager: Starting saveDraft for:', name.substring(0, 20));
+      const user = await this.checkAuth();
 
       const draftData = {
         user_id: user.id,
@@ -28,6 +38,7 @@ export class SupabaseDraftManager {
       };
 
       if (draftId) {
+        console.log('📤 SupabaseDraftManager: Updating existing draft:', draftId);
         // Update existing draft
         const { data, error } = await supabase
           .from('drafts')
@@ -38,8 +49,10 @@ export class SupabaseDraftManager {
           .single();
 
         if (error) throw error;
+        console.log('📤 SupabaseDraftManager: Successfully updated draft:', data.id);
         return data.id;
       } else {
+        console.log('📤 SupabaseDraftManager: Creating new draft');
         // Create new draft
         const { data, error } = await supabase
           .from('drafts')
@@ -48,6 +61,7 @@ export class SupabaseDraftManager {
           .single();
 
         if (error) throw error;
+        console.log('📤 SupabaseDraftManager: Successfully created draft:', data.id);
         return data.id;
       }
     } catch (error) {
@@ -58,12 +72,9 @@ export class SupabaseDraftManager {
 
   static async getAllDrafts(): Promise<DraftResume[]> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        console.log('No user authenticated, returning empty array');
-        return [];
-      }
+      console.log('📥 SupabaseDraftManager: Starting getAllDrafts');
+      const user = await this.checkAuth();
+      console.log('📥 SupabaseDraftManager: User authenticated:', user.email);
 
       const { data, error } = await supabase
         .from('drafts')
@@ -72,11 +83,11 @@ export class SupabaseDraftManager {
         .order('updated_at', { ascending: false });
 
       if (error) {
-        console.error('Supabase query error:', error);
+        console.error('📥 SupabaseDraftManager: Supabase query error:', error);
         throw error;
       }
 
-      console.log('Supabase query successful, returned:', data?.length || 0, 'drafts');
+      console.log('📥 SupabaseDraftManager: Query successful, returned:', data?.length || 0, 'drafts');
       return (data || []).map(draft => ({
         id: draft.id,
         name: draft.name,
@@ -88,19 +99,15 @@ export class SupabaseDraftManager {
         step: draft.step
       }));
     } catch (error) {
-      console.error('Error in getAllDrafts:', error);
+      console.error('📥 SupabaseDraftManager: Error in getAllDrafts:', error);
       throw error; // Re-throw to let caller handle fallback
     }
   }
 
   static async getDraft(id: string): Promise<DraftResume | null> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        console.log('No user authenticated for getDraft');
-        return null;
-      }
+      console.log('📥 SupabaseDraftManager: Starting getDraft for:', id);
+      const user = await this.checkAuth();
 
       const { data, error } = await supabase
         .from('drafts')
@@ -111,14 +118,14 @@ export class SupabaseDraftManager {
 
       if (error) {
         if (error.code === 'PGRST116') {
-          console.log('Draft not found in Supabase:', id);
+          console.log('📥 SupabaseDraftManager: Draft not found:', id);
           return null; // Draft not found
         }
-        console.error('Supabase getDraft error:', error);
+        console.error('📥 SupabaseDraftManager: Query error:', error);
         throw error;
       }
 
-      console.log('Successfully retrieved draft from Supabase:', id);
+      console.log('📥 SupabaseDraftManager: Successfully retrieved draft:', id);
       return {
         id: data.id,
         name: data.name,
@@ -130,18 +137,15 @@ export class SupabaseDraftManager {
         step: data.step
       };
     } catch (error) {
-      console.error('Error in getDraft:', error);
+      console.error('📥 SupabaseDraftManager: Error in getDraft:', error);
       throw error; // Re-throw to let caller handle fallback
     }
   }
 
   static async deleteDraft(id: string): Promise<void> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
+      console.log('🗑️ SupabaseDraftManager: Starting deleteDraft for:', id);
+      const user = await this.checkAuth();
 
       const { error } = await supabase
         .from('drafts')
@@ -149,21 +153,22 @@ export class SupabaseDraftManager {
         .eq('id', id)
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('🗑️ SupabaseDraftManager: Delete error:', error);
+        throw error;
+      }
+      
+      console.log('🗑️ SupabaseDraftManager: Successfully deleted draft:', id);
     } catch (error) {
-      console.error('Error deleting draft from Supabase:', error);
+      console.error('🗑️ SupabaseDraftManager: Error in deleteDraft:', error);
       throw new Error('Failed to delete draft from cloud');
     }
   }
 
   static async getRecentDrafts(limit: number = 5): Promise<DraftResume[]> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        console.log('No user authenticated for getRecentDrafts');
-        return [];
-      }
+      console.log('📥 SupabaseDraftManager: Starting getRecentDrafts, limit:', limit);
+      const user = await this.checkAuth();
 
       const { data, error } = await supabase
         .from('drafts')
@@ -173,11 +178,11 @@ export class SupabaseDraftManager {
         .limit(limit);
 
       if (error) {
-        console.error('Supabase getRecentDrafts error:', error);
+        console.error('📥 SupabaseDraftManager: getRecentDrafts error:', error);
         throw error;
       }
 
-      console.log('Successfully retrieved recent drafts from Supabase:', data?.length || 0);
+      console.log('📥 SupabaseDraftManager: Retrieved recent drafts:', data?.length || 0);
       return (data || []).map(draft => ({
         id: draft.id,
         name: draft.name,
@@ -189,7 +194,7 @@ export class SupabaseDraftManager {
         step: draft.step
       }));
     } catch (error) {
-      console.error('Error in getRecentDrafts:', error);
+      console.error('📥 SupabaseDraftManager: Error in getRecentDrafts:', error);
       throw error; // Re-throw to let caller handle fallback
     }
   }
@@ -197,11 +202,8 @@ export class SupabaseDraftManager {
   // Save resume data separately for backup
   static async saveResumeData(resumeData: ResumeData): Promise<string> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
+      console.log('📤 SupabaseDraftManager: Starting saveResumeData');
+      const user = await this.checkAuth();
 
       // Check if user already has resume data
       const { data: existing, error: fetchError } = await supabase
@@ -233,6 +235,7 @@ export class SupabaseDraftManager {
           .single();
 
         if (error) throw error;
+        console.log('📤 SupabaseDraftManager: Updated existing resume data:', data.id);
         return data.id;
       } else {
         // Create new record
@@ -243,6 +246,7 @@ export class SupabaseDraftManager {
           .single();
 
         if (error) throw error;
+        console.log('📤 SupabaseDraftManager: Created new resume data:', data.id);
         return data.id;
       }
     } catch (error) {
@@ -253,11 +257,8 @@ export class SupabaseDraftManager {
 
   static async getResumeData(): Promise<ResumeData | null> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        return null;
-      }
+      console.log('📥 SupabaseDraftManager: Starting getResumeData');
+      const user = await this.checkAuth();
 
       const { data, error } = await supabase
         .from('resume_data')
@@ -267,11 +268,13 @@ export class SupabaseDraftManager {
 
       if (error) {
         if (error.code === 'PGRST116') {
+          console.log('📥 SupabaseDraftManager: No resume data found');
           return null; // No resume data found
         }
         throw error;
       }
 
+      console.log('📥 SupabaseDraftManager: Successfully retrieved resume data');
       return {
         personalInfo: data.personal_info,
         summary: data.summary || '',
@@ -283,8 +286,8 @@ export class SupabaseDraftManager {
         customSections: data.custom_sections || {}
       };
     } catch (error) {
-      console.error('Error loading resume data from Supabase:', error);
-      return null;
+      console.error('📥 SupabaseDraftManager: Error in getResumeData:', error);
+      throw error; // Re-throw to let caller handle fallback
     }
   }
 }

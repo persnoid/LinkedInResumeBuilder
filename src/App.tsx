@@ -342,6 +342,21 @@ function App() {
     saveDraft(name);
     setCurrentStep(currentStep + 1);
   };
+  const handleSavePromptSave = async (name: string) => {
+    try {
+      // Wait for the save operation to complete
+      await saveDraft(name);
+      
+      // Only increment step if we're not already on the final step
+      if (currentStep < STEPS.length - 1) {
+        setCurrentStep(currentStep + 1);
+      }
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      // Don't increment step if save failed
+      showToast('Failed to save draft. Please try again.', 'error');
+    }
+  };
 
   const handleSavePromptSkip = () => {
     setShowSavePrompt(false);

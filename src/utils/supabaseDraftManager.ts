@@ -61,6 +61,7 @@ export class SupabaseDraftManager {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
+        console.log('No user authenticated, returning empty array');
         return [];
       }
 
@@ -70,8 +71,12 @@ export class SupabaseDraftManager {
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase query error:', error);
+        throw error;
+      }
 
+      console.log('Supabase query successful, returned:', data?.length || 0, 'drafts');
       return (data || []).map(draft => ({
         id: draft.id,
         name: draft.name,
@@ -83,8 +88,8 @@ export class SupabaseDraftManager {
         step: draft.step
       }));
     } catch (error) {
-      console.error('Error loading drafts from Supabase:', error);
-      return [];
+      console.error('Error in getAllDrafts:', error);
+      throw error; // Re-throw to let caller handle fallback
     }
   }
 
@@ -93,6 +98,7 @@ export class SupabaseDraftManager {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
+        console.log('No user authenticated for getDraft');
         return null;
       }
 
@@ -105,11 +111,14 @@ export class SupabaseDraftManager {
 
       if (error) {
         if (error.code === 'PGRST116') {
+          console.log('Draft not found in Supabase:', id);
           return null; // Draft not found
         }
+        console.error('Supabase getDraft error:', error);
         throw error;
       }
 
+      console.log('Successfully retrieved draft from Supabase:', id);
       return {
         id: data.id,
         name: data.name,
@@ -121,8 +130,8 @@ export class SupabaseDraftManager {
         step: data.step
       };
     } catch (error) {
-      console.error('Error getting draft from Supabase:', error);
-      return null;
+      console.error('Error in getDraft:', error);
+      throw error; // Re-throw to let caller handle fallback
     }
   }
 
@@ -152,6 +161,7 @@ export class SupabaseDraftManager {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
+        console.log('No user authenticated for getRecentDrafts');
         return [];
       }
 
@@ -162,8 +172,12 @@ export class SupabaseDraftManager {
         .order('updated_at', { ascending: false })
         .limit(limit);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase getRecentDrafts error:', error);
+        throw error;
+      }
 
+      console.log('Successfully retrieved recent drafts from Supabase:', data?.length || 0);
       return (data || []).map(draft => ({
         id: draft.id,
         name: draft.name,
@@ -175,8 +189,8 @@ export class SupabaseDraftManager {
         step: draft.step
       }));
     } catch (error) {
-      console.error('Error loading recent drafts from Supabase:', error);
-      return [];
+      console.error('Error in getRecentDrafts:', error);
+      throw error; // Re-throw to let caller handle fallback
     }
   }
 

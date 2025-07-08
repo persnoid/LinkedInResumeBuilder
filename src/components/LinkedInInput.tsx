@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Linkedin, Upload, AlertCircle, CheckCircle, FileText, ExternalLink, Brain, Settings, FolderOpen } from 'lucide-react';
 import { parsePDFFile, checkAIAvailability } from '../utils/pdfParser';
-import { DraftManager } from '../utils/draftManager';
 import { SupabaseDraftManager } from '../utils/supabaseDraftManager';
 import { ResumeData } from '../types/resume';
 
@@ -62,19 +61,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
       setRecentDrafts(recent);
     } catch (error) {
       console.error('🔗 LinkedInInput: Error loading recent drafts from Supabase:', error);
-      console.log('🔗 LinkedInInput: Falling back to local storage...');
-      
-      loadRecentDraftsFromLocal();
-    }
-  };
-
-  const loadRecentDraftsFromLocal = () => {
-    try {
-      const localRecent = DraftManager.getRecentDrafts(3);
-      console.log('🔗 LinkedInInput: Recent drafts loaded from local storage:', localRecent.length);
-      setRecentDrafts(localRecent);
-    } catch (localError) {
-      console.error('🔗 LinkedInInput: Error loading recent drafts from local storage:', localError);
+      console.log('🔗 LinkedInInput: No recent drafts available (user may not be signed in)');
       setRecentDrafts([]);
     }
   };

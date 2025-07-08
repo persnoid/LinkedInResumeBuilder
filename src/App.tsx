@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from './lib/supabase';
 import { ProgressIndicator } from './components/ProgressIndicator';
 import { LinkedInInput } from './components/LinkedInInput';
 import { TemplateSelector } from './components/TemplateSelector';

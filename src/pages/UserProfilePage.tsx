@@ -162,32 +162,48 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
   };
 
   const handleSignOut = async () => {
-    const confirmed = await showConfirmation({
-      title: 'Sign Out',
-      message: 'Are you sure you want to sign out? Any unsaved changes will be lost.',
-      confirmText: 'Sign Out',
-      cancelText: 'Cancel',
-      type: 'warning'
-    });
+    try {
+      const confirmed = await showConfirmation({
+        title: 'Sign Out',
+        message: 'Are you sure you want to sign out? Any unsaved changes will be lost.',
+        confirmText: 'Sign Out',
+        cancelText: 'Cancel',
+        type: 'warning'
+      });
 
-    if (confirmed) {
-      setIsSigningOut(true);
-      try {
-        const { error } = await signOut();
-        if (error) {
+      if (confirmed) {
+        setIsSigningOut(true);
+        setSaveMessage('Signing out...');
+        
+        try {
+          const { error } = await signOut();
+          if (error) {
+            console.error('Sign out error:', error);
+            setSaveMessage('Failed to sign out. Please try again.');
+            setTimeout(() => setSaveMessage(''), 3000);
+          } else {
+            // Successful sign out
+            setSaveMessage('Signed out successfully!');
+            // Close modal and reset form
+            setTimeout(() => {
+              onClose();
+              resetForm();
+              // Force page reload to reset all state
+              window.location.reload();
+            }, 1000);
+          }
+        } catch (error) {
+          console.error('Sign out error:', error);
           setSaveMessage('Failed to sign out. Please try again.');
           setTimeout(() => setSaveMessage(''), 3000);
-        } else {
-          // Close modal and reset form
-          onClose();
-          resetForm();
+        } finally {
+          setIsSigningOut(false);
         }
-      } catch (error) {
-        setSaveMessage('Failed to sign out. Please try again.');
-        setTimeout(() => setSaveMessage(''), 3000);
-      } finally {
-        setIsSigningOut(false);
       }
+    } catch (error) {
+      console.error('Confirmation dialog error:', error);
+      setSaveMessage('An error occurred. Please try again.');
+      setTimeout(() => setSaveMessage(''), 3000);
     }
   };
 

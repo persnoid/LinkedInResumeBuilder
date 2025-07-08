@@ -87,20 +87,24 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    console.log('🔗 LinkedInInput: File upload started:', file?.name);
     if (!file) return;
 
     if (file.type !== 'application/pdf') {
       setError('Please upload a valid PDF file');
+      console.log('🔗 LinkedInInput: Invalid file type:', file.type);
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) { // 10MB limit
       setError('File size must be less than 10MB');
+      console.log('🔗 LinkedInInput: File too large:', file.size);
       return;
     }
 
     // Check if AI is available before processing
     if (!aiStatus.aiAvailable) {
+      console.log('🔗 LinkedInInput: AI not available, status:', aiStatus);
       setError('AI-powered parsing is not available. Please ensure the AI service is running and your OpenAI API key is configured.');
       return;
     }
@@ -126,6 +130,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
       // Parse the PDF file using AI
       const extractedData = await parsePDFFile(file);
       
+      console.log('🔗 LinkedInInput: PDF parsed successfully');
       clearInterval(progressInterval);
       setUploadProgress(100);
       
@@ -133,6 +138,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
         setIsLoading(false);
         setSuccess(true);
         onDataExtracted(extractedData);
+        console.log('🔗 LinkedInInput: Data extracted and passed to parent');
         
         setTimeout(() => {
           onNext();
@@ -140,6 +146,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
       }, 500);
       
     } catch (error) {
+      console.error('🔗 LinkedInInput: PDF parsing error:', error);
       setIsLoading(false);
       setUploadProgress(0);
       setError(error instanceof Error ? error.message : 'Failed to process PDF file');
@@ -152,6 +159,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
     setError('');
     
     // Provide sample data for users who want to try the tool
+    console.log('🔗 LinkedInInput: Loading sample data');
     const sampleData: ResumeData = {
       personalInfo: {
         name: 'John Doe',
@@ -211,6 +219,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
       setIsLoading(false);
       setSuccess(true);
       onDataExtracted(sampleData);
+      console.log('🔗 LinkedInInput: Sample data loaded successfully');
       
       setTimeout(() => {
         onNext();
@@ -233,7 +242,12 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
 
   const handleOpenDraftManager = () => {
     // Refresh recent drafts before opening
-    loadRecentDraftsFromSupabase();
+    console.log('🔗 LinkedInInput: Opening draft manager');
+    try {
+      loadRecentDraftsFromSupabase();
+    } catch (error) {
+      console.error('🔗 LinkedInInput: Error refreshing drafts:', error);
+    }
     onOpenDraftManager();
   };
 

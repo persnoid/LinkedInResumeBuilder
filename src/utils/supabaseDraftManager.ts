@@ -4,14 +4,22 @@ import { DraftResume, ResumeData } from '../types/resume';
 export class SupabaseDraftManager {
   // Check if user is authenticated before operations
   private static async checkAuth() {
+    console.log('🔒 SupabaseDraftManager: Checking authentication...');
     const { data: { user }, error } = await supabase.auth.getUser();
+    console.log('🔒 SupabaseDraftManager: Auth check result:', { 
+      hasUser: !!user, 
+      userEmail: user?.email,
+      error: error?.message 
+    });
     if (error) {
       console.error('Auth check error:', error);
       throw new Error('Authentication failed');
     }
     if (!user) {
+      console.error('🔒 SupabaseDraftManager: No user found in auth check');
       throw new Error('User not authenticated');
     }
+    console.log('🔒 SupabaseDraftManager: User authenticated successfully');
     return user;
   }
 
@@ -73,6 +81,7 @@ export class SupabaseDraftManager {
   static async getAllDrafts(): Promise<DraftResume[]> {
     try {
       console.log('📥 SupabaseDraftManager: Starting getAllDrafts');
+      console.log('📥 SupabaseDraftManager: About to check auth...');
       const user = await this.checkAuth();
       console.log('📥 SupabaseDraftManager: User authenticated:', user.email);
 
@@ -85,6 +94,7 @@ export class SupabaseDraftManager {
       if (error) {
         console.error('📥 SupabaseDraftManager: Supabase query error:', error);
         throw error;
+        throw new Error(`Database query failed: ${error.message}`);
       }
 
       console.log('📥 SupabaseDraftManager: Query successful, returned:', data?.length || 0, 'drafts');
@@ -100,6 +110,7 @@ export class SupabaseDraftManager {
       }));
     } catch (error) {
       console.error('📥 SupabaseDraftManager: Error in getAllDrafts:', error);
+      console.error('📥 SupabaseDraftManager: Full error details:', error);
       throw error; // Re-throw to let caller handle fallback
     }
   }
@@ -107,6 +118,7 @@ export class SupabaseDraftManager {
   static async getDraft(id: string): Promise<DraftResume | null> {
     try {
       console.log('📥 SupabaseDraftManager: Starting getDraft for:', id);
+      console.log('📥 SupabaseDraftManager: About to check auth for getDraft...');
       const user = await this.checkAuth();
 
       const { data, error } = await supabase

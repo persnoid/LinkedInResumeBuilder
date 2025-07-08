@@ -2,33 +2,73 @@ import { ResumeData } from '../types/resume';
 
 export const parsePDFFile = async (file: File): Promise<ResumeData> => {
   try {
+    console.log('📄 PDFParser: Starting PDF parsing for file:', file.name);
+    console.log('📄 PDFParser: File details:', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      lastModified: file.lastModified
+    });
+
     // Create FormData to send the PDF file
     const formData = new FormData();
     formData.append('pdf', file);
+    console.log('📄 PDFParser: FormData created, sending to /api/parse-pdf');
 
     // Send PDF to AI-powered backend for parsing
     const response = await fetch('/api/parse-pdf', {
       method: 'POST',
       body: formData,
+      // Add timeout to prevent hanging
+      signal: AbortSignal.timeout(60000) // 60 second timeout
+    });
+
+    console.log('📄 PDFParser: Response received:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error('📄 PDFParser: Response not ok:', errorData);
       throw new Error(errorData.error || `PDF parsing failed: ${response.statusText}`);
     }
 
     const result = await response.json();
+    console.log('📄 PDFParser: Result received:', {
+      success: result.success,
+      hasData: !!result.data,
+      parsingMethod: result.parsing_method,
+      error: result.error
+    });
     
     if (!result.success || result.error) {
+      console.error('📄 PDFParser: Parsing unsuccessful:', result.error);
       throw new Error(result.error || 'PDF parsing failed');
     }
 
     // Log which parsing method was used
     console.log(`PDF parsed using: ${result.parsing_method || 'AI-powered parsing'}`);
 
-    return transformAIResponse(result.data);
+    const transformedData = transformAIResponse(result.data);
+    console.log('📄 PDFParser: Data transformed successfully');
+    
+    return transformedData;
   } catch (error) {
     console.error('AI PDF parsing error:', error);
+    console.error('📄 PDFParser: Full error details:', error);
+    
+    // Provide more specific error messages
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        throw new Error('PDF parsing timed out. Please try again with a smaller file.');
+      }
+      if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+        throw new Error('Network error. Please check your internet connection and try again.');
+      }
+    }
+    
     throw new Error(
       error instanceof Error 
         ? error.message 
@@ -38,8 +78,9 @@ export const parsePDFFile = async (file: File): Promise<ResumeData> => {
 };
 
 const transformAIResponse = (data: any): ResumeData => {
+  console.log('📄 PDFParser: Transforming AI response data');
   // Transform the AI response to match our frontend data structure
-  return {
+  const transformedData = {
     personalInfo: {
       name: data.personal_info?.name || '',
       title: data.personal_info?.title || '',
@@ -88,6 +129,15 @@ const transformAIResponse = (data: any): ResumeData => {
       level: typeof lang === 'object' ? lang.level || '' : ''
     }))
   };
+  
+  console.log('📄 PDFParser: Data transformation complete:', {
+    hasPersonalInfo: !!transformedData.personalInfo.name,
+    experienceCount: transformedData.experience.length,
+    skillsCount: transformedData.skills.length,
+    educationCount: transformedData.education.length
+  });
+  
+  return transformedData;
 };
 
 // Check if AI parsing is available
@@ -97,9 +147,19 @@ export const checkAIAvailability = async (): Promise<{
   message: string;
 }> => {
   try {
-    const response = await fetch('/api/config');
+    console.log('🔍 PDFParser: Checking AI availability...');
+    const response = await fetch('/api/config', {
+      signal: AbortSignal.timeout(5000) // 5 second timeout
+    });
+    
+    console.log('🔍 PDFParser: Config response:', {
+      status: response.status,
+      ok: response.ok
+    });
+    
     if (response.ok) {
       const config = await response.json();
+      console.log('🔍 PDFParser: Config data:', config);
       return {
         aiAvailable: config.ai_parsing_available,
         openaiConfigured: config.openai_api_key_configured,
@@ -111,7 +171,7 @@ export const checkAIAvailability = async (): Promise<{
       };
     }
   } catch (error) {
-    console.warn('Could not check AI availability:', error);
+    console.warn('🔍 PDFParser: Could not check AI availability:', error);
   }
   
   return {

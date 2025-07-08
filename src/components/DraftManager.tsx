@@ -53,15 +53,15 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   useEffect(() => {
     if (isOpen) {
       console.log('🗂️ DraftManager: useEffect triggered - Modal opened, starting to load drafts...');
-      console.log('🗂️ DraftManager: Modal opened, starting to load drafts...');
       loadDrafts();
     } else {
       console.log('🗂️ DraftManager: useEffect triggered - Modal closed, resetting state...');
       // Reset state when modal closes
       setError(null);
       setIsLoading(false);
+      setDrafts([]);
     }
-  }, [isOpen]);
+  }, [isOpen, user]); // Add user dependency to reload when auth changes
 
   const loadDrafts = async () => {
     console.log('🗂️ DraftManager: loadDrafts() START - isLoading before:', isLoading);
@@ -69,6 +69,9 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       setIsLoading(true);
       console.log('🗂️ DraftManager: loadDrafts() - isLoading set to TRUE');
       setError(null);
+      
+      // Small delay to ensure loading state is visible
+      await new Promise(resolve => setTimeout(resolve, 100));
       console.log('🗂️ DraftManager: Starting draft loading process...');
       console.log('🗂️ DraftManager: User authenticated:', !!user, user?.email);
 
@@ -93,6 +96,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   const loadDraftsFromSupabase = async () => {
     console.log('🗂️ DraftManager: loadDraftsFromSupabase() START');
     try {
+      console.log('🗂️ DraftManager: Making Supabase query...');
       console.log('🗂️ DraftManager: Attempting to load drafts from Supabase...');
       const supabaseDrafts = await SupabaseDraftManager.getAllDrafts();
       console.log('🗂️ DraftManager: Successfully loaded', supabaseDrafts.length, 'drafts from Supabase');
@@ -103,6 +107,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       console.log('🗂️ DraftManager: Successfully loaded drafts from cloud');
 
     } catch (supabaseError) {
+      console.error('🗂️ DraftManager: Detailed Supabase error:', supabaseError);
       console.error('🗂️ DraftManager: Supabase loading failed:', supabaseError);
       setDrafts([]);
       setError('Failed to load drafts from cloud storage. Please try again.');
@@ -112,6 +117,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
 
   const refreshDrafts = async () => {
     try {
+      console.log('🗂️ DraftManager: Refreshing drafts...');
       setIsLoading(true);
       setError(null);
       
@@ -142,6 +148,12 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       setError(null);
       console.log('🗂️ DraftManager: Quick save started for:', saveName.trim());
       
+      // Check authentication before saving
+      if (!user) {
+        throw new Error('You must be signed in to save drafts.');
+      }
+      
+      console.log('🗂️ DraftManager: User authenticated, proceeding with save');
       const name = saveName.trim();
       let draftId: string;
       
@@ -165,7 +177,8 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         console.log('🗂️ DraftManager: Successfully saved to Supabase with ID:', draftId);
         showToast('Draft saved to cloud successfully!', 'success');
       } else {
-        throw new Error('You must be signed in to save drafts.');
+        console.error('🗂️ DraftManager: User not authenticated in save operation');
+        throw new Error('Authentication required to save drafts.');
       }
       
       setSaveName('');
@@ -181,6 +194,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   };
 
   const handleDeleteDraft = async (id: string) => {
+    console.log('🗂️ DraftManager: Delete draft requested for:', id);
     const confirmed = await showConfirmation({
       title: 'Delete Draft',
       message: 'Are you sure you want to delete this draft? This action cannot be undone.',
@@ -191,6 +205,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
 
     if (confirmed) {
       try {
+        console.log('🗂️ DraftManager: User confirmed deletion');
         setIsLoading(true);
         console.log('🗂️ DraftManager: Deleting draft:', id);
         
@@ -201,6 +216,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
           setError(null);
           showToast('Draft deleted successfully!', 'success');
         } else {
+          console.error('🗂️ DraftManager: User not authenticated for deletion');
           throw new Error('You must be signed in to delete drafts.');
         }
       } catch (err) {
@@ -219,6 +235,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     if (!draft || !newName.trim()) {
       setError('Invalid draft or name');
       return;
+      console.log('🗂️ DraftManager: Invalid draft or name for rename');
     }
 
     try {
@@ -241,6 +258,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         await refreshDrafts();
         showToast('Draft renamed successfully!', 'success');
       } else {
+        console.error('🗂️ DraftManager: User not authenticated for rename');
         throw new Error('You must be signed in to rename drafts.');
       }
     } catch (err) {
@@ -253,24 +271,9 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     }
   };
 
-  const handleExportDraft = (id: string) => {
-    console.log('🗂️ DraftManager: Export feature not available for cloud drafts');
-    showToast('Export feature is not available for cloud drafts', 'info');
-  };
-
-  const handleImportDraft = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    console.log('🗂️ DraftManager: Import feature not available for cloud drafts');
-    showToast('Import feature is not available for cloud drafts', 'info');
-
-    // Reset file input
-    event.target.value = '';
-  };
-
   const handleLoadDraft = async (draft: DraftResume) => {
     try {
+      console.log('🗂️ DraftManager: Loading draft requested:', draft.id);
       setLoadingDraftId(draft.id);
       setError(null);
       
@@ -278,6 +281,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       
       // Validate draft data before loading
       if (!draft.resumeData || !draft.resumeData.personalInfo) {
+        console.error('🗂️ DraftManager: Invalid draft data structure');
         throw new Error(t('draftManager.errors.invalidDraft'));
       }
 
@@ -306,6 +310,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
 
       // Add a small delay to show loading state
       await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('🗂️ DraftManager: Calling onLoadDraft with validated data');
 
       // Call the parent component's load function
       await onLoadDraft(validatedDraft);
@@ -314,6 +319,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       
     } catch (err) {
       console.error('🗂️ DraftManager: Error loading draft:', err);
+      console.error('🗂️ DraftManager: Draft loading failed with error:', err);
       setError(t('draftManager.errors.loadFailed'));
       showToast(t('draftManager.errors.loadFailed'), 'error');
     } finally {
@@ -351,6 +357,15 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
           <div>
             <h2 className="text-xl font-bold text-gray-900">{t('draftManager.title')}</h2>
             <p className="text-sm text-gray-600">{t('draftManager.subtitle')}</p>
+            
+            {/* User Status */}
+            <div className="flex items-center mt-2 space-x-2">
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                user ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {user ? `✓ Signed in as ${user.email}` : '✗ Not signed in'}
+              </span>
+            </div>
             {user && (
               <div className="flex items-center mt-1">
                 <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
@@ -441,7 +456,14 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
             </div>
           )}
           {/* Import/Export */}
-          <div className="mb-6 flex space-x-3">            
+          <div className="mb-6 flex space-x-3">
+            {/* Diagnostic Info */}
+            <div className="text-xs text-gray-500 flex items-center">
+              User: {user ? '✓' : '✗'} | 
+              Drafts: {drafts.length} | 
+              Loading: {isLoading ? '✓' : '✗'}
+            </div>
+            
             <button
               onClick={refreshDrafts}
               disabled={isLoading}
@@ -473,6 +495,10 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                 <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-3"></div>
                 <p className="text-gray-500">{t('draftManager.status.loadingDrafts')}</p>
                 <p className="text-xs text-gray-400 mt-1">Loading from cloud storage...</p>
+                {/* Debug info */}
+                <div className="text-xs text-gray-400 mt-2">
+                  Debug: User={user ? 'Yes' : 'No'}, Error={error ? 'Yes' : 'No'}
+                </div>
               </div>
             ) : drafts.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
@@ -599,6 +625,10 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
               <p>All drafts are stored securely in the cloud</p>
               {user && (
                 <p className="text-xs text-green-600">Signed in as {user.email}</p>
+              )}
+              {/* Debug footer */}
+              <div className="text-xs text-gray-400 mt-1">
+                Debug: Drafts={drafts.length}, Loading={isLoading}, Error={!!error}
               )}
             </div>
             <button

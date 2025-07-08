@@ -338,10 +338,6 @@ function App() {
     }
   };
 
-  const handleSavePromptSave = (name: string) => {
-    saveDraft(name);
-    setCurrentStep(currentStep + 1);
-  };
   const handleSavePromptSave = async (name: string) => {
     try {
       // Wait for the save operation to complete

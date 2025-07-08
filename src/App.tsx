@@ -260,26 +260,51 @@ function App() {
         
         let draftId: string;
         
-        try {
-          // Try Supabase first
-          draftId = await SupabaseDraftManager.saveDraft(
-            name,
-            resumeData,
-            selectedTemplate,
-            customizations,
-            currentStep,
-            currentDraftId
-          );
-
-          // Also save primary resume data as backup
-          await SupabaseDraftManager.saveResumeData(resumeData);
+        // Check if user is authenticated for cloud operations
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        
+        if (user && !authError) {
+          // User is authenticated - try cloud first, then fallback to local
+          try {
+            // Try Supabase first
+            draftId = await SupabaseDraftManager.saveDraft(
+              name,
+              resumeData,
+              selectedTemplate,
+              customizations,
+              currentStep,
+              currentDraftId
+            );
+            
+            console.log('Draft saved to Supabase with ID:', draftId);
+            showToast('Draft saved to cloud successfully!', 'success');
+          } catch (supabaseError) {
+            console.error('Error saving draft to Supabase:', supabaseError);
+            
+            // Fallback to local storage
+            draftId = DraftManager.saveDraft(
+              name,
+              resumeData,
+              selectedTemplate,
+              customizations,
+              currentStep,
+              currentDraftId
+            );
+            
+            showToast('Draft saved locally (cloud sync unavailable)', 'warning');
+          }
           
-          console.log('Draft saved to Supabase with ID:', draftId);
-          showToast('Draft saved to cloud successfully!', 'success');
-        } catch (supabaseError) {
-          console.error('Error saving draft to Supabase:', supabaseError);
-          
-          // Fallback to local storage
+          // ALWAYS try to save primary resume data for authenticated users
+          try {
+            await SupabaseDraftManager.saveResumeData(resumeData);
+            console.log('Primary resume data saved to Supabase as backup');
+          } catch (resumeDataError) {
+            console.warn('Failed to save primary resume data to Supabase:', resumeDataError);
+            // Don't show error to user as this is a background operation
+          }
+        } else {
+          // No user authentication - save locally only
+          console.log('No user authenticated, saving locally only...');
           draftId = DraftManager.saveDraft(
             name,
             resumeData,
@@ -289,7 +314,8 @@ function App() {
             currentDraftId
           );
           
-          showToast('Draft saved locally (cloud sync unavailable)', 'warning');
+          console.log('Draft saved to local storage with ID:', draftId);
+          showToast('Draft saved locally', 'success');
         }
 
         // Update state with the new draft ID

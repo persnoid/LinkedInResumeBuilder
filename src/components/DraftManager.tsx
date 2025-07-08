@@ -45,6 +45,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   const [editingName, setEditingName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const [loadingDraftId, setLoadingDraftId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [dataSource, setDataSource] = useState<'supabase' | 'local' | 'none'>('none');
@@ -56,6 +57,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     } else {
       // Reset state when modal closes
       setError(null);
+      setWarning(null);
       setIsLoading(false);
       setDataSource('none');
     }
@@ -65,6 +67,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     try {
       setIsLoading(true);
       setError(null);
+      setWarning(null);
       console.log('🗂️ DraftManager: Starting draft loading process...');
       console.log('🗂️ DraftManager: User authenticated:', !!user, user?.email);
 
@@ -93,13 +96,14 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       setDrafts(supabaseDrafts);
       setDataSource('supabase');
       setError(null);
+      setWarning(null);
       
       if (supabaseDrafts.length === 0) {
         console.log('🗂️ DraftManager: No drafts found in Supabase, checking local storage...');
         const localDrafts = DraftManager.getAllDrafts();
         if (localDrafts.length > 0) {
           console.log('🗂️ DraftManager: Found', localDrafts.length, 'local drafts, showing hybrid message');
-          setError('No cloud drafts found. Local drafts are available but not synced to cloud.');
+          setWarning(`No cloud drafts found. You have ${localDrafts.length} local drafts that could be synced to cloud.`);
         }
       }
     } catch (supabaseError) {
@@ -117,16 +121,18 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       
       setDrafts(localDrafts);
       setDataSource('local');
+      setError(null);
       
       if (localDrafts.length > 0) {
-        setError('Showing local drafts (cloud sync unavailable)');
+        setWarning(`Showing ${localDrafts.length} local drafts. ${user ? 'Cloud sync temporarily unavailable.' : 'Sign in to sync drafts to cloud.'}`);
       } else {
-        setError(null);
+        setWarning(null);
       }
     } catch (localError) {
       console.error('🗂️ DraftManager: Local storage loading failed:', localError);
       setDrafts([]);
       setDataSource('none');
+      setWarning(null);
       setError('Failed to load drafts from both cloud and local storage');
     }
   };
@@ -135,6 +141,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     try {
       setIsLoading(true);
       setError(null);
+      setWarning(null);
       
       if (user && dataSource === 'supabase') {
         console.log('🗂️ DraftManager: Refreshing from Supabase...');
@@ -154,12 +161,14 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   const handleQuickSave = async () => {
     if (!currentResumeData || !saveName.trim()) {
       setError('Please enter a draft name');
+      setWarning(null);
       return;
     }
 
     try {
       setIsSaving(true);
       setError(null);
+      setWarning(null);
       console.log('🗂️ DraftManager: Quick save started for:', saveName.trim());
       
       const name = saveName.trim();
@@ -260,35 +269,32 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         
         if (dataSource === 'supabase' && user) {
           console.log('🗂️ DraftManager: Deleting from Supabase...');
-          await SupabaseDraftManager.deleteDraft(id);
+          try {
+            await SupabaseDraftManager.deleteDraft(id);
+            await refreshDrafts();
+            setError(null);
+            setWarning(null);
+            showToast('Draft deleted successfully!', 'success');
+          } catch (cloudError) {
+            console.error('🗂️ DraftManager: Cloud delete failed, trying local delete...', cloudError);
+            // Fallback to local delete
+            DraftManager.deleteDraft(id);
+            loadDraftsFromLocal(); // Refresh local drafts only
+            setWarning('Draft deleted locally only. Cloud version may still exist due to sync issues.');
+            showToast('Draft deleted locally (cloud delete failed)', 'warning');
+          }
         } else {
           console.log('🗂️ DraftManager: Deleting from local storage...');
           DraftManager.deleteDraft(id);
+          await refreshDrafts();
+          setError(null);
+          setWarning(null);
+          showToast('Draft deleted successfully!', 'success');
         }
-        
-        await refreshDrafts();
-        setError(null);
-        showToast('Draft deleted successfully!', 'success');
       } catch (err) {
         console.error('🗂️ DraftManager: Error deleting draft:', err);
-        
-        // If cloud delete failed, try local delete
-        if (dataSource === 'supabase') {
-          try {
-            console.log('🗂️ DraftManager: Cloud delete failed, trying local delete...');
-            DraftManager.deleteDraft(id);
-            loadDraftsFromLocal(); // Refresh local drafts only
-            setError('Draft deleted locally (cloud delete failed)');
-            showToast('Draft deleted locally (cloud delete failed)', 'warning');
-          } catch (localError) {
-            console.error('🗂️ DraftManager: Local delete also failed:', localError);
-            setError('Failed to delete draft');
-            showToast('Failed to delete draft', 'error');
-          }
-        } else {
-          setError('Failed to delete draft');
-          showToast('Failed to delete draft', 'error');
-        }
+        setError('Failed to delete draft');
+        showToast('Failed to delete draft', 'error');
       } finally {
         setIsLoading(false);
       }
@@ -299,6 +305,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     const draft = drafts.find(d => d.id === id);
     if (!draft || !newName.trim()) {
       setError('Invalid draft or name');
+      setWarning(null);
       return;
     }
 
@@ -308,14 +315,38 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       
       if (dataSource === 'supabase' && user) {
         console.log('🗂️ DraftManager: Renaming in Supabase...');
-        await SupabaseDraftManager.saveDraft(
-          newName.trim(),
-          draft.resumeData,
-          draft.selectedTemplate,
-          draft.customizations,
-          draft.step,
-          id
-        );
+        try {
+          await SupabaseDraftManager.saveDraft(
+            newName.trim(),
+            draft.resumeData,
+            draft.selectedTemplate,
+            draft.customizations,
+            draft.step,
+            id
+          );
+          setEditingId(null);
+          setEditingName('');
+          setError(null);
+          setWarning(null);
+          await refreshDrafts();
+          showToast('Draft renamed successfully!', 'success');
+        } catch (cloudError) {
+          console.error('🗂️ DraftManager: Cloud rename failed, trying local rename...', cloudError);
+          // Fallback to local rename
+          DraftManager.saveDraft(
+            newName.trim(),
+            draft.resumeData,
+            draft.selectedTemplate,
+            draft.customizations,
+            draft.step,
+            id
+          );
+          setEditingId(null);
+          setEditingName('');
+          setWarning('Draft renamed locally only. Cloud version may not be updated due to sync issues.');
+          loadDraftsFromLocal(); // Refresh local drafts only
+          showToast('Draft renamed locally (cloud update failed)', 'warning');
+        }
       } else {
         console.log('🗂️ DraftManager: Renaming in local storage...');
         DraftManager.saveDraft(
@@ -326,43 +357,17 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
           draft.step,
           id
         );
+        setEditingId(null);
+        setEditingName('');
+        setError(null);
+        setWarning(null);
+        await refreshDrafts();
+        showToast('Draft renamed successfully!', 'success');
       }
-
-      setEditingId(null);
-      setEditingName('');
-      setError(null);
-      await refreshDrafts();
-      showToast('Draft renamed successfully!', 'success');
     } catch (err) {
       console.error('🗂️ DraftManager: Error renaming draft:', err);
-      
-      // If cloud rename failed, try local rename
-      if (dataSource === 'supabase') {
-        try {
-          console.log('🗂️ DraftManager: Cloud rename failed, trying local rename...');
-          DraftManager.saveDraft(
-            newName.trim(),
-            draft.resumeData,
-            draft.selectedTemplate,
-            draft.customizations,
-            draft.step,
-            id
-          );
-          
-          setEditingId(null);
-          setEditingName('');
-          setError('Draft renamed locally (cloud update failed)');
-          loadDraftsFromLocal(); // Refresh local drafts only
-          showToast('Draft renamed locally (cloud update failed)', 'warning');
-        } catch (localError) {
-          console.error('🗂️ DraftManager: Local rename also failed:', localError);
-          setError('Failed to rename draft');
-          showToast('Failed to rename draft', 'error');
-        }
-      } else {
-        setError('Failed to rename draft');
-        showToast('Failed to rename draft', 'error');
-      }
+      setError('Failed to rename draft');
+      showToast('Failed to rename draft', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -373,6 +378,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       console.log('🗂️ DraftManager: Exporting draft:', id);
       DraftManager.exportDraft(id);
       setError(null);
+      setWarning(null);
       showToast('Draft exported successfully!', 'success');
     } catch (err) {
       console.error('🗂️ DraftManager: Error exporting draft:', err);
@@ -392,7 +398,15 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         console.log('🗂️ DraftManager: Draft imported successfully');
         refreshDrafts();
         setError(null);
+        setWarning(null);
         showToast(t('draftManager.status.importedSuccessfully'), 'success');
+        
+        // Suggest cloud sync for authenticated users
+        if (user) {
+          setTimeout(() => {
+            showToast('Draft imported locally. Consider saving it as a new draft to sync to cloud storage.', 'info', 5000);
+          }, 2000);
+        }
       })
       .catch((error) => {
         console.error('🗂️ DraftManager: Import error:', error);
@@ -411,6 +425,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
     try {
       setLoadingDraftId(draft.id);
       setError(null);
+      setWarning(null);
       
       console.log('🗂️ DraftManager: Loading draft:', draft.id, draft.name);
       
@@ -517,13 +532,27 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         </div>
 
         <div className="p-6 overflow-y-auto max-h-[70vh]">
-          {/* Error Display */}
+          {/* Error and Warning Display */}
           {error && (
-            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-700 text-sm">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               <div className="flex items-center justify-between">
                 <span>{error}</span>
                 <button 
                   onClick={() => setError(null)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {warning && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-700 text-sm">
+              <div className="flex items-center justify-between">
+                <span>{warning}</span>
+                <button 
+                  onClick={() => setWarning(null)}
                   className="text-yellow-500 hover:text-yellow-700"
                 >
                   <X className="w-4 h-4" />
@@ -568,6 +597,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
                     onClick={() => {
                       setSaveName('');
                       setError(null);
+                      setWarning(null);
                     }}
                     className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm transition-colors"
                     disabled={isSaving}

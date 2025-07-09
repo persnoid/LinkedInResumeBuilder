@@ -94,7 +94,6 @@ export class SupabaseDraftManager {
       if (error) {
         console.error('📥 SupabaseDraftManager: Supabase query error:', error);
         throw error;
-        throw new Error(`Database query failed: ${error.message}`);
       }
 
       console.log('📥 SupabaseDraftManager: Query successful, returned:', data?.length || 0, 'drafts');

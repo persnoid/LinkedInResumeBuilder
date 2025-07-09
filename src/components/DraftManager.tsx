@@ -160,7 +160,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
           typography: { fontFamily: 'Inter, sans-serif' },
           sectionOrder: ['summary', 'experience', 'education', 'skills', 'certifications']
         },
-        currentStep || 1,
+        currentStep ?? 0,
         currentDraftId || undefined
       );
 

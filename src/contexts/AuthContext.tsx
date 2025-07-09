@@ -137,18 +137,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signOut = async () => {
     try {
       setLoading(true);
-      if (!user) {
-        setLoading(false);
-        return { error: null };
-      }
+      
+      console.log('🔓 AuthContext: Starting sign out process for user:', user?.email);
 
       const { error } = await supabase.auth.signOut();
-      return { error };
+      
+      if (error) {
+        console.error('🔓 AuthContext: Sign out error from Supabase:', error);
+        return { error };
+      }
+      
+      console.log('🔓 AuthContext: Supabase sign out successful, clearing local state');
+      
+      // Explicitly clear the auth state immediately
+      setUser(null);
+      setSession(null);
+      
+      console.log('🔓 AuthContext: Local auth state cleared');
+      
+      return { error: null };
     } catch (error) {
       console.error('Sign out error:', error);
       return { error: error as AuthError };
     } finally {
-      setLoading(false);
+      // Add a small delay to ensure state updates are processed
+      setTimeout(() => {
+        setLoading(false);
+        console.log('🔓 AuthContext: Sign out process completed');
+      }, 100);
     }
   };
 

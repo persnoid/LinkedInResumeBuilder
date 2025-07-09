@@ -179,23 +179,26 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
           const { error } = await signOut();
           if (error) {
             console.error('Sign out error:', error);
-            setSaveMessage('Failed to sign out. Please try again.');
-            setTimeout(() => setSaveMessage(''), 3000);
+            setSaveMessage(`Failed to sign out: ${error.message}. Please try again.`);
+            setTimeout(() => setSaveMessage(''), 5000);
           } else {
             // Successful sign out
+            console.log('👤 UserProfilePage: Sign out successful');
             setSaveMessage('Signed out successfully!');
+            
             // Close modal and reset form
             setTimeout(() => {
+              console.log('👤 UserProfilePage: Closing modal and resetting form');
               onClose();
               resetForm();
-              // Force page reload to reset all state
-              window.location.reload();
-            }, 1000);
+              // Optional: Force page reload to reset all state (can be removed if not needed)
+              // window.location.reload();
+            }, 500);
           }
         } catch (error) {
           console.error('Sign out error:', error);
           setSaveMessage('Failed to sign out. Please try again.');
-          setTimeout(() => setSaveMessage(''), 3000);
+          setTimeout(() => setSaveMessage(''), 5000);
         } finally {
           setIsSigningOut(false);
         }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { X, Save, User, Settings, Camera, Mail, Phone, MapPin, Globe, Linkedin, LogOut, AlertTriangle } from 'lucide-react';
 import { PersonalInfoSection } from '../components/template-engine/sections/PersonalInfoSection';
 import { useAuth } from '../contexts/AuthContext';
@@ -36,6 +37,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Load profile data from Supabase on component mount
   useEffect(() => {
@@ -79,7 +81,15 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
     loadProfileFromSupabase();
   }, [user]);
 
-  const handlePersonalInfoUpdate = (field: string, value: any) => {
+  const handlePersonalInfoUpdate = useCallback((field: string, value: any) => {
+    // Prevent updates while another update is in progress
+    if (isUpdating) {
+      console.log('👤 UserProfilePage - Skipping update, already in progress');
+      return;
+    }
+    
+    setIsUpdating(true);
+    
     console.log('👤 UserProfilePage - handlePersonalInfoUpdate called:', {
       field,
       valueType: typeof value,
@@ -90,41 +100,33 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
     });
     
     setPersonalInfo(prev => {
-      console.log('👤 UserProfilePage - Current personalInfo before update:', {
-        hasPhoto: !!prev.photo,
-        photoLength: prev.photo?.length || 0,
-        name: prev.name,
-        email: prev.email
-      });
-      
       const updated = { ...prev };
       
       // Handle nested field updates (e.g., "personalInfo.name")
       if (field.includes('.')) {
         const [parent, child] = field.split('.');
-        console.log('👤 UserProfilePage - Processing nested field update:', { parent, child });
         if (parent === 'personalInfo') {
-          updated[child as keyof PersonalInfo] = value;
-          console.log('👤 UserProfilePage - Updated nested field:', child, 'with value type:', typeof value);
+          // Only update if the value has actually changed
+          if (updated[child as keyof PersonalInfo] !== value) {
+            updated[child as keyof PersonalInfo] = value;
+            console.log('👤 UserProfilePage - Updated nested field:', child);
+          }
         }
       } else {
-        updated[field as keyof PersonalInfo] = value;
-        console.log('👤 UserProfilePage - Updated direct field:', field, 'with value type:', typeof value);
+        // Only update if the value has actually changed
+        if (updated[field as keyof PersonalInfo] !== value) {
+          updated[field as keyof PersonalInfo] = value;
+          console.log('👤 UserProfilePage - Updated direct field:', field);
+        }
       }
       
-      console.log('👤 UserProfilePage - Updated personalInfo:', {
-        hasPhoto: !!updated.photo,
-        photoLength: updated.photo?.length || 0,
-        photoChanged: prev.photo !== updated.photo,
-        name: updated.name,
-        email: updated.email
-      });
+      // Set updating to false after state update
+      setTimeout(() => setIsUpdating(false), 100);
       
       return updated;
     });
     
-    console.log('👤 UserProfilePage - setPersonalInfo called, state should update');
-  };
+  }, [isUpdating]);
 
   const handleSaveProfile = async () => {
     setIsSaving(true);

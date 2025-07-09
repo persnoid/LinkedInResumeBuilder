@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Mail, Phone, MapPin, Globe, Linkedin, User, Camera, Upload, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface PersonalInfoSectionProps {
@@ -38,6 +38,14 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   // Default professional photo from Pexels
   const defaultPhoto = 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=2';
 
+  // Debounce function to prevent rapid successive calls
+  const debounce = useCallback((func: Function, delay: number) => {
+    let timeoutId: NodeJS.Timeout;
+    return (...args: any[]) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func(...args), delay);
+    };
+  }, []);
   // Get display parts from sectionStyles, defaulting to all parts
   const displayParts = sectionStyles?.displayParts || ['photo', 'name', 'title', 'contact'];
   const photoSize = sectionStyles?.photoSize || '24'; // Default to 96px (24 * 4)
@@ -54,7 +62,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     { icon: Globe, value: displayWebsite, label: 'Website', field: 'website' },
   ].filter(item => item.value);
 
-  const handleTextEdit = (field: string, value: string) => {
+  const handleTextEdit = useCallback(debounce((field: string, value: string) => {
     console.log('🖼️ PersonalInfoSection - handleTextEdit called:', {
       field,
       value: value?.substring(0, 50) + (value?.length > 50 ? '...' : ''),
@@ -67,7 +75,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     } else {
       console.error('🖼️ PersonalInfoSection - onDataUpdate not available for text edit');
     }
-  };
+  }, 300), [onDataUpdate]);
 
   const validateImageFile = (file: File): { isValid: boolean; message: string } => {
     // Check file type
@@ -189,9 +197,22 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   }> = ({ value, field, className = '', style = {}, placeholder = '', multiline = false }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState(value);
+    const [lastSavedValue, setLastSavedValue] = useState(value);
+
+    // Update edit value when the prop value changes (but only if not currently editing)
+    React.useEffect(() => {
+      if (!isEditing && value !== lastSavedValue) {
+        setEditValue(value);
+        setLastSavedValue(value);
+      }
+    }, [value, isEditing, lastSavedValue]);
 
     const handleSave = () => {
-      handleTextEdit(field, editValue);
+      // Only save if the value has actually changed
+      if (editValue !== lastSavedValue) {
+        handleTextEdit(field, editValue);
+        setLastSavedValue(editValue);
+      }
       setIsEditing(false);
     };
 
@@ -200,7 +221,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         e.preventDefault();
         handleSave();
       } else if (e.key === 'Escape') {
-        setEditValue(value);
+        setEditValue(lastSavedValue);
         setIsEditing(false);
       }
     };

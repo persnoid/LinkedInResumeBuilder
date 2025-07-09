@@ -83,6 +83,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         console.log('🗂️ DraftManager: No user authenticated, cannot load drafts');
         setError('You must be signed in to access drafts');
         setDrafts([]);
+        setIsLoading(false);
         return;
       }
 

@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Save, User, Settings, Camera, Mail, Phone, MapPin, Globe, Linkedin, LogOut, AlertTriangle } from 'lucide-react';
 import { PersonalInfoSection } from '../components/template-engine/sections/PersonalInfoSection';

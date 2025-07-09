@@ -356,7 +356,10 @@ function App() {
 
   const handleSavePromptSkip = () => {
     setShowSavePrompt(false);
-    setCurrentStep(currentStep + 1);
+    // Only increment step if we're not already on the final step
+    if (currentStep < STEPS.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
   };
 
   const renderCurrentStep = () => {

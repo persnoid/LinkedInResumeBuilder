@@ -112,7 +112,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
       
       return updated;
     });
-    
+  }, []);
 
   const handleSaveProfile = async () => {
     setIsSaving(true);

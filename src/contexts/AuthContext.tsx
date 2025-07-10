@@ -54,6 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } catch (error) {
         console.error('Unexpected error getting session:', error);
       } finally {
+        // CRITICAL FIX: Always set loading to false, regardless of success or failure
         console.log('🔐 AuthProvider - Setting loading to false after initial session check');
         setLoading(false);
       }
@@ -80,8 +81,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           await ensureProfile(session.user);
         }
         
-        console.log('🔐 AuthProvider - Setting loading to false after auth state change');
-        setLoading(false);
+        // Only set loading to false if it's still true (avoid unnecessary updates)
+        setLoading(prev => {
+          if (prev) {
+            console.log('🔐 AuthProvider - Setting loading to false after auth state change');
+            return false;
+          }
+          return prev;
+        });
       }
     );
 
@@ -301,6 +308,17 @@ export const useRequireAuth = () => {
     timestamp: new Date().toISOString()
   });
 
+  // CRITICAL FIX: Add timeout fallback to prevent infinite loading
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (isChecking) {
+        console.log('🔐 useRequireAuth - TIMEOUT: Force setting isChecking to false after 10 seconds');
+        setIsChecking(false);
+      }
+    }, 10000); // 10 second fallback timeout
+
+    return () => clearTimeout(timeoutId);
+  }, [isChecking]);
   useEffect(() => {
     console.log('🔐 useRequireAuth - useEffect triggered (loading dependency):', {
       authLoading: loading,
@@ -311,6 +329,10 @@ export const useRequireAuth = () => {
     
     if (!loading) {
       console.log('🔐 useRequireAuth - Auth loading complete, setting isChecking to false');
+      setIsChecking(false);
+    } else if (user) {
+      // CRITICAL FIX: If we have a user but loading is still true, force complete
+      console.log('🔐 useRequireAuth - User exists but still loading, force completing auth check');
       setIsChecking(false);
     } else {
       console.log('🔐 useRequireAuth - Auth still loading, keeping isChecking true');

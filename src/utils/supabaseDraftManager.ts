@@ -3,12 +3,18 @@ import { DraftResume, ResumeData } from '../types/resume';
 
 export class SupabaseDraftManager {
   // Check if user is authenticated before operations
-  private static async checkAuth() {
+  private static async checkAuth(timeoutMs: number = 5000) {
     console.log('🗄️ SupabaseDraftManager: Checking authentication...');
     
     try {
+      // Add timeout to prevent hanging
+      const authPromise = supabase.auth.getUser();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Auth check timeout')), timeoutMs)
+      );
+      
       console.log('🗄️ SupabaseDraftManager: Calling supabase.auth.getUser()...');
-    const { data: { user }, error } = await supabase.auth.getUser();
+      const { data: { user }, error } = await Promise.race([authPromise, timeoutPromise]) as any;
       console.log('🗄️ SupabaseDraftManager: supabase.auth.getUser() completed');
       console.log('🗄️ SupabaseDraftManager: Auth check result:', { 
         hasUser: !!user, 
@@ -26,7 +32,7 @@ export class SupabaseDraftManager {
           status: error.status,
           details: error.details
         });
-      throw new Error('Authentication failed');
+        throw new Error(`Authentication failed: ${error.message}`);
     }
     if (!user) {
       console.error('🗄️ SupabaseDraftManager: No user found in auth check');
@@ -178,12 +184,21 @@ export class SupabaseDraftManager {
   static async getAllDrafts(): Promise<DraftResume[]> {
     try {
       console.log('📥 SupabaseDraftManager: Starting getAllDrafts');
-      console.log('📥 SupabaseDraftManager: About to check auth for getAllDrafts...');
-      const user = await this.checkAuth();
-      console.log('📥 SupabaseDraftManager: User authenticated for getAllDrafts:', {
-        userId: user.id,
-        email: user.email
-      });
+      
+      let user;
+      try {
+        console.log('📥 SupabaseDraftManager: About to check auth for getAllDrafts...');
+        user = await this.checkAuth(3000); // 3 second timeout for getAllDrafts
+        console.log('📥 SupabaseDraftManager: User authenticated for getAllDrafts:', {
+          userId: user.id,
+          email: user.email
+        });
+      } catch (authError) {
+        console.error('📥 SupabaseDraftManager: Auth check failed for getAllDrafts:', authError);
+        // Instead of throwing, return empty array to prevent hanging
+        console.log('📥 SupabaseDraftManager: Returning empty array due to auth failure');
+        return [];
+      }
 
       console.log('📥 SupabaseDraftManager: Starting Supabase query for getAllDrafts...');
       console.log('📥 SupabaseDraftManager: Query parameters:', {
@@ -192,11 +207,18 @@ export class SupabaseDraftManager {
         orderBy: 'updated_at desc'
       });
       
-      const { data, error } = await supabase
+      // Add timeout to query as well
+      const queryPromise = supabase
         .from('drafts')
         .select('*')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
+      
+      const queryTimeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Query timeout')), 10000) // 10 second timeout for query
+      );
+      
+      const { data, error } = await Promise.race([queryPromise, queryTimeoutPromise]) as any;
 
       console.log('📥 SupabaseDraftManager: Supabase query completed for getAllDrafts');
       console.log('📥 SupabaseDraftManager: Query result details:', {
@@ -215,7 +237,9 @@ export class SupabaseDraftManager {
           details: error.details,
           hint: error.hint
         });
-        throw error;
+        // Return empty array instead of throwing to prevent hanging
+        console.log('📥 SupabaseDraftManager: Returning empty array due to query error');
+        return [];
       }
 
       console.log('📥 SupabaseDraftManager: Query successful for getAllDrafts, returned:', data?.length || 0, 'drafts');
@@ -243,16 +267,7 @@ export class SupabaseDraftManager {
       }));
       
       console.log('📥 SupabaseDraftManager: Data transformation completed for getAllDrafts, returning:', transformedData.length, 'drafts');
-      return (data || []).map(draft => ({
-        id: draft.id,
-        name: draft.name,
-        resumeData: draft.resume_data,
-        selectedTemplate: draft.selected_template,
-        customizations: draft.customizations || {},
-        createdAt: draft.created_at,
-        updatedAt: draft.updated_at,
-        step: draft.step
-      }));
+      return transformedData;
     } catch (error) {
       console.error('📥 SupabaseDraftManager: Exception in getAllDrafts:', {
         error: error,
@@ -260,7 +275,9 @@ export class SupabaseDraftManager {
         stack: error instanceof Error ? error.stack : undefined,
         timestamp: new Date().toISOString()
       });
-      throw error; // Re-throw to let caller handle fallback
+      // Return empty array instead of throwing to prevent hanging UI
+      console.log('📥 SupabaseDraftManager: Returning empty array due to exception');
+      return [];
     }
   }
 
@@ -329,12 +346,20 @@ export class SupabaseDraftManager {
   static async getRecentDrafts(limit: number = 5): Promise<DraftResume[]> {
     try {
       console.log('📥 SupabaseDraftManager: Starting getRecentDrafts, limit:', limit);
-      console.log('📥 SupabaseDraftManager: About to check auth for getRecentDrafts...');
-      const user = await this.checkAuth();
-      console.log('📥 SupabaseDraftManager: User authenticated for getRecentDrafts:', {
-        userId: user.id,
-        email: user.email
-      });
+      
+      let user;
+      try {
+        console.log('📥 SupabaseDraftManager: About to check auth for getRecentDrafts...');
+        user = await this.checkAuth(3000); // 3 second timeout
+        console.log('📥 SupabaseDraftManager: User authenticated for getRecentDrafts:', {
+          userId: user.id,
+          email: user.email
+        });
+      } catch (authError) {
+        console.error('📥 SupabaseDraftManager: Auth check failed for getRecentDrafts:', authError);
+        console.log('📥 SupabaseDraftManager: Returning empty array due to auth failure');
+        return [];
+      }
 
       console.log('📥 SupabaseDraftManager: Starting Supabase query for getRecentDrafts...');
       console.log('📥 SupabaseDraftManager: Query parameters:', {
@@ -344,12 +369,19 @@ export class SupabaseDraftManager {
         orderBy: 'updated_at desc'
       });
       
-      const { data, error } = await supabase
+      // Add timeout to query
+      const queryPromise = supabase
         .from('drafts')
         .select('*')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false })
         .limit(limit);
+      
+      const queryTimeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Query timeout')), 8000) // 8 second timeout
+      );
+      
+      const { data, error } = await Promise.race([queryPromise, queryTimeoutPromise]) as any;
 
       console.log('📥 SupabaseDraftManager: Supabase query completed for getRecentDrafts');
       console.log('📥 SupabaseDraftManager: Query result details:', {
@@ -368,7 +400,8 @@ export class SupabaseDraftManager {
           details: error.details,
           hint: error.hint
         });
-        throw error;
+        console.log('📥 SupabaseDraftManager: Returning empty array due to query error');
+        return [];
       }
 
       console.log('📥 SupabaseDraftManager: Query successful for getRecentDrafts, returned:', data?.length || 0, 'drafts');
@@ -398,16 +431,7 @@ export class SupabaseDraftManager {
       }));
       
       console.log('📥 SupabaseDraftManager: Data transformation completed for getRecentDrafts, returning:', transformedData.length, 'drafts');
-      return (data || []).map(draft => ({
-        id: draft.id,
-        name: draft.name,
-        resumeData: draft.resume_data,
-        selectedTemplate: draft.selected_template,
-        customizations: draft.customizations || {},
-        createdAt: draft.created_at,
-        updatedAt: draft.updated_at,
-        step: draft.step
-      }));
+      return transformedData;
     } catch (error) {
       console.error('📥 SupabaseDraftManager: Exception in getRecentDrafts:', {
         error: error,
@@ -415,7 +439,8 @@ export class SupabaseDraftManager {
         stack: error instanceof Error ? error.stack : undefined,
         timestamp: new Date().toISOString()
       });
-      throw error; // Re-throw to let caller handle fallback
+      console.log('📥 SupabaseDraftManager: Returning empty array due to exception');
+      return [];
     }
   }
 

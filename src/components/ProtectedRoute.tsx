@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRequireAuth } from '../contexts/AuthContext';
 import { AuthModal } from './AuthModal';
-import { Shield, Lock, Sparkles, Zap, Star } from 'lucide-react';
+import { Shield, Lock, Sparkles, Zap, Star, User } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;

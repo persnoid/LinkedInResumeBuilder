@@ -53,6 +53,23 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [effectiveLoading]);
 
+  // Helper functions for modal management
+  const openSignInModal = () => {
+    console.log('🔒 ProtectedRoute - Opening Sign In modal');
+    setAuthModalInitialMode('signin');
+    setShowAuthModal(true);
+  };
+
+  const openSignUpModal = () => {
+    console.log('🔒 ProtectedRoute - Opening Sign Up modal');
+    setAuthModalInitialMode('signup');
+    setShowAuthModal(true);
+  };
+
+  const closeAuthModal = () => {
+    console.log('🔒 ProtectedRoute - Closing auth modal');
+    setShowAuthModal(false);
+  };
   if (effectiveLoading) {
     console.log('🔒 ProtectedRoute - Rendering loading screen (effectiveLoading=true)');
     return (
@@ -174,10 +191,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
               
               <div className="space-y-4">
                 <button
-                  onClick={() => {
-                    setAuthModalInitialMode('signin');
-                    setShowAuthModal(true);
-                  }}
+                  onClick={openSignInModal}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   <Lock className="w-5 h-5 mr-3" />
@@ -187,10 +201,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
                 <p className="text-sm text-gray-500">
                   New here?{' '}
                   <button
-                    onClick={() => {
-                      setAuthModalInitialMode('signup');
-                      setShowAuthModal(true);
-                    }}
+                    onClick={openSignUpModal}
                     className="text-blue-600 hover:text-blue-700 font-medium underline decoration-2 underline-offset-4 hover:decoration-blue-700 transition-colors"
                   >
                     Create your free account
@@ -236,7 +247,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
         <AuthModal
           isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
+          onClose={closeAuthModal}
           initialMode={authModalInitialMode}
         />
       </>

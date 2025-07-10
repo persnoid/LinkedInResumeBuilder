@@ -85,6 +85,15 @@ function App() {
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  console.log('🏠 App RENDER - Current state:', {
+    currentStep,
+    hasResumeData: !!resumeData,
+    selectedTemplate,
+    currentDraftId,
+    isTransitioning,
+    timestamp: new Date().toISOString()
+  });
+
   // Toast notification hook
   const { toast, showToast, hideToast } = useToast();
 
@@ -93,27 +102,43 @@ function App() {
 
   // Load current draft on app start - CLOUD ONLY
   useEffect(() => {
+    console.log('🏠 App - useEffect for initial data loading triggered');
     const initializeData = async () => {
       try {
+        console.log('🏠 App - Starting data initialization...');
         // Check if user is authenticated
         const { data: { user }, error: authError } = await supabase.auth.getUser();
+        console.log('🏠 App - Auth check result:', {
+          hasUser: !!user,
+          userEmail: user?.email,
+          authError: authError?.message
+        });
         
         if (user && !authError) {
           // Try to load user's primary resume data
           try {
+            console.log('🏠 App - Loading primary resume data from Supabase...');
             const primaryResumeData = await SupabaseDraftManager.getResumeData();
+            console.log('🏠 App - Primary resume data loaded:', {
+              hasData: !!primaryResumeData,
+              hasPersonalInfo: !!primaryResumeData?.personalInfo,
+              personalInfoName: primaryResumeData?.personalInfo?.name
+            });
             if (primaryResumeData) {
               console.log('Loading primary resume data from Supabase');
               setResumeData(primaryResumeData);
+              console.log('🏠 App - Resume data set in state');
             }
           } catch (error) {
-            console.warn('Failed to load primary resume data:', error);
+            console.warn('🏠 App - Failed to load primary resume data:', error);
           }
         } else {
-          console.log('User not authenticated, skipping data initialization');
+          console.log('🏠 App - User not authenticated, skipping data initialization');
         }
       } catch (error) {
-        console.error('Error during data initialization:', error);
+        console.error('🏠 App - Error during data initialization:', error);
+      } finally {
+        console.log('🏠 App - Data initialization completed');
       }
     };
     
@@ -363,13 +388,13 @@ function App() {
   };
 
   const renderCurrentStep = () => {
-    console.log('Rendering step:', currentStep, 'Has data:', !!resumeData, 'Is transitioning:', isTransitioning);
     console.log('🏠 App - renderCurrentStep called with:', {
       currentStep,
       hasResumeData: !!resumeData,
       isTransitioning,
       selectedTemplate,
-      currentDraftId
+      currentDraftId,
+      timestamp: new Date().toISOString()
     });
     
     // Show loading state during transition
@@ -413,7 +438,7 @@ function App() {
           </ErrorBoundary>
         ) : (
           (() => {
-            console.log('🏠 App - Step 1 but no resumeData, showing loading');
+            console.log('🏠 App - Step 1 but no resumeData, showing loading screen');
             return (
               <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
@@ -442,7 +467,7 @@ function App() {
           </ErrorBoundary>
         ) : (
           (() => {
-            console.log('🏠 App - Step 2 but no resumeData, showing loading');
+            console.log('🏠 App - Step 2 but no resumeData, showing loading screen');
             return (
               <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">

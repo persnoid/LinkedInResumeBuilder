@@ -4,22 +4,23 @@ import { DraftResume, ResumeData } from '../types/resume';
 export class SupabaseDraftManager {
   // Check if user is authenticated before operations
   private static async checkAuth() {
-    console.log('🔒 SupabaseDraftManager: Checking authentication...');
+    console.log('🗄️ SupabaseDraftManager: Checking authentication...');
     const { data: { user }, error } = await supabase.auth.getUser();
-    console.log('🔒 SupabaseDraftManager: Auth check result:', { 
+    console.log('🗄️ SupabaseDraftManager: Auth check result:', { 
       hasUser: !!user, 
       userEmail: user?.email,
-      error: error?.message 
+      error: error?.message,
+      timestamp: new Date().toISOString()
     });
     if (error) {
       console.error('Auth check error:', error);
       throw new Error('Authentication failed');
     }
     if (!user) {
-      console.error('🔒 SupabaseDraftManager: No user found in auth check');
+      console.error('🗄️ SupabaseDraftManager: No user found in auth check');
       throw new Error('User not authenticated');
     }
-    console.log('🔒 SupabaseDraftManager: User authenticated successfully');
+    console.log('🗄️ SupabaseDraftManager: User authenticated successfully');
     return user;
   }
 
@@ -268,7 +269,7 @@ export class SupabaseDraftManager {
 
   static async getResumeData(): Promise<ResumeData | null> {
     try {
-      console.log('📥 SupabaseDraftManager: Starting getResumeData');
+      console.log('🗄️ SupabaseDraftManager: Starting getResumeData');
       const user = await this.checkAuth();
 
       const { data, error } = await supabase
@@ -279,13 +280,19 @@ export class SupabaseDraftManager {
 
       if (error) {
         if (error.code === 'PGRST116') {
-          console.log('📥 SupabaseDraftManager: No resume data found');
+          console.log('🗄️ SupabaseDraftManager: No resume data found');
           return null; // No resume data found
         }
         throw error;
       }
 
-      console.log('📥 SupabaseDraftManager: Successfully retrieved resume data');
+      console.log('🗄️ SupabaseDraftManager: Successfully retrieved resume data:', {
+        hasPersonalInfo: !!data.personal_info,
+        personalInfoName: data.personal_info?.name,
+        experienceCount: data.experience?.length || 0,
+        skillsCount: data.skills?.length || 0,
+        timestamp: new Date().toISOString()
+      });
       return {
         personalInfo: data.personal_info,
         summary: data.summary || '',
@@ -297,7 +304,7 @@ export class SupabaseDraftManager {
         customSections: data.custom_sections || {}
       };
     } catch (error) {
-      console.error('📥 SupabaseDraftManager: Error in getResumeData:', error);
+      console.error('🗄️ SupabaseDraftManager: Error in getResumeData:', error);
       throw error; // Re-throw to let caller handle fallback
     }
   }

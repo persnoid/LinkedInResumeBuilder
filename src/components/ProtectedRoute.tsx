@@ -21,6 +21,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const effectiveLoading = loading;
   const effectiveIsAuthenticated = isAuthenticated;
 
+  console.log('🔒 ProtectedRoute RENDER - Current state:', {
+    effectiveLoading,
+    effectiveIsAuthenticated,
+    hasUser: !!user,
+    userEmail: user?.email,
+    timestamp: new Date().toISOString()
+  });
+
   // Animated loading progress
   useEffect(() => {
     if (effectiveLoading) {

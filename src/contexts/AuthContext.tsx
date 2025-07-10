@@ -24,30 +24,53 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  console.log('🔐 AuthProvider RENDER - Current state:', {
+    hasUser: !!user,
+    userEmail: user?.email,
+    hasSession: !!session,
+    loading,
+    timestamp: new Date().toISOString()
+  });
+
   useEffect(() => {
+    console.log('🔐 AuthProvider useEffect - Starting initial session check');
     // Get initial session
     const getInitialSession = async () => {
       try {
+        console.log('🔐 AuthProvider - Calling supabase.auth.getSession()');
         const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('🔐 AuthProvider - getSession result:', {
+          hasSession: !!session,
+          userEmail: session?.user?.email,
+          error: error?.message
+        });
         if (error) {
           console.error('Error getting initial session:', error);
         } else {
+          console.log('🔐 AuthProvider - Setting session and user from initial check');
           setSession(session);
           setUser(session?.user ?? null);
         }
       } catch (error) {
         console.error('Unexpected error getting session:', error);
       } finally {
+        console.log('🔐 AuthProvider - Setting loading to false after initial session check');
         setLoading(false);
       }
     };
 
     getInitialSession();
 
+    console.log('🔐 AuthProvider - Setting up auth state change listener');
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        console.log('🔐 AuthProvider - Auth state changed:', {
+          event,
+          userEmail: session?.user?.email,
+          hasSession: !!session,
+          timestamp: new Date().toISOString()
+        });
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -57,11 +80,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           await ensureProfile(session.user);
         }
         
+        console.log('🔐 AuthProvider - Setting loading to false after auth state change');
         setLoading(false);
       }
     );
 
+    console.log('🔐 AuthProvider - Auth state change listener set up successfully');
+
     return () => {
+      console.log('🔐 AuthProvider - Cleaning up auth state change listener');
       subscription.unsubscribe();
     };
   }, []);
@@ -120,52 +147,59 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('🔐 AuthProvider - signIn started for:', email);
       setLoading(true);
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password
+      });
+      console.log('🔐 AuthProvider - signIn result:', { 
+        success: !error, 
+        error: error?.message 
       });
       return { error };
     } catch (error) {
       console.error('Sign in error:', error);
       return { error: error as AuthError };
     } finally {
+      console.log('🔐 AuthProvider - signIn finally block, setting loading to false');
       setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
+      console.log('🔐 AuthProvider - signOut started');
       setLoading(true);
       
       // Check if user is currently authenticated
       if (!user) {
-        console.log('🔓 AuthContext: No user to sign out, clearing local state');
+        console.log('🔐 AuthProvider - No user to sign out, clearing local state');
         setUser(null);
         setSession(null);
         setLoading(false);
         return { error: null };
       }
       
-      console.log('🔓 AuthContext: Starting sign out process for user:', user?.email);
+      console.log('🔐 AuthProvider - Starting sign out process for user:', user?.email);
 
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error('🔓 AuthContext: Sign out error from Supabase:', error);
+        console.error('🔐 AuthProvider - Sign out error from Supabase:', error);
         // Still clear local state even if Supabase signOut fails
         setUser(null);
         setSession(null);
         return { error };
       }
       
-      console.log('🔓 AuthContext: Supabase sign out successful, clearing local state');
+      console.log('🔐 AuthProvider - Supabase sign out successful, clearing local state');
       
       // Explicitly clear the auth state immediately
       setUser(null);
       setSession(null);
       
-      console.log('🔓 AuthContext: Local auth state cleared');
+      console.log('🔐 AuthProvider - Local auth state cleared');
       
       return { error: null };
     } catch (error) {
@@ -175,8 +209,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setSession(null);
       return { error: error as AuthError };
     } finally {
+      console.log('🔐 AuthProvider - signOut finally block, setting loading to false');
       setLoading(false);
-      console.log('🔓 AuthContext: Sign out process completed');
+      console.log('🔐 AuthProvider - Sign out process completed');
     }
   };
 
@@ -256,7 +291,7 @@ export const useRequireAuth = () => {
   const [isChecking, setIsChecking] = useState(true);
 
   // DEBUG: Log auth state changes - Add more detailed logging
-  console.log('🔐 useRequireAuth - Detailed State:', {
+  console.log('🔐 useRequireAuth RENDER - Detailed State:', {
     user: user?.email || 'null',
     authLoading: loading,
     isChecking,
@@ -267,10 +302,11 @@ export const useRequireAuth = () => {
   });
 
   useEffect(() => {
-    console.log('🔐 useRequireAuth - useEffect triggered:', {
+    console.log('🔐 useRequireAuth - useEffect triggered (loading dependency):', {
       authLoading: loading,
       currentIsChecking: isChecking,
-      user: user?.email || 'null'
+      user: user?.email || 'null',
+      timestamp: new Date().toISOString()
     });
     
     if (!loading) {
@@ -283,17 +319,27 @@ export const useRequireAuth = () => {
   
   // Additional useEffect to track user changes
   useEffect(() => {
-    console.log('🔐 useRequireAuth - User changed:', {
+    console.log('🔐 useRequireAuth - useEffect triggered (user dependency):', {
       user: user?.email || 'null',
       isAuthenticated: !!user,
       authLoading: loading,
-      isChecking
+      isChecking,
+      timestamp: new Date().toISOString()
     });
   }, [user]);
 
-  return {
+  const result = {
     user,
     loading: isChecking, // This controls the loading state for ProtectedRoute
     isAuthenticated: !!user
   };
+
+  console.log('🔐 useRequireAuth - Returning result:', {
+    hasUser: !!result.user,
+    loading: result.loading,
+    isAuthenticated: result.isAuthenticated,
+    timestamp: new Date().toISOString()
+  });
+
+  return result;
 };

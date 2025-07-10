@@ -171,6 +171,12 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       showToast('Draft saved successfully!', 'success');
       
       setSaveName('');
+      
+      // Close the modal after successful save
+      setTimeout(() => {
+        onClose();
+      }, 1500); // Give user time to see success message
+      
       await refreshDrafts();
     } catch (err) {
       console.error('🗂️ DraftManager: Error saving draft:', err);

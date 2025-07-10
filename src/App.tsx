@@ -309,6 +309,62 @@ function App() {
     }
   };
 
+  // Quick save function for updating existing drafts
+  const quickSaveDraft = async () => {
+    if (!resumeData) {
+      showToast('No resume data to save', 'error');
+      return;
+    }
+
+    if (currentDraftId) {
+      // Update existing draft without name prompt
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        
+        if (user && !authError) {
+          // Get existing draft name
+          const existingDraft = await SupabaseDraftManager.getDraft(currentDraftId);
+          if (existingDraft) {
+            showToast('Updating draft...', 'info', 2000);
+            
+            await SupabaseDraftManager.saveDraft(
+              existingDraft.name,
+              resumeData,
+              selectedTemplate,
+              customizations,
+              currentStep,
+              currentDraftId
+            );
+            
+            showToast('Draft updated successfully!', 'success');
+          } else {
+            showToast('Draft not found. Creating new draft...', 'warning');
+            setShowSavePrompt(true);
+          }
+        } else {
+          showToast('You must be signed in to save drafts.', 'error');
+        }
+      } catch (error) {
+        console.error('Error updating draft:', error);
+        showToast('Failed to update draft. Please try again.', 'error');
+      }
+    } else {
+      // No current draft, show save prompt for new draft
+      setShowSavePrompt(true);
+    }
+  };
+
+  // Save as new draft function (always prompts for name)
+  const saveAsNewDraft = () => {
+    if (!resumeData) {
+      showToast('No resume data to save', 'error');
+      return;
+    }
+    
+    // Always show save prompt for new draft, regardless of current draft status
+    setShowSavePrompt(true);
+  };
+
   // Auto-save function for step transitions
   const autoSaveDraft = async (step: number) => {
     if (currentDraftId && resumeData) {
@@ -365,8 +421,35 @@ function App() {
 
   const handleSavePromptSave = async (name: string) => {
     try {
+      // For "Save as New", always create a new draft (don't pass currentDraftId)
+      const draftIdToUse = undefined; // This ensures a new draft is created
+      
       // Wait for the save operation to complete
-      await saveDraft(name);
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (user && !authError) {
+        showToast('Creating new draft...', 'info', 2000);
+        
+        const newDraftId = await SupabaseDraftManager.saveDraft(
+          name,
+          resumeData!,
+          selectedTemplate,
+          customizations,
+          currentStep,
+          draftIdToUse // undefined = create new draft
+        );
+        
+        // Update current draft ID to the new draft
+        setCurrentDraftId(newDraftId);
+        
+        // Also save primary resume data
+        await SupabaseDraftManager.saveResumeData(resumeData!);
+        
+        showToast('New draft created successfully!', 'success');
+      } else {
+        showToast('You must be signed in to save drafts.', 'error');
+        return;
+      }
       
       // Only increment step if we're not already on the final step
       if (currentStep < STEPS.length - 1) {

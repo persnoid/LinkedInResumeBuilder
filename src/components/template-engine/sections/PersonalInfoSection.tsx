@@ -281,7 +281,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
       <img
         src={personalInfo.photo || defaultPhoto}
         alt="Profile"
-        className="w-full h-full object-cover rounded-full border-2 cursor-pointer"
+        className="w-full h-full object-cover rounded-full border-2 cursor-pointer print:cursor-default"
         style={{ borderColor: styles.colors.primary }}
         onClick={() => editMode && fileInputRef.current?.click()}
       />
@@ -331,7 +331,9 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         customStyle={{
           width: `${photoSizePx}px`,
           height: `${photoSizePx}px`,
-          aspectRatio: '1'
+          aspectRatio: '1',
+          borderRadius: '50%',
+          overflow: 'hidden'
         }}
       />
     </div>
@@ -370,6 +372,9 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         className="contact-header font-bold mb-4 uppercase tracking-wide"
         style={{ 
           fontSize: styles.typography.fontSize.heading3,
+          aspectRatio: '1',
+          objectFit: 'cover',
+          objectPosition: 'center'
           color: styles.colors.primary,
           borderBottom: `2px solid ${styles.colors.primary}`,
           paddingBottom: '2px',
@@ -379,7 +384,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         Contact Information
       </h4>)}
       
-      <div 
+      {editMode && isHovering && !window.matchMedia('print').matches && (
         className={`contact-info ${
           contactLayout === 'row' 
             ? 'flex flex-wrap gap-x-4 gap-y-2 justify-center' 
@@ -388,7 +393,13 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
       >
         {contactItems.map((item, index) => (
           <div key={index} className="contact-item flex items-center">
-            <item.icon className="w-3 h-3 mr-2 flex-shrink-0" style={{ color: styles.colors.accent }} />
+            <item.icon 
+              className="w-3 h-3 mr-2 flex-shrink-0 print:w-2 print:h-2" 
+              style={{ 
+                color: styles.colors.accent,
+                fontSize: '8px' // Force small size for PDF
+              }} 
+            />
             <EditableText
               value={item.value}
               field={item.field}
@@ -442,10 +453,13 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
             {contactItems.map((item, index) => (
               <div key={index} className="contact-item flex items-center">
                 <item.icon 
-                  className="w-3 h-3 mr-1" 
-                  style={{ color: styles.colors.background }} 
+                  className="w-3 h-3 mr-1 print:w-2 print:h-2" 
+                  style={{ 
+                    color: styles.colors.background,
+                    fontSize: '8px' // Force small size for PDF
+                  }} 
                 />
-                <EditableText
+      {uploadStatus !== 'idle' && !window.matchMedia('print').matches && (
                   value={item.value}
                   field={item.field}
                   style={{ 
@@ -463,7 +477,9 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
             customStyle={{
               width: `${photoSizePx}px`,
               height: `${photoSizePx}px`,
-              aspectRatio: '1'
+              aspectRatio: '1',
+              borderRadius: '50%',
+              overflow: 'hidden'
             }}
           />
         </div>

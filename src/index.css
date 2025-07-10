@@ -14,6 +14,31 @@
     print-color-adjust: exact;
   }
   
+  /* Force small icon sizes in print */
+  svg, .lucide {
+    width: 8px !important;
+    height: 8px !important;
+    min-width: 8px !important;
+    min-height: 8px !important;
+    max-width: 8px !important;
+    max-height: 8px !important;
+  }
+  
+  /* Fix profile photo aspect ratio in print */
+  img.rounded-full,
+  img[style*="border-radius: 50%"] {
+    object-fit: cover !important;
+    object-position: center !important;
+    aspect-ratio: 1 !important;
+  }
+  
+  /* Hide interactive elements in print */
+  .group:hover > *,
+  .hover\:opacity-100,
+  .opacity-0 {
+    display: none !important;
+  }
+  
   .page-break-before {
     page-break-before: always;
   }

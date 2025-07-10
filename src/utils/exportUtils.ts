@@ -84,34 +84,39 @@ export const exportToPDF = async (elementId: string, filename: string = 'resume.
           clonedElement.style.transform = 'none';
           clonedElement.style.transformOrigin = 'top left';
           
-          // Fix icon sizes in cloned document
+          // Fix icon sizes in cloned document - Force smaller icons for PDF
           const icons = clonedElement.querySelectorAll('svg');
           icons.forEach((icon: any) => {
-            const currentWidth = icon.getAttribute('width') || icon.style.width;
-            const currentHeight = icon.getAttribute('height') || icon.style.height;
-            
-            if (currentWidth && currentHeight) {
-              icon.style.width = currentWidth.includes('px') ? currentWidth : `${currentWidth}px`;
-              icon.style.height = currentHeight.includes('px') ? currentHeight : `${currentHeight}px`;
-            } else {
-              // Default icon size
-              icon.style.width = '8px';
-              icon.style.height = '8px';
-            }
+            // Force consistent small icon size for PDF export
+            icon.style.width = '8px';
+            icon.style.height = '8px';
             icon.style.flexShrink = '0';
+            icon.style.minWidth = '8px';
+            icon.style.minHeight = '8px';
+            icon.style.maxWidth = '8px';
+            icon.style.maxHeight = '8px';
           });
 
-          // Fix image sizes
+          // Fix image sizes and aspect ratio
           const images = clonedElement.querySelectorAll('img');
           images.forEach((img: any) => {
-            if (img.style.width && img.style.height) {
-              // Keep existing dimensions
+            // Check if this is a profile photo (circular)
+            if (img.classList.contains('rounded-full') || img.style.borderRadius === '50%') {
+              // Force square aspect ratio for profile photos
+              const size = Math.min(parseInt(img.style.width) || 96, parseInt(img.style.height) || 96);
+              img.style.width = `${size}px`;
+              img.style.height = `${size}px`;
+              img.style.objectFit = 'cover';
+              img.style.objectPosition = 'center';
+              img.style.aspectRatio = '1';
             } else {
+              // For other images, maintain aspect ratio
               const rect = img.getBoundingClientRect();
               if (rect.width && rect.height) {
                 img.style.width = `${rect.width}px`;
                 img.style.height = `${rect.height}px`;
               }
+              img.style.objectFit = 'contain';
             }
           });
         }

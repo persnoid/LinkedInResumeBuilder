@@ -259,7 +259,6 @@ function App() {
     if (!resumeData) return;
 
     try {
-      setShowSavePrompt(false); // Close the prompt immediately
       showToast('Saving draft...', 'info', 2000);
       
       let draftId: string;
@@ -428,6 +427,9 @@ function App() {
 
   const handleSavePromptSave = async (name: string) => {
     try {
+      // Close the modal immediately to improve UX
+      setShowSavePrompt(false);
+      
       // For "Save as New", always create a new draft (don't pass currentDraftId)
       const draftIdToUse = undefined; // This ensures a new draft is created
       
@@ -455,6 +457,8 @@ function App() {
         showToast('New draft created successfully!', 'success');
       } else {
         showToast('You must be signed in to save drafts.', 'error');
+        // Reopen modal if there was an auth error
+        setShowSavePrompt(true);
         return;
       }
       
@@ -464,8 +468,9 @@ function App() {
       }
     } catch (error) {
       console.error('Error saving draft:', error);
-      // Don't increment step if save failed
       showToast('Failed to save draft. Please try again.', 'error');
+      // Reopen modal if save failed
+      setShowSavePrompt(true);
     }
   };
 

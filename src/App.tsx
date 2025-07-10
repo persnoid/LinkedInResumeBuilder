@@ -432,7 +432,9 @@ function App() {
               onTemplateSelect={handleTemplateSelect}
               onNext={nextStep}
               onBack={prevStep}
-              onSaveDraft={() => setShowSavePrompt(true)}
+              onSaveDraft={saveAsNewDraft}
+              onQuickSave={quickSaveDraft}
+              onSaveAsNew={saveAsNewDraft}
               currentDraftId={currentDraftId}
             />
           </ErrorBoundary>
@@ -461,7 +463,9 @@ function App() {
               onResumeDataUpdate={handleResumeDataUpdate}
               onExport={handleExport}
               onBack={prevStep}
-              onSaveDraft={() => setShowSavePrompt(true)}
+              onSaveDraft={saveAsNewDraft}
+              onQuickSave={quickSaveDraft}
+              onSaveAsNew={saveAsNewDraft}
               currentDraftId={currentDraftId}
             />
           </ErrorBoundary>

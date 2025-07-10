@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle, Eye, Layout, Grid, Save, Palette, FileText, Zap, Sparkles, User, X, ZoomIn } from 'lucide-react';
+import { CheckCircle, Eye, Layout, Grid, Save, Palette, FileText, Zap, Sparkles, User, X, ZoomIn, Plus } from 'lucide-react';
 import { reactiveTemplates } from '../data/reactive-templates';
 import { TemplateConfig, ResumeData } from '../types/resume';
 import { TemplateRenderer } from './template-engine/TemplateRenderer';

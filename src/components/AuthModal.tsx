@@ -25,6 +25,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Update mode when initialMode prop changes
+  React.useEffect(() => {
+    if (isOpen) {
+      console.log('🔐 AuthModal: Modal opened with initialMode:', initialMode);
+      setMode(initialMode);
+      resetForm();
+    }
+  }, [isOpen, initialMode]);
   if (!isOpen) return null;
 
   const resetForm = () => {

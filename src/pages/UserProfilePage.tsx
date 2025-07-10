@@ -36,7 +36,6 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
 
   // Load profile data from Supabase on component mount
   useEffect(() => {
@@ -81,14 +80,6 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
   }, [user]);
 
   const handlePersonalInfoUpdate = useCallback((field: string, value: any) => {
-    // Prevent updates while another update is in progress
-    if (isUpdating) {
-      console.log('👤 UserProfilePage - Skipping update, already in progress');
-      return;
-    }
-    
-    setIsUpdating(true);
-    
     console.log('👤 UserProfilePage - handlePersonalInfoUpdate called:', {
       field,
       valueType: typeof value,
@@ -119,13 +110,9 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
         }
       }
       
-      // Set updating to false after state update
-      setTimeout(() => setIsUpdating(false), 100);
-      
       return updated;
     });
     
-  }, [isUpdating]);
 
   const handleSaveProfile = async () => {
     setIsSaving(true);

@@ -160,11 +160,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('Sign out error:', error);
       return { error: error as AuthError };
     } finally {
-      // Add a small delay to ensure state updates are processed
-      setTimeout(() => {
-        setLoading(false);
-        console.log('🔓 AuthContext: Sign out process completed');
-      }, 100);
+      setLoading(false);
+      console.log('🔓 AuthContext: Sign out process completed');
     }
   };
 

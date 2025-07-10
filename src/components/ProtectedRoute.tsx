@@ -17,23 +17,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const [authModalInitialMode, setAuthModalInitialMode] = useState<'signin' | 'signup'>('signin');
   const [loadingProgress, setLoadingProgress] = useState(0);
   
-  // TEMPORARY DEBUG: Force bypass loading if user exists
-  const shouldBypassLoading = user !== null;
-  const effectiveLoading = shouldBypassLoading ? false : loading;
-  const effectiveIsAuthenticated = shouldBypassLoading ? true : isAuthenticated;
-
-  // DEBUG: Log all state changes
-  console.log('🔒 ProtectedRoute - Detailed State:', {
-    user: user?.email || 'null',
-    originalLoading: loading,
-    effectiveLoading,
-    originalIsAuthenticated: isAuthenticated,
-    effectiveIsAuthenticated,
-    shouldBypassLoading,
-    showAuthModal,
-    loadingProgress: Math.round(loadingProgress),
-    timestamp: new Date().toISOString().split('T')[1]
-  });
+  // Use actual loading and authentication states
+  const effectiveLoading = loading;
+  const effectiveIsAuthenticated = isAuthenticated;
 
   // Animated loading progress
   useEffect(() => {
@@ -48,7 +34,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
       return () => clearInterval(interval);
     } else {
-      console.log('🔒 ProtectedRoute - Effective loading complete, setting progress to 100%');
+      console.log('🔒 ProtectedRoute - Loading complete, setting progress to 100%');
       setLoadingProgress(100);
     }
   }, [effectiveLoading]);
@@ -71,7 +57,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     setShowAuthModal(false);
   };
   if (effectiveLoading) {
-    console.log('🔒 ProtectedRoute - Rendering loading screen (effectiveLoading=true)');
+    console.log('🔒 ProtectedRoute - Rendering loading screen');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center relative overflow-hidden">
         {/* Animated background elements */}
@@ -152,13 +138,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!effectiveIsAuthenticated) {
-    console.log('🔒 ProtectedRoute - User not effectively authenticated, showing auth interface');
+    console.log('🔒 ProtectedRoute - User not authenticated, showing auth interface');
     if (fallback) {
       console.log('🔒 ProtectedRoute - Rendering custom fallback component');
       return <>{fallback}</>;
     }
 
-    console.log('🔒 ProtectedRoute - Rendering default auth interface');
+    console.log('🔒 ProtectedRoute - Rendering authentication interface');
     return (
       <>
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-6 relative overflow-hidden">
@@ -257,6 +243,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  console.log('🔒 ProtectedRoute - User effectively authenticated, rendering children');
+  console.log('🔒 ProtectedRoute - User authenticated, rendering children');
   return <>{children}</>;
 };

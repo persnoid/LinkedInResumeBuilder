@@ -138,12 +138,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setLoading(true);
       
+      // Check if user is currently authenticated
+      if (!user) {
+        console.log('🔓 AuthContext: No user to sign out, clearing local state');
+        setUser(null);
+        setSession(null);
+        setLoading(false);
+        return { error: null };
+      }
+      
       console.log('🔓 AuthContext: Starting sign out process for user:', user?.email);
 
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error('🔓 AuthContext: Sign out error from Supabase:', error);
+        // Still clear local state even if Supabase signOut fails
+        setUser(null);
+        setSession(null);
         return { error };
       }
       
@@ -158,6 +170,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { error: null };
     } catch (error) {
       console.error('Sign out error:', error);
+      // Ensure local state is cleared even on exception
+      setUser(null);
+      setSession(null);
       return { error: error as AuthError };
     } finally {
       setLoading(false);

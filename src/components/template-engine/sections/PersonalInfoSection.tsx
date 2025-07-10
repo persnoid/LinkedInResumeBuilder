@@ -331,9 +331,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         customStyle={{
           width: `${photoSizePx}px`,
           height: `${photoSizePx}px`,
-          aspectRatio: '1',
-          borderRadius: '50%',
-          overflow: 'hidden'
+          aspectRatio: '1'
         }}
       />
     </div>
@@ -372,9 +370,6 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         className="contact-header font-bold mb-4 uppercase tracking-wide"
         style={{ 
           fontSize: styles.typography.fontSize.heading3,
-          aspectRatio: '1',
-          objectFit: 'cover',
-          objectPosition: 'center'
           color: styles.colors.primary,
           borderBottom: `2px solid ${styles.colors.primary}`,
           paddingBottom: '2px',
@@ -384,13 +379,11 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         Contact Information
       </h4>)}
       
-      {editMode && isHovering && !window.matchMedia('print').matches && (
-        className={`contact-info ${
-          contactLayout === 'row' 
-            ? 'flex flex-wrap gap-x-4 gap-y-2 justify-center' 
-            : 'space-y-3'
-        }`}
-      >
+      <div className={`contact-info ${
+        contactLayout === 'row' 
+          ? 'flex flex-wrap gap-x-4 gap-y-2 justify-center' 
+          : 'space-y-3'
+      }`}>
         {contactItems.map((item, index) => (
           <div key={index} className="contact-item flex items-center">
             <item.icon 
@@ -459,7 +452,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                     fontSize: '8px' // Force small size for PDF
                   }} 
                 />
-      {uploadStatus !== 'idle' && !window.matchMedia('print').matches && (
+                <EditableText
                   value={item.value}
                   field={item.field}
                   style={{ 
@@ -477,9 +470,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
             customStyle={{
               width: `${photoSizePx}px`,
               height: `${photoSizePx}px`,
-              aspectRatio: '1',
-              borderRadius: '50%',
-              overflow: 'hidden'
+              aspectRatio: '1'
             }}
           />
         </div>
@@ -509,7 +500,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   if (config.columns === 1) {
     return (
       <div className="personal-info-main-content mb-6">
-        <div >
+        <div>
           {renderPhoto()}
           {renderName()}
           {renderTitle() && <div className="mt-2">{renderTitle()}</div>}

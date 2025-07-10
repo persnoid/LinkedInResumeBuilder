@@ -55,7 +55,6 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     { icon: Globe, value: displayWebsite, label: 'Website', field: 'website' },
   ].filter(item => item.value);
 
-  const handleTextEdit = useCallback(debounce((field: string, value: string) => {
   const handleTextEdit = useCallback((field: string, value: string) => {
     console.log('🖼️ PersonalInfoSection - handleTextEdit called:', {
       field,
@@ -69,6 +68,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     } else {
       console.error('🖼️ PersonalInfoSection - onDataUpdate not available for text edit');
     }
+  }, [onDataUpdate]);
 
   const validateImageFile = (file: File): { isValid: boolean; message: string } => {
     // Check file type
@@ -366,8 +366,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
           contactLayout === 'row' 
             ? 'flex flex-wrap gap-x-4 gap-y-2 justify-center' 
             : 'space-y-3'
-        }`
-      }
+        }`}
       >
         {contactItems.map((item, index) => (
           <div key={index} className="contact-item flex items-center">

@@ -209,18 +209,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
                 </p>
                 
                 {/* Alternative: More prominent signup button */}
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <button
-                    onClick={openSignUpModal}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl"
-                  >
-                    <User className="w-5 h-5 mr-3" />
-                    Create Free Account
-                  </button>
-                  <p className="text-xs text-gray-500 mt-2 text-center">
-                    Get started with your professional resume in minutes
-                  </p>
-                </div>
+                
               </div>
               
               {/* Benefits Grid */}

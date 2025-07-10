@@ -348,6 +348,13 @@ function App() {
         console.error('Error updating draft:', error);
         showToast('Failed to update draft. Please try again.', 'error');
       }
+      
+      // Close draft manager if it's open
+      if (showDraftManager) {
+        setTimeout(() => {
+          setShowDraftManager(false);
+        }, 1500);
+      }
     } else {
       // No current draft, show save prompt for new draft
       setShowSavePrompt(true);

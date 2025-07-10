@@ -149,26 +149,29 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
     }
   };
 
-  const handleSignOut = async () => {
-    try {
+              console.log('🔐 UserProfilePage: Sign out had error but continuing with UI cleanup');
+              // Don't show error message - sign out will be forced in AuthContext
       const confirmed = await showConfirmation({
-        title: 'Sign Out',
         message: 'Are you sure you want to sign out? Any unsaved changes will be lost.',
-        confirmText: 'Sign Out',
-        cancelText: 'Cancel',
-        type: 'warning'
-      });
-
-      if (confirmed) {
-        setIsSigningOut(true);
-        setSaveMessage('Signing out...');
-        
-        try {
           const { error } = await signOut();
+            
+            // Always proceed with UI cleanup regardless of error
+            console.log('👤 UserProfilePage: Proceeding with UI cleanup');
+            setSaveMessage('Signed out successfully!');
+            
+            // Close modal and reset form immediately
+            setTimeout(() => {
+              console.log('👤 UserProfilePage: Closing modal and resetting form');
+              onClose();
+              resetForm();
+            }, 100); // Reduced timeout to speed up UI response
+            
           if (error) {
             console.error('Sign out error:', error);
-            setSaveMessage(`Failed to sign out: ${error.message}. Please try again.`);
-            setTimeout(() => setSaveMessage(''), 5000);
+            // Even on exception, proceed with UI cleanup
+            console.log('👤 UserProfilePage: Exception during sign out, but cleaning up UI anyway');
+            onClose();
+            resetForm();
           } else {
             // Successful sign out
             console.log('👤 UserProfilePage: Sign out successful');

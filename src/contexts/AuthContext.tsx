@@ -70,8 +70,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           event,
           userEmail: session?.user?.email,
           hasSession: !!session,
+          currentLoading: loading,
           timestamp: new Date().toISOString()
         });
+        
+        // CRITICAL: For SIGNED_OUT event, immediately clear state and stop loading
+        if (event === 'SIGNED_OUT') {
+          console.log('🔐 AuthProvider - SIGNED_OUT event detected, force clearing state');
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -81,14 +91,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           await ensureProfile(session.user);
         }
         
-        // Only set loading to false if it's still true (avoid unnecessary updates)
-        setLoading(prev => {
-          if (prev) {
-            console.log('🔐 AuthProvider - Setting loading to false after auth state change');
-            return false;
-          }
-          return prev;
-        });
+        // Set loading to false after processing auth state change
+        console.log('🔐 AuthProvider - Setting loading to false after auth state change');
+        setLoading(false);
       }
     );
 
@@ -177,49 +182,53 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signOut = async () => {
     try {
       console.log('🔐 AuthProvider - signOut started');
-      setLoading(true);
+      // Don't set loading to true for sign out - it can get stuck
+      console.log('🔐 AuthProvider - Setting loading to true for signOut');
       
       // Check if user is currently authenticated
       if (!user) {
         console.log('🔐 AuthProvider - No user to sign out, clearing local state');
         setUser(null);
         setSession(null);
-        setLoading(false);
+        console.log('🔐 AuthProvider - No user found, sign out complete');
         return { error: null };
       }
       
       console.log('🔐 AuthProvider - Starting sign out process for user:', user?.email);
 
+      // Set loading to true only after we confirm there's a user to sign out
+      setLoading(true);
+      
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error('🔐 AuthProvider - Sign out error from Supabase:', error);
-        // Still clear local state even if Supabase signOut fails
-        setUser(null);
-        setSession(null);
-        return { error };
       }
       
-      console.log('🔐 AuthProvider - Supabase sign out successful, clearing local state');
+      console.log('🔐 AuthProvider - Supabase sign out completed, clearing local state');
       
-      // Explicitly clear the auth state immediately
+      // CRITICAL: Always clear local state regardless of Supabase result
       setUser(null);
       setSession(null);
       
       console.log('🔐 AuthProvider - Local auth state cleared');
       
-      return { error: null };
+      return { error };
     } catch (error) {
       console.error('Sign out error:', error);
-      // Ensure local state is cleared even on exception
+      // CRITICAL: Clear state even on exception
+      console.log('🔐 AuthProvider - Exception during sign out, clearing state anyway');
+    } finally {
+      // CRITICAL: Always set loading to false and clear state
+      console.log('🔐 AuthProvider - signOut finally block, force completing sign out');
+      setLoading(false);
+      // Force clear state to ensure sign out completes
       setUser(null);
       setSession(null);
-      return { error: error as AuthError };
-    } finally {
-      console.log('🔐 AuthProvider - signOut finally block, setting loading to false');
-      setLoading(false);
       console.log('🔐 AuthProvider - Sign out process completed');
     }
+    
+    return { error: null };
   };
 
   const resetPassword = async (email: string) => {

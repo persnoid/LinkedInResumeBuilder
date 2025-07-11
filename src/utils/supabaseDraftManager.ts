@@ -5,19 +5,48 @@ export class SupabaseDraftManager {
   // Check if user is authenticated before operations
   private static async checkAuth(timeoutMs: number = 5000) {
     console.log('🗄️ SupabaseDraftManager: Checking authentication...');
-    
+
     try {
+      console.log('🗄️ SupabaseDraftManager: Calling supabase.auth.getSession()...');
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log('🗄️ SupabaseDraftManager: supabase.auth.getSession() completed');
+      console.log('🗄️ SupabaseDraftManager: getSession result:', {
+        hasSession: !!session,
+        userEmail: session?.user?.email,
+        userId: session?.user?.id,
+        error: sessionError?.message,
+        errorCode: sessionError?.code,
+        timestamp: new Date().toISOString()
+      });
+
+      if (sessionError) {
+        console.error('🗄️ SupabaseDraftManager: Session retrieval error details:', {
+          message: sessionError.message,
+          code: sessionError.code,
+          status: sessionError.status,
+          details: sessionError.details
+        });
+      }
+
+      if (session?.user) {
+        console.log('🗄️ SupabaseDraftManager: Returning cached session user:', {
+          userId: session.user.id,
+          email: session.user.email
+        });
+        return session.user;
+      }
+
       // Add timeout to prevent hanging
       const authPromise = supabase.auth.getUser();
-      const timeoutPromise = new Promise((_, reject) => 
+      const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Auth check timeout')), timeoutMs)
       );
-      
+
       console.log('🗄️ SupabaseDraftManager: Calling supabase.auth.getUser()...');
       const { data: { user }, error } = await Promise.race([authPromise, timeoutPromise]) as any;
       console.log('🗄️ SupabaseDraftManager: supabase.auth.getUser() completed');
-      console.log('🗄️ SupabaseDraftManager: Auth check result:', { 
-        hasUser: !!user, 
+      console.log('🗄️ SupabaseDraftManager: Auth check result:', {
+        hasUser: !!user,
         userEmail: user?.email,
         userId: user?.id,
         error: error?.message,

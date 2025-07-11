@@ -214,20 +214,12 @@ export class SupabaseDraftManager {
     try {
       console.log('📥 SupabaseDraftManager: Starting getAllDrafts');
       
-      let user;
-      try {
-        console.log('📥 SupabaseDraftManager: About to check auth for getAllDrafts...');
-        user = await this.checkAuth(3000); // 3 second timeout for getAllDrafts
-        console.log('📥 SupabaseDraftManager: User authenticated for getAllDrafts:', {
-          userId: user.id,
-          email: user.email
-        });
-      } catch (authError) {
-        console.error('📥 SupabaseDraftManager: Auth check failed for getAllDrafts:', authError);
-        // Instead of throwing, return empty array to prevent hanging
-        console.log('📥 SupabaseDraftManager: Returning empty array due to auth failure');
-        return [];
-      }
+      console.log('📥 SupabaseDraftManager: About to check auth for getAllDrafts...');
+      const user = await this.checkAuth(3000); // 3 second timeout for getAllDrafts
+      console.log('📥 SupabaseDraftManager: User authenticated for getAllDrafts:', {
+        userId: user.id,
+        email: user.email
+      });
 
       console.log('📥 SupabaseDraftManager: Starting Supabase query for getAllDrafts...');
       console.log('📥 SupabaseDraftManager: Query parameters:', {
@@ -244,7 +236,7 @@ export class SupabaseDraftManager {
         .order('updated_at', { ascending: false });
       
       const queryTimeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Query timeout')), 10000) // 10 second timeout for query
+        setTimeout(() => reject(new Error('Query timeout - please check your internet connection')), 10000) // 10 second timeout for query
       );
       
       const { data, error } = await Promise.race([queryPromise, queryTimeoutPromise]) as any;
@@ -266,9 +258,8 @@ export class SupabaseDraftManager {
           details: error.details,
           hint: error.hint
         });
-        // Return empty array instead of throwing to prevent hanging
-        console.log('📥 SupabaseDraftManager: Returning empty array due to query error');
-        return [];
+        // Re-throw the error so the UI can handle it properly
+        throw new Error(`Failed to load drafts: ${error.message}`);
       }
 
       console.log('📥 SupabaseDraftManager: Query successful for getAllDrafts, returned:', data?.length || 0, 'drafts');
@@ -304,9 +295,19 @@ export class SupabaseDraftManager {
         stack: error instanceof Error ? error.stack : undefined,
         timestamp: new Date().toISOString()
       });
-      // Return empty array instead of throwing to prevent hanging UI
-      console.log('📥 SupabaseDraftManager: Returning empty array due to exception');
-      return [];
+      
+      // Re-throw the error so the UI can show proper error messages
+      if (error instanceof Error) {
+        if (error.message.includes('timeout')) {
+          throw new Error('Request timeout - please check your internet connection and try again');
+        } else if (error.message.includes('Authentication failed') || error.message.includes('User not authenticated')) {
+          throw new Error('Please sign in to access your drafts');
+        } else {
+          throw new Error(`Failed to load drafts: ${error.message}`);
+        }
+      } else {
+        throw new Error('Failed to load drafts. Please try again.');
+      }
     }
   }
 
@@ -376,19 +377,12 @@ export class SupabaseDraftManager {
     try {
       console.log('📥 SupabaseDraftManager: Starting getRecentDrafts, limit:', limit);
       
-      let user;
-      try {
-        console.log('📥 SupabaseDraftManager: About to check auth for getRecentDrafts...');
-        user = await this.checkAuth(3000); // 3 second timeout
-        console.log('📥 SupabaseDraftManager: User authenticated for getRecentDrafts:', {
-          userId: user.id,
-          email: user.email
-        });
-      } catch (authError) {
-        console.error('📥 SupabaseDraftManager: Auth check failed for getRecentDrafts:', authError);
-        console.log('📥 SupabaseDraftManager: Returning empty array due to auth failure');
-        return [];
-      }
+      console.log('📥 SupabaseDraftManager: About to check auth for getRecentDrafts...');
+      const user = await this.checkAuth(3000); // 3 second timeout
+      console.log('📥 SupabaseDraftManager: User authenticated for getRecentDrafts:', {
+        userId: user.id,
+        email: user.email
+      });
 
       console.log('📥 SupabaseDraftManager: Starting Supabase query for getRecentDrafts...');
       console.log('📥 SupabaseDraftManager: Query parameters:', {
@@ -407,7 +401,7 @@ export class SupabaseDraftManager {
         .limit(limit);
       
       const queryTimeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Query timeout')), 8000) // 8 second timeout
+        setTimeout(() => reject(new Error('Query timeout - please check your internet connection')), 8000) // 8 second timeout
       );
       
       const { data, error } = await Promise.race([queryPromise, queryTimeoutPromise]) as any;
@@ -429,8 +423,8 @@ export class SupabaseDraftManager {
           details: error.details,
           hint: error.hint
         });
-        console.log('📥 SupabaseDraftManager: Returning empty array due to query error');
-        return [];
+        // Re-throw the error so the UI can handle it properly
+        throw new Error(`Failed to load recent drafts: ${error.message}`);
       }
 
       console.log('📥 SupabaseDraftManager: Query successful for getRecentDrafts, returned:', data?.length || 0, 'drafts');
@@ -468,8 +462,19 @@ export class SupabaseDraftManager {
         stack: error instanceof Error ? error.stack : undefined,
         timestamp: new Date().toISOString()
       });
-      console.log('📥 SupabaseDraftManager: Returning empty array due to exception');
-      return [];
+      
+      // Re-throw the error so the UI can show proper error messages
+      if (error instanceof Error) {
+        if (error.message.includes('timeout')) {
+          throw new Error('Request timeout - please check your internet connection and try again');
+        } else if (error.message.includes('Authentication failed') || error.message.includes('User not authenticated')) {
+          throw new Error('Please sign in to access your drafts');
+        } else {
+          throw new Error(`Failed to load recent drafts: ${error.message}`);
+        }
+      } else {
+        throw new Error('Failed to load recent drafts. Please try again.');
+      }
     }
   }
 

@@ -14,6 +14,7 @@ import { useConfirmation } from './hooks/useConfirmation';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
 import { SupabaseDraftManager } from './utils/supabaseDraftManager';
 import { ResumeData, DraftResume, Customizations } from './types/resume';
+import { useAuth } from './contexts/AuthContext';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component<
@@ -100,40 +101,33 @@ function App() {
   // Confirmation dialog hook
   const { confirmation, showConfirmation } = useConfirmation();
 
+  // Authentication state
+  const { user, loading: authLoading } = useAuth();
+
   // Load current draft on app start - CLOUD ONLY
   useEffect(() => {
+    if (authLoading || !user) return;
     console.log('🏠 App - useEffect for initial data loading triggered');
+
     const initializeData = async () => {
       try {
         console.log('🏠 App - Starting data initialization...');
-        // Check if user is authenticated
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        console.log('🏠 App - Auth check result:', {
-          hasUser: !!user,
-          userEmail: user?.email,
-          authError: authError?.message
-        });
-        
-        if (user && !authError) {
-          // Try to load user's primary resume data
-          try {
-            console.log('🏠 App - Loading primary resume data from Supabase...');
-            const primaryResumeData = await SupabaseDraftManager.getResumeData();
-            console.log('🏠 App - Primary resume data loaded:', {
-              hasData: !!primaryResumeData,
-              hasPersonalInfo: !!primaryResumeData?.personalInfo,
-              personalInfoName: primaryResumeData?.personalInfo?.name
-            });
-            if (primaryResumeData) {
-              console.log('Loading primary resume data from Supabase');
-              setResumeData(primaryResumeData);
-              console.log('🏠 App - Resume data set in state');
-            }
-          } catch (error) {
-            console.warn('🏠 App - Failed to load primary resume data:', error);
+        // Try to load user's primary resume data
+        try {
+          console.log('🏠 App - Loading primary resume data from Supabase...');
+          const primaryResumeData = await SupabaseDraftManager.getResumeData();
+          console.log('🏠 App - Primary resume data loaded:', {
+            hasData: !!primaryResumeData,
+            hasPersonalInfo: !!primaryResumeData?.personalInfo,
+            personalInfoName: primaryResumeData?.personalInfo?.name
+          });
+          if (primaryResumeData) {
+            console.log('Loading primary resume data from Supabase');
+            setResumeData(primaryResumeData);
+            console.log('🏠 App - Resume data set in state');
           }
-        } else {
-          console.log('🏠 App - User not authenticated, skipping data initialization');
+        } catch (error) {
+          console.warn('🏠 App - Failed to load primary resume data:', error);
         }
       } catch (error) {
         console.error('🏠 App - Error during data initialization:', error);
@@ -141,9 +135,9 @@ function App() {
         console.log('🏠 App - Data initialization completed');
       }
     };
-    
+
     initializeData();
-  }, []);
+  }, [authLoading, user]);
 
   const loadDraftData = async (draft: DraftResume) => {
     try {
@@ -260,13 +254,10 @@ function App() {
 
     try {
       showToast('Saving draft...', 'info', 2000);
-      
+
       let draftId: string;
-      
-      // Check if user is authenticated for cloud operations
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
-      if (user && !authError) {
+
+      if (user) {
         // User is authenticated - save to cloud
         try {
           draftId = await SupabaseDraftManager.saveDraft(
@@ -318,14 +309,12 @@ function App() {
     if (currentDraftId) {
       // Update existing draft without name prompt
       try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        
-        if (user && !authError) {
+        if (user) {
           // Get existing draft name
           const existingDraft = await SupabaseDraftManager.getDraft(currentDraftId);
           if (existingDraft) {
             showToast('Updating draft...', 'info', 2000);
-            
+
             await SupabaseDraftManager.saveDraft(
               existingDraft.name,
               resumeData,
@@ -334,7 +323,7 @@ function App() {
               currentStep,
               currentDraftId
             );
-            
+
             showToast('Draft updated successfully!', 'success');
           } else {
             showToast('Draft not found. Creating new draft...', 'warning');
@@ -373,25 +362,20 @@ function App() {
 
   // Auto-save function for step transitions
   const autoSaveDraft = async (step: number) => {
-    if (currentDraftId && resumeData) {
+    if (currentDraftId && resumeData && user) {
       try {
-        // Check if user is authenticated
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        
-        if (user && !authError) {
-          // Try to get draft name from Supabase
-          const draft = await SupabaseDraftManager.getDraft(currentDraftId);
-          if (draft) {
-            await SupabaseDraftManager.saveDraft(
-              draft.name,
-              resumeData,
-              selectedTemplate,
-              customizations,
-              step,
-              currentDraftId
-            );
-            console.log('Auto-saved draft to Supabase');
-          }
+        // Try to get draft name from Supabase
+        const draft = await SupabaseDraftManager.getDraft(currentDraftId);
+        if (draft) {
+          await SupabaseDraftManager.saveDraft(
+            draft.name,
+            resumeData,
+            selectedTemplate,
+            customizations,
+            step,
+            currentDraftId
+          );
+          console.log('Auto-saved draft to Supabase');
         }
       } catch (error) {
         console.warn('Auto-save failed:', error);
@@ -434,9 +418,7 @@ function App() {
       const draftIdToUse = undefined; // This ensures a new draft is created
       
       // Wait for the save operation to complete
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
-      if (user && !authError) {
+      if (user) {
         showToast('Creating new draft...', 'info', 2000);
         
         const newDraftId = await SupabaseDraftManager.saveDraft(
@@ -457,7 +439,7 @@ function App() {
         showToast('New draft created successfully!', 'success');
       } else {
         showToast('You must be signed in to save drafts.', 'error');
-        // Reopen modal if there was an auth error
+        // Reopen modal if user is not authenticated
         setShowSavePrompt(true);
         return;
       }

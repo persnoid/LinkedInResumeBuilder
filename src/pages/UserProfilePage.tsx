@@ -165,6 +165,14 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
         setIsSigningOut(true);
         try {
           const { error } = await signOut();
+          
+          // Additional cleanup for browser extension issues
+          if (typeof window !== 'undefined') {
+            // Clear any potential localStorage that might cause extension conflicts
+            try {
+              localStorage.removeItem('supabase.auth.token');
+            } catch (e) { /* ignore */ }
+          }
             
           // Always proceed with UI cleanup regardless of error
           console.log('👤 UserProfilePage: Proceeding with UI cleanup');
@@ -173,6 +181,11 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
           // Close modal and reset form immediately
           setTimeout(() => {
             console.log('👤 UserProfilePage: Closing modal and resetting form');
+            
+            // Force clear any hanging state
+            try {
+              window.dispatchEvent(new Event('auth-cleared'));
+            } catch (e) { /* ignore */ }
             onClose();
             resetForm();
           }, 100); // Reduced timeout to speed up UI response

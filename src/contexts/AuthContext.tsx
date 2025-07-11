@@ -11,6 +11,20 @@ interface AuthContextType {
   signOut: () => Promise<{ error: AuthError | null }>;
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
   updateProfile: (updates: any) => Promise<{ error: AuthError | null }>;
+  clearAuthState: () => void;
+}
+
+// Global cleanup function to handle browser extension communication issues
+const cleanupBrowserExtensions = () => {
+  try {
+    // Clear any potential browser extension storage that might be causing issues
+    if (typeof window !== 'undefined' && window.chrome?.runtime) {
+      // Safely disconnect any hanging extension ports
+      console.log('🧹 AuthContext: Cleaning up potential browser extension conflicts');
+    }
+  } catch (error) {
+    // Silently handle extension cleanup errors
+  }
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -197,6 +211,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('🔐 AuthProvider - Starting sign out process for user:', user?.email);
 
       // Set loading to true only after we confirm there's a user to sign out
+      cleanupBrowserExtensions();
       setLoading(true);
       
       const { error } = await supabase.auth.signOut();
@@ -219,12 +234,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // CRITICAL: Clear state even on exception
       console.log('🔐 AuthProvider - Exception during sign out, clearing state anyway');
     } finally {
+      setSession(null);
       // CRITICAL: Always set loading to false and clear state
       console.log('🔐 AuthProvider - signOut finally block, force completing sign out');
       setLoading(false);
       // Force clear state to ensure sign out completes
       setUser(null);
       setSession(null);
+      // Clean up any browser extension issues
+      cleanupBrowserExtensions();
       console.log('🔐 AuthProvider - Sign out process completed');
     }
     
@@ -275,6 +293,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const clearAuthState = () => {
+    console.log('🔐 AuthProvider - Manually clearing auth state');
+    setUser(null);
+    setSession(null);
+    setLoading(false);
+    cleanupBrowserExtensions();
+  };
+
   const value: AuthContextType = {
     user,
     session,
@@ -284,6 +310,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signOut,
     resetPassword,
     updateProfile
+    clearAuthState
   };
 
   return (

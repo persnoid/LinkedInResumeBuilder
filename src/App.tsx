@@ -104,6 +104,18 @@ function App() {
   // Authentication state
   const { user, loading: authLoading } = useAuth();
 
+  // Handle browser extension cleanup on component mount
+  useEffect(() => {
+    const handleAuthCleared = () => {
+      console.log('🏠 App: Auth cleared event received, resetting state');
+      setCurrentDraftId(null);
+      setResumeData(null);
+    };
+
+    window.addEventListener('auth-cleared', handleAuthCleared);
+    return () => window.removeEventListener('auth-cleared', handleAuthCleared);
+  }, []);
+
   // Load current draft on app start - CLOUD ONLY
   useEffect(() => {
     if (authLoading || !user) return;

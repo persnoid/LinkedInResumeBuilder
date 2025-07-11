@@ -14,7 +14,7 @@ import { useConfirmation } from './hooks/useConfirmation';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
 import { SupabaseDraftManager } from './utils/supabaseDraftManager';
 import { ResumeData, DraftResume, Customizations } from './types/resume';
-import { useAuth } from './contexts/AuthContext';
+import { useRequireAuth } from './contexts/AuthContext';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component<
@@ -101,8 +101,16 @@ function App() {
   // Confirmation dialog hook
   const { confirmation, showConfirmation } = useConfirmation();
 
-  // Authentication state
-  const { user, loading: authLoading } = useAuth();
+  // Authentication state - Use more robust useRequireAuth hook
+  const { user, loading: authCheckLoading, isAuthenticated } = useRequireAuth();
+
+  console.log('🏠 App - Authentication state:', {
+    hasUser: !!user,
+    userEmail: user?.email,
+    authCheckLoading,
+    isAuthenticated,
+    timestamp: new Date().toISOString()
+  });
 
   // Handle browser extension cleanup on component mount
   useEffect(() => {
@@ -118,8 +126,19 @@ function App() {
 
   // Load current draft on app start - CLOUD ONLY
   useEffect(() => {
-    if (authLoading || !user) return;
-    console.log('🏠 App - useEffect for initial data loading triggered');
+    // Wait for authentication check to complete
+    if (authCheckLoading) {
+      console.log('🏠 App - Authentication check still in progress, waiting...');
+      return;
+    }
+
+    // Only proceed if user is authenticated
+    if (!isAuthenticated || !user) {
+      console.log('🏠 App - User not authenticated, skipping data initialization');
+      return;
+    }
+
+    console.log('🏠 App - Authentication complete, starting data initialization for user:', user.email);
 
     const initializeData = async () => {
       try {
@@ -149,7 +168,7 @@ function App() {
     };
 
     initializeData();
-  }, [authLoading, user]);
+  }, [authCheckLoading, isAuthenticated, user]);
 
   const loadDraftData = async (draft: DraftResume) => {
     try {

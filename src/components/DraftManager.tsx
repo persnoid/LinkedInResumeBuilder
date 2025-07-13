@@ -110,25 +110,8 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   };
 
   const refreshDrafts = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      setWarning(null);
-      
-      if (user) {
-        console.log('🗂️ DraftManager: Refreshing from Supabase...');
-        await loadDrafts();
-      } else {
-        console.log('🗂️ DraftManager: No user, cannot refresh drafts');
-        setError('You must be signed in to access drafts');
-        setDrafts([]);
-      }
-    } catch (error) {
-      console.error('🗂️ DraftManager: Error refreshing drafts:', error);
-      setError('Failed to refresh drafts');
-    } finally {
-      setIsLoading(false);
-    }
+    // loadDrafts already handles the loading state, errors, and warnings.
+    await loadDrafts();
   };
 
   const handleQuickSave = async () => {

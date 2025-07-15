@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
+import { getCurrentUserSync } from './lib/authUtils';
 import { ProgressIndicator } from './components/ProgressIndicator';
 import { LinkedInInput } from './components/LinkedInInput';
 import { TemplateSelector } from './components/TemplateSelector';
@@ -14,7 +15,6 @@ import { useConfirmation } from './hooks/useConfirmation';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
 import { SupabaseDraftManager } from './utils/supabaseDraftManager';
 import { ResumeData, DraftResume, Customizations } from './types/resume';
-import { useRequireAuth } from './contexts/AuthContext';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component<
@@ -101,8 +101,20 @@ function App() {
   // Confirmation dialog hook
   const { confirmation, showConfirmation } = useConfirmation();
 
-  // Authentication state - Use more robust useRequireAuth hook
-  const { user, loading: authCheckLoading, isAuthenticated } = useRequireAuth();
+  // Authentication state - read cached session synchronously then verify
+  const [user, setUser] = useState(() => getCurrentUserSync());
+  const [authCheckLoading, setAuthCheckLoading] = useState(false);
+  const isAuthenticated = !!user;
+
+  useEffect(() => {
+    setAuthCheckLoading(true);
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (session?.user) setUser(session.user);
+      })
+      .catch(console.warn)
+      .finally(() => setAuthCheckLoading(false));
+  }, []);
 
   console.log('🏠 App - Authentication state:', {
     hasUser: !!user,

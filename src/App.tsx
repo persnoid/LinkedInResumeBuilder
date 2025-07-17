@@ -15,6 +15,7 @@ import { useConfirmation } from './hooks/useConfirmation';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
 import { SupabaseDraftManager } from './utils/supabaseDraftManager';
 import { ResumeData, DraftResume, Customizations } from './types/resume';
+import { useAuth } from './contexts/AuthContext';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component<

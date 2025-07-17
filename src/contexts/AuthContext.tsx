@@ -292,9 +292,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { error: error as AuthError };
     }
   }
+  return (
+    <AuthContext.Provider value={contextValue}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+// Hook to use the AuthContext
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+// Hook that ensures user is authenticated (for protected routes)
+export const useRequireAuth = () => {
+  const { user, loading } = useAuth();
+  
   return {
     user,
-    loading, // Direct passthrough of core auth loading state
+    loading,
     isAuthenticated: !!user
   };
 };

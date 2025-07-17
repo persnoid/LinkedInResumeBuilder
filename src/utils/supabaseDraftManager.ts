@@ -4,7 +4,7 @@ import { getCurrentUserSync } from '../lib/authUtils';
 
 export class SupabaseDraftManager {
   // Check if user is authenticated before operations
-  private static async checkAuth(timeoutMs: number = 5000) {
+  private static async checkAuth(timeoutMs: number = 3000) {
     console.log('🗄️ SupabaseDraftManager: Checking authentication...');
 
     try {
@@ -19,7 +19,15 @@ export class SupabaseDraftManager {
       }
 
       console.log('🗄️ SupabaseDraftManager: Calling supabase.auth.getSession()...');
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      // Add timeout to prevent hanging
+      const sessionPromise = supabase.auth.getSession();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Auth session timeout')), timeoutMs)
+      );
+      
+      const { data: { session }, error: sessionError } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+      
       console.log('🗄️ SupabaseDraftManager: supabase.auth.getSession() completed');
       console.log('🗄️ SupabaseDraftManager: getSession result:', {
         hasSession: !!session,
@@ -37,6 +45,7 @@ export class SupabaseDraftManager {
           status: sessionError.status,
           details: sessionError.details
         });
+        throw new Error(`Session error: ${sessionError.message}`);
       }
 
       if (session?.user) {
@@ -47,14 +56,14 @@ export class SupabaseDraftManager {
         return session.user;
       }
 
-      // Add timeout to prevent hanging
+      // Fallback to getUser if no session
       const authPromise = supabase.auth.getUser();
-      const timeoutPromise = new Promise((_, reject) =>
+      const userTimeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Auth check timeout')), timeoutMs)
       );
 
       console.log('🗄️ SupabaseDraftManager: Calling supabase.auth.getUser()...');
-      const { data: { user }, error } = await Promise.race([authPromise, timeoutPromise]) as any;
+      const { data: { user }, error } = await Promise.race([authPromise, userTimeoutPromise]) as any;
       console.log('🗄️ SupabaseDraftManager: supabase.auth.getUser() completed');
       console.log('🗄️ SupabaseDraftManager: Auth check result:', {
         hasUser: !!user,
@@ -65,7 +74,7 @@ export class SupabaseDraftManager {
         timestamp: new Date().toISOString()
       });
       
-    if (error) {
+      if (error) {
         console.error('🗄️ SupabaseDraftManager: Auth check error details:', {
           message: error.message,
           code: error.code,
@@ -73,20 +82,24 @@ export class SupabaseDraftManager {
           details: error.details
         });
         throw new Error(`Authentication failed: ${error.message}`);
-    }
-    if (!user) {
-      console.error('🗄️ SupabaseDraftManager: No user found in auth check');
-      throw new Error('User not authenticated');
-    }
+      }
+      if (!user) {
+        console.error('🗄️ SupabaseDraftManager: No user found in auth check');
+        throw new Error('User not authenticated');
+      }
       console.log('🗄️ SupabaseDraftManager: User authenticated successfully:', {
         userId: user.id,
         email: user.email
       });
-    return user;
+      return user;
     } catch (authError) {
       if (authError instanceof Error && authError.message.includes('callback is no longer runnable')) {
         console.warn('🗄️ SupabaseDraftManager: Ignoring stale callback error from Supabase auth', authError);
         throw new Error('Authentication failed. Please sign in again.');
+      }
+      if (authError instanceof Error && authError.message.includes('timeout')) {
+        console.warn('🗄️ SupabaseDraftManager: Auth check timed out');
+        throw new Error('Authentication check timed out. Please try again.');
       }
       console.error('🗄️ SupabaseDraftManager: Exception in checkAuth():', {
         error: authError,

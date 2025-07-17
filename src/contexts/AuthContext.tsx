@@ -52,7 +52,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const getInitialSession = async () => {
       try {
         console.log('🔐 AuthProvider - Calling supabase.auth.getSession()');
-        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        // Add timeout to prevent hanging
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Session check timeout')), 5000)
+        );
+        
+        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        
         console.log('🔐 AuthProvider - getSession result:', {
           hasSession: !!session,
           userEmail: session?.user?.email,
@@ -60,13 +68,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
         if (error) {
           console.error('Error getting initial session:', error);
+          // Set loading to false even on error
+          setLoading(false);
         } else {
           console.log('🔐 AuthProvider - Setting session and user from initial check');
           setSession(session);
           setUser(session?.user ?? null);
+          setLoading(false);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Unexpected error getting session:', error);
+        // Force set loading to false on timeout or other errors
+        setLoading(false);
+        setSession(null);
+        setUser(null);
       } finally {
         // CRITICAL FIX: Always set loading to false, regardless of success or failure
         console.log('🔐 AuthProvider - Setting loading to false after initial session check');
@@ -97,12 +112,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return;
         }
         
+        // For other events, update session and user first
         setSession(session);
         setUser(session?.user ?? null);
         
         if (event === 'SIGNED_IN' && session?.user) {
           // Ensure user profile exists
-          await ensureProfile(session.user);
+          try {
+            await ensureProfile(session.user);
+          } catch (error) {
+            console.error('Error ensuring profile:', error);
+          }
         }
         
         // Set loading to false after processing auth state change
@@ -118,6 +138,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Add a safety timeout to ensure loading never stays true forever
+  useEffect(() => {
+    const safetyTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn('🔐 AuthProvider - Safety timeout: forcing loading to false after 10 seconds');
+        setLoading(false);
+      }
+    }, 10000); // 10 second safety timeout
+
+    return () => clearTimeout(safetyTimeout);
+  }, [loading]);
 
   // Ensure user profile exists in the profiles table
   const ensureProfile = async (user: User) => {

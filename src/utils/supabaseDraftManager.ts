@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { DraftResume, ResumeData } from '../types/resume';
+import { getCurrentUserSync } from '../lib/authUtils';
 
 export class SupabaseDraftManager {
   // Check if user is authenticated before operations
@@ -7,6 +8,16 @@ export class SupabaseDraftManager {
     console.log('🗄️ SupabaseDraftManager: Checking authentication...');
 
     try {
+      // Try reading cached session first to avoid extension issues
+      const cachedUser = getCurrentUserSync();
+      if (cachedUser) {
+        console.log('🗄️ SupabaseDraftManager: Returning cached user from localStorage:', {
+          userId: cachedUser.id,
+          email: cachedUser.email
+        });
+        return cachedUser;
+      }
+
       console.log('🗄️ SupabaseDraftManager: Calling supabase.auth.getSession()...');
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       console.log('🗄️ SupabaseDraftManager: supabase.auth.getSession() completed');
@@ -73,6 +84,10 @@ export class SupabaseDraftManager {
       });
     return user;
     } catch (authError) {
+      if (authError instanceof Error && authError.message.includes('callback is no longer runnable')) {
+        console.warn('🗄️ SupabaseDraftManager: Ignoring stale callback error from Supabase auth', authError);
+        throw new Error('Authentication failed. Please sign in again.');
+      }
       console.error('🗄️ SupabaseDraftManager: Exception in checkAuth():', {
         error: authError,
         message: authError instanceof Error ? authError.message : String(authError),

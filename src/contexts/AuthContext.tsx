@@ -292,6 +292,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { error: error as AuthError };
     }
   }
+
+  const clearAuthState = () => {
+    console.log('🔐 AuthProvider - clearAuthState called');
+    setUser(null);
+    setSession(null);
+    setLoading(false);
+  };
+
+  // Create the context value object
+  const contextValue: AuthContextType = {
+    user,
+    session,
+    loading,
+    signUp,
+    signIn,
+    signOut,
+    resetPassword,
+    updateProfile,
+    clearAuthState
+  };
   return (
     <AuthContext.Provider value={contextValue}>
       {children}
@@ -318,3 +338,21 @@ export const useRequireAuth = () => {
     isAuthenticated: !!user
   };
 };
+  const clearAuthState = () => {
+    console.log('🔐 AuthProvider - clearAuthState called');
+    setUser(null);
+    setSession(null);
+    setLoading(false);
+  };
+
+  const contextValue: AuthContextType = {
+    user,
+    session,
+    loading,
+    signUp,
+    signIn,
+    signOut,
+    resetPassword,
+    updateProfile,
+    clearAuthState
+  };

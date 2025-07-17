@@ -337,22 +337,3 @@ export const useRequireAuth = () => {
     loading,
     isAuthenticated: !!user
   };
-};
-  const clearAuthState = () => {
-    console.log('🔐 AuthProvider - clearAuthState called');
-    setUser(null);
-    setSession(null);
-    setLoading(false);
-  };
-
-  const contextValue: AuthContextType = {
-    user,
-    session,
-    loading,
-    signUp,
-    signIn,
-    signOut,
-    resetPassword,
-    updateProfile,
-    clearAuthState
-  };

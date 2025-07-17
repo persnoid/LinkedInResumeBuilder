@@ -290,6 +290,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Update profile error:', error);
       return { error: error as AuthError };
+    }
+  }
   return {
     user,
     loading, // Direct passthrough of core auth loading state

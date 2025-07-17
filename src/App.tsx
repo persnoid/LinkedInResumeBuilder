@@ -124,7 +124,7 @@ function App() {
         // User is authenticated - load their data
         console.log('🏠 App - User authenticated, loading data for:', currentUser.email);
         try {
-          const primaryResumeData = await SupabaseDraftManager.getResumeData();
+          const primaryResumeData = await SupabaseDraftManager.getResumeData(currentUser);
           if (primaryResumeData) {
             console.log('🏠 App - Primary resume data loaded successfully');
             setResumeData(primaryResumeData);
@@ -276,7 +276,8 @@ function App() {
             selectedTemplate,
             customizations,
             currentStep,
-            currentDraftId
+            currentDraftId,
+            user
           );
           
           console.log('Draft saved to Supabase with ID:', draftId);
@@ -284,7 +285,7 @@ function App() {
           
           // ALWAYS try to save primary resume data for authenticated users
           try {
-            await SupabaseDraftManager.saveResumeData(resumeData);
+            await SupabaseDraftManager.saveResumeData(resumeData, user);
             console.log('Primary resume data saved to Supabase as backup');
           } catch (resumeDataError) {
             console.warn('Failed to save primary resume data to Supabase:', resumeDataError);
@@ -321,7 +322,7 @@ function App() {
       try {
         if (user) {
           // Get existing draft name
-          const existingDraft = await SupabaseDraftManager.getDraft(currentDraftId);
+          const existingDraft = await SupabaseDraftManager.getDraft(currentDraftId, user);
           if (existingDraft) {
             showToast('Updating draft...', 'info', 2000);
 
@@ -331,7 +332,8 @@ function App() {
               selectedTemplate,
               customizations,
               currentStep,
-              currentDraftId
+              currentDraftId,
+              user
             );
 
             showToast('Draft updated successfully!', 'success');
@@ -375,7 +377,7 @@ function App() {
     if (currentDraftId && resumeData && user) {
       try {
         // Try to get draft name from Supabase
-        const draft = await SupabaseDraftManager.getDraft(currentDraftId);
+        const draft = await SupabaseDraftManager.getDraft(currentDraftId, user);
         if (draft) {
           await SupabaseDraftManager.saveDraft(
             draft.name,
@@ -383,7 +385,8 @@ function App() {
             selectedTemplate,
             customizations,
             step,
-            currentDraftId
+            currentDraftId,
+            user
           );
           console.log('Auto-saved draft to Supabase');
         }
@@ -437,14 +440,15 @@ function App() {
           selectedTemplate,
           customizations,
           currentStep,
-          draftIdToUse // undefined = create new draft
+          draftIdToUse, // undefined = create new draft
+          user
         );
         
         // Update current draft ID to the new draft
         setCurrentDraftId(newDraftId);
         
         // Also save primary resume data
-        await SupabaseDraftManager.saveResumeData(resumeData!);
+        await SupabaseDraftManager.saveResumeData(resumeData!, user);
         
         showToast('New draft created successfully!', 'success');
       } else {

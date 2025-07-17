@@ -101,28 +101,8 @@ function App() {
   // Confirmation dialog hook
   const { confirmation, showConfirmation } = useConfirmation();
 
-  // Authentication state - read cached session synchronously then verify
-  const [user, setUser] = useState(() => getCurrentUserSync());
-  const [authCheckLoading, setAuthCheckLoading] = useState(false);
-  const isAuthenticated = !!user;
-
-  useEffect(() => {
-    setAuthCheckLoading(true);
-    supabase.auth.getSession()
-      .then(({ data: { session } }) => {
-        if (session?.user) setUser(session.user);
-      })
-      .catch(console.warn)
-      .finally(() => setAuthCheckLoading(false));
-  }, []);
-
-  console.log('🏠 App - Authentication state:', {
-    hasUser: !!user,
-    userEmail: user?.email,
-    authCheckLoading,
-    isAuthenticated,
-    timestamp: new Date().toISOString()
-  });
+  // Use the auth context directly
+  const { user } = useAuth();
 
   // Handle browser extension cleanup on component mount
   useEffect(() => {
@@ -136,51 +116,37 @@ function App() {
     return () => window.removeEventListener('auth-cleared', handleAuthCleared);
   }, []);
 
-  // Load current draft on app start - CLOUD ONLY
+  // Load user data when user changes (login/logout/refresh)
   useEffect(() => {
-    // Wait for authentication check to complete
-    if (authCheckLoading) {
-      console.log('🏠 App - Authentication check still in progress, waiting...');
-      return;
-    }
-
-    // Only proceed if user is authenticated
-    if (!isAuthenticated || !user) {
-      console.log('🏠 App - User not authenticated, skipping data initialization');
-      return;
-    }
-
-    console.log('🏠 App - Authentication complete, starting data initialization for user:', user.email);
-
-    const initializeData = async () => {
-      try {
-        console.log('🏠 App - Starting data initialization...');
-        // Try to load user's primary resume data
+    const initializeData = async (currentUser: any) => {
+      if (currentUser) {
+        // User is authenticated - load their data
+        console.log('🏠 App - User authenticated, loading data for:', currentUser.email);
         try {
-          console.log('🏠 App - Loading primary resume data from Supabase...');
           const primaryResumeData = await SupabaseDraftManager.getResumeData();
-          console.log('🏠 App - Primary resume data loaded:', {
-            hasData: !!primaryResumeData,
-            hasPersonalInfo: !!primaryResumeData?.personalInfo,
-            personalInfoName: primaryResumeData?.personalInfo?.name
-          });
           if (primaryResumeData) {
-            console.log('Loading primary resume data from Supabase');
+            console.log('🏠 App - Primary resume data loaded successfully');
             setResumeData(primaryResumeData);
-            console.log('🏠 App - Resume data set in state');
+            setCurrentDraftId(null); // Clear draft ID on new session
+          } else {
+            console.log('🏠 App - No primary resume data found');
+            setResumeData(null);
           }
         } catch (error) {
-          console.warn('🏠 App - Failed to load primary resume data:', error);
+          console.error('🏠 App - Failed to load user data:', error);
+          setResumeData(null);
+          showToast('Failed to load your data. Please try refreshing the page.', 'error');
         }
-      } catch (error) {
-        console.error('🏠 App - Error during data initialization:', error);
-      } finally {
-        console.log('🏠 App - Data initialization completed');
+      } else {
+        // User is not authenticated - clear all data
+        console.log('🏠 App - User not authenticated, clearing data');
+        setResumeData(null);
+        setCurrentDraftId(null);
       }
     };
 
-    initializeData();
-  }, [authCheckLoading, isAuthenticated, user]);
+    initializeData(user);
+  }, [user, showToast]);
 
   const loadDraftData = async (draft: DraftResume) => {
     try {

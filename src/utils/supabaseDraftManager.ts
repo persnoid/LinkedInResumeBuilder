@@ -4,7 +4,16 @@ import { getCurrentUserSync } from '../lib/authUtils';
 
 export class SupabaseDraftManager {
   // Check if user is authenticated before operations
-  private static async checkAuth(timeoutMs: number = 3000) {
+  // If user is provided, skip the auth check (already authenticated)
+  private static async checkAuth(timeoutMs: number = 3000, providedUser?: any) {
+    if (providedUser) {
+      console.log('🗄️ SupabaseDraftManager: Using provided authenticated user:', {
+        userId: providedUser.id,
+        email: providedUser.email
+      });
+      return providedUser;
+    }
+    
     console.log('🗄️ SupabaseDraftManager: Checking authentication...');
 
     try {
@@ -116,7 +125,8 @@ export class SupabaseDraftManager {
     selectedTemplate: string,
     customizations: any,
     step: number,
-    draftId?: string
+    draftId?: string,
+    providedUser?: any
   ): Promise<string> {
     try {
       console.log('📤 SupabaseDraftManager: Starting saveDraft:', {
@@ -128,7 +138,7 @@ export class SupabaseDraftManager {
       });
       
       console.log('📤 SupabaseDraftManager: About to check auth for saveDraft...');
-      const user = await this.checkAuth();
+      const user = await this.checkAuth(3000, providedUser);
       console.log('📤 SupabaseDraftManager: User authenticated for saveDraft:', {
         userId: user.id,
         email: user.email
@@ -238,12 +248,12 @@ export class SupabaseDraftManager {
     }
   }
 
-  static async getAllDrafts(): Promise<DraftResume[]> {
+  static async getAllDrafts(providedUser?: any): Promise<DraftResume[]> {
     try {
       console.log('📥 SupabaseDraftManager: Starting getAllDrafts');
       
       console.log('📥 SupabaseDraftManager: About to check auth for getAllDrafts...');
-      const user = await this.checkAuth(3000); // 3 second timeout for getAllDrafts
+      const user = await this.checkAuth(3000, providedUser);
       console.log('📥 SupabaseDraftManager: User authenticated for getAllDrafts:', {
         userId: user.id,
         email: user.email
@@ -339,11 +349,11 @@ export class SupabaseDraftManager {
     }
   }
 
-  static async getDraft(id: string): Promise<DraftResume | null> {
+  static async getDraft(id: string, providedUser?: any): Promise<DraftResume | null> {
     try {
       console.log('📥 SupabaseDraftManager: Starting getDraft for:', id);
       console.log('📥 SupabaseDraftManager: About to check auth for getDraft...');
-      const user = await this.checkAuth();
+      const user = await this.checkAuth(3000, providedUser);
 
       const { data, error } = await supabase
         .from('drafts')
@@ -378,10 +388,10 @@ export class SupabaseDraftManager {
     }
   }
 
-  static async deleteDraft(id: string): Promise<void> {
+  static async deleteDraft(id: string, providedUser?: any): Promise<void> {
     try {
       console.log('🗑️ SupabaseDraftManager: Starting deleteDraft for:', id);
-      const user = await this.checkAuth();
+      const user = await this.checkAuth(3000, providedUser);
 
       const { error } = await supabase
         .from('drafts')
@@ -401,12 +411,12 @@ export class SupabaseDraftManager {
     }
   }
 
-  static async getRecentDrafts(limit: number = 5): Promise<DraftResume[]> {
+  static async getRecentDrafts(limit: number = 5, providedUser?: any): Promise<DraftResume[]> {
     try {
       console.log('📥 SupabaseDraftManager: Starting getRecentDrafts, limit:', limit);
       
       console.log('📥 SupabaseDraftManager: About to check auth for getRecentDrafts...');
-      const user = await this.checkAuth(3000); // 3 second timeout
+      const user = await this.checkAuth(3000, providedUser);
       console.log('📥 SupabaseDraftManager: User authenticated for getRecentDrafts:', {
         userId: user.id,
         email: user.email
@@ -507,10 +517,10 @@ export class SupabaseDraftManager {
   }
 
   // Save resume data separately for backup
-  static async saveResumeData(resumeData: ResumeData): Promise<string> {
+  static async saveResumeData(resumeData: ResumeData, providedUser?: any): Promise<string> {
     try {
       console.log('📤 SupabaseDraftManager: Starting saveResumeData');
-      const user = await this.checkAuth();
+      const user = await this.checkAuth(3000, providedUser);
 
       // Check if user already has resume data
       const { data: existing, error: fetchError } = await supabase
@@ -562,11 +572,11 @@ export class SupabaseDraftManager {
     }
   }
 
-  static async getResumeData(): Promise<ResumeData | null> {
+  static async getResumeData(providedUser?: any): Promise<ResumeData | null> {
     try {
       console.log('🗄️ SupabaseDraftManager: Starting getResumeData');
       console.log('🗄️ SupabaseDraftManager: About to check auth for getResumeData...');
-      const user = await this.checkAuth();
+      const user = await this.checkAuth(3000, providedUser);
       console.log('🗄️ SupabaseDraftManager: User authenticated for getResumeData:', {
         userId: user.id,
         email: user.email

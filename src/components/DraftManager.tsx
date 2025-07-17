@@ -88,7 +88,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
       }
 
       console.log('🗂️ DraftManager: User is authenticated, loading from Supabase...');
-      const supabaseDrafts = await SupabaseDraftManager.getAllDrafts();
+      const supabaseDrafts = await SupabaseDraftManager.getAllDrafts(user);
       console.log('🗂️ DraftManager: Successfully loaded', supabaseDrafts.length, 'drafts from Supabase');
       
       setDrafts(supabaseDrafts);
@@ -145,11 +145,12 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
           sectionOrder: ['summary', 'experience', 'education', 'skills', 'certifications']
         },
         currentStep ?? 0,
-        currentDraftId || undefined
+        currentDraftId || undefined,
+        user
       );
 
       // Also save primary resume data
-      await SupabaseDraftManager.saveResumeData(currentResumeData);
+      await SupabaseDraftManager.saveResumeData(currentResumeData, user);
       console.log('🗂️ DraftManager: Successfully saved to Supabase with ID:', draftId);
       showToast('Draft saved successfully!', 'success');
       
@@ -184,7 +185,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         setIsLoading(true);
         console.log('🗂️ DraftManager: Deleting draft:', id);
         
-        await SupabaseDraftManager.deleteDraft(id);
+        await SupabaseDraftManager.deleteDraft(id, user);
         await refreshDrafts();
         setError(null);
         setWarning(null);
@@ -217,7 +218,8 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
         draft.selectedTemplate,
         draft.customizations,
         draft.step,
-        id
+        id,
+        user
       );
       
       setEditingId(null);
@@ -294,7 +296,9 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
             draft.resumeData,
             draft.selectedTemplate,
             draft.customizations || {},
-            draft.step || 0
+            draft.step || 0,
+            undefined,
+            user
           );
           
           console.log('🗂️ DraftManager: Draft imported successfully');

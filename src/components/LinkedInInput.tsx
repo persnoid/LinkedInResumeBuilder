@@ -56,7 +56,9 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
 
   const loadRecentDraftsFromSupabase = async () => {
     try {
-      const recent = await SupabaseDraftManager.getRecentDrafts(3);
+      // Try to get current user for the recent drafts call
+      const { data: { session } } = await supabase.auth.getSession();
+      const recent = await SupabaseDraftManager.getRecentDrafts(3, session?.user);
       console.log('🔗 LinkedInInput: Recent drafts loaded from Supabase:', recent.length);
       setRecentDrafts(recent);
     } catch (error) {

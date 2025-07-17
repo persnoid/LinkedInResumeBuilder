@@ -337,3 +337,4 @@ export const useRequireAuth = () => {
     loading,
     isAuthenticated: !!user
   };
+}

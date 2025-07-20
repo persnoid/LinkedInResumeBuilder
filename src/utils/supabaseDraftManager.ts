@@ -119,6 +119,66 @@ export class SupabaseDraftManager {
     }
   }
 
+
+  static async getAllDrafts(user: { id: string }): Promise<DraftResume[]> {
+    console.log('📥 SupabaseDraftManager: Querying drafts for user:', user.id);
+    const { data, error } = await supabase
+      .from('drafts')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.error('📥 SupabaseDraftManager: getAllDrafts error:', error);
+      throw error;
+    }
+
+    console.log('📥 SupabaseDraftManager: getAllDrafts returned', data?.length ?? 0, 'draft(s)');
+    return (data || []).map(d => ({
+      id: d.id,
+      name: d.name,
+      resumeData: d.resume_data,
+      selectedTemplate: d.selected_template,
+      customizations: d.customizations || {},
+      createdAt: d.created_at,
+      updatedAt: d.updated_at,
+      step: d.step
+    }));
+  }
+
+  /**
+   * Fetch primary resume data for the given user.
+   */
+  static async getResumeData(user: { id: string }): Promise<ResumeData | null> {
+    console.log('🗄️ SupabaseDraftManager: Querying primary resume data for user:', user.id);
+    const { data, error } = await supabase
+      .from('resume_data')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        console.log('🗄️ SupabaseDraftManager: No resume data found for user; returning null');
+        return null;
+      }
+      console.error('🗄️ SupabaseDraftManager: getResumeData error:', error);
+      throw error;
+    }
+
+    console.log('🗄️ SupabaseDraftManager: getResumeData successful');
+    return {
+      personalInfo: data.personal_info,
+      summary: data.summary || '',
+      experience: data.experience || [],
+      education: data.education || [],
+      skills: data.skills || [],
+      certifications: data.certifications || [],
+      languages: data.languages || [],
+      customSections: data.custom_sections || {}
+    };
+  }
+
   static async saveDraft(
     name: string,
     resumeData: ResumeData,
@@ -248,106 +308,6 @@ export class SupabaseDraftManager {
     }
   }
 
-  static async getAllDrafts(providedUser?: any): Promise<DraftResume[]> {
-    try {
-      console.log('📥 SupabaseDraftManager: Starting getAllDrafts');
-      
-      console.log('📥 SupabaseDraftManager: About to check auth for getAllDrafts...');
-      const user = await this.checkAuth(3000, providedUser);
-      console.log('📥 SupabaseDraftManager: User authenticated for getAllDrafts:', {
-        userId: user.id,
-        email: user.email
-      });
-
-      console.log('📥 SupabaseDraftManager: Starting Supabase query for getAllDrafts...');
-      console.log('📥 SupabaseDraftManager: Query parameters:', {
-        table: 'drafts',
-        userId: user.id,
-        orderBy: 'updated_at desc'
-      });
-      
-      // Add timeout to query as well
-      const queryPromise = supabase
-        .from('drafts')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
-      
-      const queryTimeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Query timeout - please check your internet connection')), 10000) // 10 second timeout for query
-      );
-      
-      const { data, error } = await Promise.race([queryPromise, queryTimeoutPromise]) as any;
-
-      console.log('📥 SupabaseDraftManager: Supabase query completed for getAllDrafts');
-      console.log('📥 SupabaseDraftManager: Query result details:', {
-        hasData: !!data,
-        dataLength: data?.length || 0,
-        hasError: !!error,
-        errorMessage: error?.message,
-        errorCode: error?.code,
-        errorDetails: error?.details
-      });
-      
-      if (error) {
-        console.error('📥 SupabaseDraftManager: Supabase query error for getAllDrafts:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint
-        });
-        // Re-throw the error so the UI can handle it properly
-        throw new Error(`Failed to load drafts: ${error.message}`);
-      }
-
-      console.log('📥 SupabaseDraftManager: Query successful for getAllDrafts, returned:', data?.length || 0, 'drafts');
-      
-      if (data && data.length > 0) {
-        console.log('📥 SupabaseDraftManager: Sample draft data (first draft):', {
-          id: data[0].id,
-          name: data[0].name,
-          template: data[0].selected_template,
-          step: data[0].step,
-          updatedAt: data[0].updated_at
-        });
-      }
-      
-      console.log('📥 SupabaseDraftManager: Starting data transformation for getAllDrafts...');
-      const transformedData = (data || []).map(draft => ({
-        id: draft.id,
-        name: draft.name,
-        resumeData: draft.resume_data,
-        selectedTemplate: draft.selected_template,
-        customizations: draft.customizations || {},
-        createdAt: draft.created_at,
-        updatedAt: draft.updated_at,
-        step: draft.step
-      }));
-      
-      console.log('📥 SupabaseDraftManager: Data transformation completed for getAllDrafts, returning:', transformedData.length, 'drafts');
-      return transformedData;
-    } catch (error) {
-      console.error('📥 SupabaseDraftManager: Exception in getAllDrafts:', {
-        error: error,
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        timestamp: new Date().toISOString()
-      });
-      
-      // Re-throw the error so the UI can show proper error messages
-      if (error instanceof Error) {
-        if (error.message.includes('timeout')) {
-          throw new Error('Request timeout - please check your internet connection and try again');
-        } else if (error.message.includes('Authentication failed') || error.message.includes('User not authenticated')) {
-          throw new Error('Please sign in to access your drafts');
-        } else {
-          throw new Error(`Failed to load drafts: ${error.message}`);
-        }
-      } else {
-        throw new Error('Failed to load drafts. Please try again.');
-      }
-    }
-  }
 
   static async getDraft(id: string, providedUser?: any): Promise<DraftResume | null> {
     try {
@@ -572,85 +532,4 @@ export class SupabaseDraftManager {
     }
   }
 
-  static async getResumeData(providedUser?: any): Promise<ResumeData | null> {
-    try {
-      console.log('🗄️ SupabaseDraftManager: Starting getResumeData');
-      console.log('🗄️ SupabaseDraftManager: About to check auth for getResumeData...');
-      const user = await this.checkAuth(3000, providedUser);
-      console.log('🗄️ SupabaseDraftManager: User authenticated for getResumeData:', {
-        userId: user.id,
-        email: user.email
-      });
-
-      console.log('🗄️ SupabaseDraftManager: Starting Supabase query for getResumeData...');
-      const { data, error } = await supabase
-        .from('resume_data')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-        
-      console.log('🗄️ SupabaseDraftManager: getResumeData query completed');
-      console.log('🗄️ SupabaseDraftManager: Query result details:', {
-        hasData: !!data,
-        hasError: !!error,
-        errorMessage: error?.message,
-        errorCode: error?.code,
-        errorDetails: error?.details
-      });
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          console.log('🗄️ SupabaseDraftManager: No resume data found for user:', user.id);
-          return null; // No resume data found
-        }
-        console.error('🗄️ SupabaseDraftManager: getResumeData query error:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint
-        });
-        throw error;
-      }
-
-      console.log('🗄️ SupabaseDraftManager: Successfully retrieved resume data:', {
-        hasPersonalInfo: !!data.personal_info,
-        personalInfoName: data.personal_info?.name,
-        experienceCount: data.experience?.length || 0,
-        skillsCount: data.skills?.length || 0,
-        timestamp: new Date().toISOString()
-      });
-      
-      console.log('🗄️ SupabaseDraftManager: Starting data transformation for getResumeData...');
-      const transformedData = {
-        personalInfo: data.personal_info,
-        summary: data.summary || '',
-        experience: data.experience || [],
-        education: data.education || [],
-        skills: data.skills || [],
-        certifications: data.certifications || [],
-        languages: data.languages || [],
-        customSections: data.custom_sections || {}
-      };
-      
-      console.log('🗄️ SupabaseDraftManager: Data transformation completed for getResumeData');
-      return {
-        personalInfo: data.personal_info,
-        summary: data.summary || '',
-        experience: data.experience || [],
-        education: data.education || [],
-        skills: data.skills || [],
-        certifications: data.certifications || [],
-        languages: data.languages || [],
-        customSections: data.custom_sections || {}
-      };
-    } catch (error) {
-      console.error('🗄️ SupabaseDraftManager: Exception in getResumeData:', {
-        error: error,
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        timestamp: new Date().toISOString()
-      });
-      throw error; // Re-throw to let caller handle fallback
-    }
-  }
-}
+ }

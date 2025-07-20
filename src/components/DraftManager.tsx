@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { DraftResume, ResumeData } from '../types/resume';
 import { useTranslation } from '../hooks/useTranslation';
 
+
 interface DraftManagerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -37,7 +38,7 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   showConfirmation
 }) => {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [drafts, setDrafts] = useState<DraftResume[]>([]);
   const [saveName, setSaveName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -47,27 +48,39 @@ export const DraftManagerComponent: React.FC<DraftManagerProps> = ({
   const [warning, setWarning] = useState<string | null>(null);
   const [loadingDraftId, setLoadingDraftId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
   
   // DEBUG: Log render state
   console.log('🗂️ DraftManager: RENDER - isLoading:', isLoading, 'drafts.length:', drafts.length, 'error:', error, 'warning:', warning);
 
-  useEffect(() => {
-    if (isOpen && user) {
-      console.log('🗂️ DraftManager: useEffect triggered - Modal opened with user, starting to load drafts...');
-      loadDrafts();
-    } else if (isOpen && !user) {
-      console.log('🗂️ DraftManager: useEffect triggered - Modal opened but no user authenticated');
-      setError('You must be signed in to manage drafts');
-      setDrafts([]);
-    } else {
-      console.log('🗂️ DraftManager: useEffect triggered - Modal closed, resetting state...');
-      // Reset state when modal closes
-      setError(null);
-      setWarning(null);
-      setIsLoading(false);
-      setDrafts([]);
-    }
-  }, [isOpen, user]);
+
+useEffect(() => {
+  if (!isOpen) {
+    // Modal closed → reset everything
+    setIsLoading(false);
+    setError(null);
+    setWarning(null);
+    setDrafts([]);
+    return;
+  }
+
+  // Still waiting on auth to finish? Do nothing.
+  if (authLoading) {
+    console.log('🗂️ DraftManager: Waiting for auth to settle...');
+    return;
+  }
+
+  if (user) {
+    console.log('🗂️ DraftManager: Auth ready & modal open → loadDrafts');
+    loadDrafts();
+  } else {
+    console.log('🗂️ DraftManager: Auth ready & no user → show sign‑in error');
+    setError('You must be signed in to manage drafts');
+    setDrafts([]);
+    setIsLoading(false);
+  }
+}, [isOpen, user, authLoading]);
+
 
   const loadDrafts = async () => {
     console.log('🗂️ DraftManager: loadDrafts() START - isLoading before:', isLoading);

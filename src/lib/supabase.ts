@@ -1,14 +1,29 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL!;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY!;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Supabase URL and Anon Key must be provided as environment variables.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(
+  supabaseUrl,
+  supabaseAnonKey,
+  {
+    auth: {
+      persistSession: true,     // keep session in localStorage
+      autoRefreshToken: true,   // refresh tokens automatically
+      detectSessionInUrl: false,// for SPAs
+      multiTab: false           // 🔥 disable multi‑tab to avoid stale callbacks
+    }
+  }
+);
 
+// Expose to window for debugging
+if (typeof window !== 'undefined') {
+  (window as any).supabase = supabase;
+}
 // Database types for better TypeScript support
 export type Database = {
   public: {

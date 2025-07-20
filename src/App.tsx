@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from './lib/supabase';
-import { getCurrentUserSync } from './lib/authUtils';
 import { ProgressIndicator } from './components/ProgressIndicator';
 import { LinkedInInput } from './components/LinkedInInput';
 import { TemplateSelector } from './components/TemplateSelector';
@@ -17,59 +15,43 @@ import { SupabaseDraftManager } from './utils/supabaseDraftManager';
 import { ResumeData, DraftResume, Customizations } from './types/resume';
 import { useAuth } from './contexts/AuthContext';
 
-// Error Boundary Component
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean; error?: Error }
-> {
-  constructor(props: { children: React.ReactNode }) {
+class ErrorBoundary extends React.Component<{}, { hasError: boolean }> {
+  constructor(props: {}) {
     super(props);
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
+  static getDerivedStateFromError() {
+    return { hasError: true };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('ErrorBoundary caught:', error, info);
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="min-h-screen flex items-center justify-center p-6">
           <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Something went wrong</h2>
-            <p className="text-gray-600 mb-4">
-              We encountered an unexpected error. Please refresh the page to try again.
-            </p>
+            <h2 className="text-xl font-bold mb-2">Something went wrong</h2>
+            <p className="mb-4">Please refresh the page and try again.</p>
             <button
               onClick={() => window.location.reload()}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors"
+              className="bg-blue-500 text-white px-6 py-2 rounded-lg"
             >
-              Refresh Page
+              Refresh
             </button>
           </div>
         </div>
       );
     }
-
     return this.props.children;
   }
 }
 
-function App() {
-  const STEPS = [
-    'LinkedIn Input',
-    'Choose Template',
-    'Customize & Export'
-  ];
+const App: React.FC = () => {
+  const STEPS = ['LinkedIn Input', 'Choose Template', 'Customize & Export'];
 
   const [currentStep, setCurrentStep] = useState(0);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
@@ -80,543 +62,125 @@ function App() {
     spacing: {},
     sections: {}
   });
-  const [linkedinData, setLinkedinData] = useState<ResumeData | null>(null);
-  const [currentDraftId, setCurrentDraftId] = useState<string | null | undefined>(undefined);
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
   const [showDraftManager, setShowDraftManager] = useState(false);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  console.log('🏠 App RENDER - Current state:', {
-    currentStep,
-    hasResumeData: !!resumeData,
-    selectedTemplate,
-    currentDraftId,
-    isTransitioning,
-    timestamp: new Date().toISOString()
-  });
-
-  // Toast notification hook
   const { toast, showToast, hideToast } = useToast();
-
-  // Confirmation dialog hook
   const { confirmation, showConfirmation } = useConfirmation();
-
-  // Use the auth context directly
   const { user } = useAuth();
 
-  // Handle browser extension cleanup on component mount
+  // Load primary resume data on user change
   useEffect(() => {
-    const handleAuthCleared = () => {
-      console.log('🏠 App: Auth cleared event received, resetting state');
-      setCurrentDraftId(null);
-      setResumeData(null);
-    };
-
-    window.addEventListener('auth-cleared', handleAuthCleared);
-    return () => window.removeEventListener('auth-cleared', handleAuthCleared);
-  }, []);
-
-  // Load user data when user changes (login/logout/refresh)
-  useEffect(() => {
-    const initializeData = async (currentUser: any) => {
-      if (currentUser) {
-        // User is authenticated - load their data
-        console.log('🏠 App - User authenticated, loading data for:', currentUser.email);
+    const init = async () => {
+      if (user) {
         try {
-          const primaryResumeData = await SupabaseDraftManager.getResumeData(currentUser);
-          if (primaryResumeData) {
-            console.log('🏠 App - Primary resume data loaded successfully');
-            setResumeData(primaryResumeData);
-            setCurrentDraftId(null); // Clear draft ID on new session
-          } else {
-            console.log('🏠 App - No primary resume data found');
-            setResumeData(null);
-          }
-        } catch (error) {
-          console.error('🏠 App - Failed to load user data:', error);
-          setResumeData(null);
-          showToast('Failed to load your data. Please try refreshing the page.', 'error');
+          const data = await SupabaseDraftManager.getResumeData(user);
+          setResumeData(data);
+          setCurrentDraftId(null);
+        } catch {
+          showToast('Failed to load data.', 'error');
         }
       } else {
-        // User is not authenticated - clear all data
-        console.log('🏠 App - User not authenticated, clearing data');
         setResumeData(null);
         setCurrentDraftId(null);
       }
     };
-
-    initializeData(user);
-  }, [user, showToast]);
+    init();
+  }, [user]);
 
   const loadDraftData = async (draft: DraftResume) => {
-    try {
-      console.log('Loading draft data in App:', draft);
-      setIsTransitioning(true);
-      
-      // Validate and set resume data
-      if (draft.resumeData) {
-        setResumeData(draft.resumeData);
-        console.log('Resume data set:', draft.resumeData);
-      }
-      
-      // Set template
-      if (draft.selectedTemplate) {
-        setSelectedTemplate(draft.selectedTemplate);
-        console.log('Template set:', draft.selectedTemplate);
-      }
-      
-      // Set customizations
-      if (draft.customizations) {
-        setCustomizations(draft.customizations);
-        console.log('Customizations set:', draft.customizations);
-      }
-      
-      // Set current draft ID
-      setCurrentDraftId(draft.id);
-      
-      // Close draft manager
-      setShowDraftManager(false);
-      
-      // Determine the next step based on draft progress
-      let nextStep = draft.step;
-      
-      // If we're on step 0 (LinkedIn Input) and have data, move to step 1 (Template Selection)
-      if (nextStep === 0 && draft.resumeData) {
-        nextStep = 1;
-      }
-      
-      // Ensure step is within valid range
-      nextStep = Math.max(0, Math.min(2, nextStep));
-      
-      console.log('Transitioning to step:', nextStep);
-      
-      // Add a small delay to ensure all state updates are processed
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Set the step and show transition
-      setCurrentStep(nextStep);
-      
-      // Add another small delay for smooth transition
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      setIsTransitioning(false);
-      
-      console.log('Draft loaded and transitioned successfully:', {
-        step: nextStep,
-        template: draft.selectedTemplate,
-        hasData: !!draft.resumeData,
-        draftId: draft.id
-      });
-      
-      // Show success toast
-      showToast('Draft loaded successfully! Transitioning to your work...', 'success', 3000);
-      
-    } catch (error) {
-      console.error('Error loading draft data:', error);
-      setIsTransitioning(false);
-      showToast('Failed to load draft. Please try again.', 'error');
-    }
+    setIsTransitioning(true);
+    setResumeData(draft.resumeData);
+    setSelectedTemplate(draft.selectedTemplate);
+    setCustomizations(draft.customizations);
+    setCurrentDraftId(draft.id);
+    setShowDraftManager(false);
+
+    let step = draft.step;
+    if (step === 0 && draft.resumeData) step = 1;
+    step = Math.min(Math.max(step, 0), 2);
+
+    await new Promise(r => setTimeout(r, 300));
+    setCurrentStep(step);
+    await new Promise(r => setTimeout(r, 200));
+
+    setIsTransitioning(false);
+    showToast('Draft loaded!', 'success');
   };
 
   const handleLinkedInData = (data: ResumeData) => {
-    setLinkedinData(data);
     setResumeData(data);
-    setCurrentDraftId(null); // Clear current draft when new data is loaded
-    
-    // Automatically move to template selection after data is parsed
+    setCurrentDraftId(null);
     setCurrentStep(1);
-  };
-
-  const handleTemplateSelect = (templateId: string) => {
-    setSelectedTemplate(templateId);
-  };
-
-  const handleResumeDataUpdate = (updatedData: ResumeData) => {
-    console.log('App - Resume data updated:', updatedData);
-    setResumeData(updatedData);
-  };
-
-  const handleCustomizationsUpdate = (newCustomizations: Customizations) => {
-    console.log('Updating customizations:', newCustomizations);
-    setCustomizations(newCustomizations);
   };
 
   const handleExport = async (format: 'pdf' | 'docx') => {
     if (!resumeData) return;
-    
     try {
       if (format === 'pdf') {
-        await exportToPDF('resume-preview', `${resumeData.personalInfo.name.replace(/\s+/g, '_')}_Resume.pdf`);
-        showToast('PDF exported successfully!', 'success');
+        await exportToPDF('resume-preview', `${resumeData.personalInfo.name}_Resume.pdf`);
       } else {
-        await exportToWord(resumeData, `${resumeData.personalInfo.name.replace(/\s+/g, '_')}_Resume.docx`);
-        showToast('Word document exported successfully!', 'success');
+        await exportToWord(resumeData, `${resumeData.personalInfo.name}_Resume.docx`);
       }
-    } catch (error) {
-      console.error('Export failed:', error);
-      showToast('Export failed. Please try again.', 'error');
+      showToast('Export successful!', 'success');
+    } catch {
+      showToast('Export failed.', 'error');
     }
   };
 
-  const saveDraft = async (name: string) => {
-    if (!resumeData) return;
-
-    try {
-      showToast('Saving draft...', 'info', 2000);
-
-      let draftId: string;
-
-      if (user) {
-        // User is authenticated - save to cloud
-        try {
-          draftId = await SupabaseDraftManager.saveDraft(
-            name,
-            resumeData,
-            selectedTemplate,
-            customizations,
-            currentStep,
-            currentDraftId,
-            user
-          );
-          
-          console.log('Draft saved to Supabase with ID:', draftId);
-          showToast('Draft saved to cloud successfully!', 'success');
-          
-          // ALWAYS try to save primary resume data for authenticated users
-          try {
-            await SupabaseDraftManager.saveResumeData(resumeData, user);
-            console.log('Primary resume data saved to Supabase as backup');
-          } catch (resumeDataError) {
-            console.warn('Failed to save primary resume data to Supabase:', resumeDataError);
-          }
-        } catch (supabaseError) {
-          console.error('Error saving draft to Supabase:', supabaseError);
-          showToast('Failed to save draft. Please try again.', 'error');
-          return;
-        }
-      } else {
-        // User not authenticated - cannot save
-        console.log('User not authenticated, cannot save draft');
-        showToast('You must be signed in to save drafts.', 'error');
-        return;
-      }
-
-      // Update state with the new draft ID
-      setCurrentDraftId(draftId);
-    } catch (error) {
-      console.error('Critical error saving draft:', error);
-      showToast('Failed to save draft. Please try again.', 'error');
-    }
-  };
-
-  // Quick save function for updating existing drafts
-  const quickSaveDraft = async () => {
-    if (!resumeData) {
-      showToast('No resume data to save', 'error');
-      return;
-    }
-
-    if (currentDraftId) {
-      // Update existing draft without name prompt
-      try {
-        if (user) {
-          // Get existing draft name
-          const existingDraft = await SupabaseDraftManager.getDraft(currentDraftId, user);
-          if (existingDraft) {
-            showToast('Updating draft...', 'info', 2000);
-
-            await SupabaseDraftManager.saveDraft(
-              existingDraft.name,
-              resumeData,
-              selectedTemplate,
-              customizations,
-              currentStep,
-              currentDraftId,
-              user
-            );
-
-            showToast('Draft updated successfully!', 'success');
-          } else {
-            showToast('Draft not found. Creating new draft...', 'warning');
-            setShowSavePrompt(true);
-          }
-        } else {
-          showToast('You must be signed in to save drafts.', 'error');
-        }
-      } catch (error) {
-        console.error('Error updating draft:', error);
-        showToast('Failed to update draft. Please try again.', 'error');
-      }
-      
-      // Close draft manager if it's open
-      if (showDraftManager) {
-        setTimeout(() => {
-          setShowDraftManager(false);
-        }, 1500);
-      }
-    } else {
-      // No current draft, show save prompt for new draft
-      setShowSavePrompt(true);
-    }
-  };
-
-  // Save as new draft function (always prompts for name)
-  const saveAsNewDraft = () => {
-    if (!resumeData) {
-      showToast('No resume data to save', 'error');
-      return;
-    }
-    
-    // Always show save prompt for new draft, regardless of current draft status
-    setShowSavePrompt(true);
-  };
-
-  // Auto-save function for step transitions
-  const autoSaveDraft = async (step: number) => {
-    if (currentDraftId && resumeData && user) {
-      try {
-        // Try to get draft name from Supabase
-        const draft = await SupabaseDraftManager.getDraft(currentDraftId, user);
-        if (draft) {
-          await SupabaseDraftManager.saveDraft(
-            draft.name,
-            resumeData,
-            selectedTemplate,
-            customizations,
-            step,
-            currentDraftId,
-            user
-          );
-          console.log('Auto-saved draft to Supabase');
-        }
-      } catch (error) {
-        console.warn('Auto-save failed:', error);
-      }
-    }
-  };
-
-  const nextStep = () => {
-    if (currentStep < STEPS.length - 1) {
-      // Show save prompt when moving from template selection step
-      if (currentStep === 1 && resumeData && !currentDraftId) {
-        setShowSavePrompt(true);
-        return;
-      }
-      
-      const newStep = currentStep + 1;
-      setCurrentStep(newStep);
-      
-      // Auto-save if we have a current draft
-      autoSaveDraft(newStep);
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 0) {
-      const newStep = currentStep - 1;
-      setCurrentStep(newStep);
-      
-      // Auto-save if we have a current draft
-      autoSaveDraft(newStep);
-    }
-  };
-
-  const handleSavePromptSave = async (name: string) => {
-    try {
-      // Close the modal immediately to improve UX
-      setShowSavePrompt(false);
-      
-      // For "Save as New", always create a new draft (don't pass currentDraftId)
-      const draftIdToUse = undefined; // This ensures a new draft is created
-      
-      // Wait for the save operation to complete
-      if (user) {
-        showToast('Creating new draft...', 'info', 2000);
-        
-        const newDraftId = await SupabaseDraftManager.saveDraft(
-          name,
-          resumeData!,
-          selectedTemplate,
-          customizations,
-          currentStep,
-          draftIdToUse, // undefined = create new draft
-          user
-        );
-        
-        // Update current draft ID to the new draft
-        setCurrentDraftId(newDraftId);
-        
-        // Also save primary resume data
-        await SupabaseDraftManager.saveResumeData(resumeData!, user);
-        
-        showToast('New draft created successfully!', 'success');
-      } else {
-        showToast('You must be signed in to save drafts.', 'error');
-        // Reopen modal if user is not authenticated
-        setShowSavePrompt(true);
-        return;
-      }
-      
-      // Only increment step if we're not already on the final step
-      if (currentStep < STEPS.length - 1) {
-        setCurrentStep(currentStep + 1);
-      }
-    } catch (error) {
-      console.error('Error saving draft:', error);
-      showToast('Failed to save draft. Please try again.', 'error');
-      // Reopen modal if save failed
-      setShowSavePrompt(true);
-    }
-  };
-
-  const handleSavePromptSkip = () => {
-    setShowSavePrompt(false);
-    // Only increment step if we're not already on the final step
-    if (currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const renderCurrentStep = () => {
-    console.log('🏠 App - renderCurrentStep called with:', {
-      currentStep,
-      hasResumeData: !!resumeData,
-      isTransitioning,
-      selectedTemplate,
-      currentDraftId,
-      timestamp: new Date().toISOString()
-    });
-    
-    // Show loading state during transition
+  const renderStep = () => {
     if (isTransitioning) {
-      console.log('🏠 App - Showing transition loading state');
-      return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading your draft...</p>
-          </div>
-        </div>
-      );
+      return <div className="flex items-center justify-center h-full">Loading...</div>;
     }
-    
     switch (currentStep) {
       case 0:
-        console.log('🏠 App - Rendering LinkedIn Input (step 0)');
-        return (
-          <ErrorBoundary>
-            <LinkedInInput
-              onDataExtracted={handleLinkedInData}
-              onNext={nextStep}
-              onOpenDraftManager={() => setShowDraftManager(true)}
-            />
-          </ErrorBoundary>
-        );
+        return <LinkedInInput onDataExtracted={handleLinkedInData} onOpenDraftManager={() => setShowDraftManager(true)} />;
       case 1:
-        console.log('🏠 App - Rendering Template Selector (step 1), hasData:', !!resumeData);
-        return resumeData ? (
-          <ErrorBoundary>
-            <TemplateSelector
-              resumeData={resumeData}
-              selectedTemplate={selectedTemplate}
-              onTemplateSelect={handleTemplateSelect}
-              onNext={nextStep}
-              onBack={prevStep}
-              onSaveDraft={saveAsNewDraft}
-              onQuickSave={quickSaveDraft}
-              onSaveAsNew={saveAsNewDraft}
-              currentDraftId={currentDraftId}
-            />
-          </ErrorBoundary>
-        ) : (
-          (() => {
-            console.log('🏠 App - Step 1 but no resumeData, showing loading screen');
-            return (
-              <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading your data...</p>
-                </div>
-              </div>
-            );
-          })()
+        return resumeData && (
+          <TemplateSelector
+            resumeData={resumeData}
+            selectedTemplate={selectedTemplate}
+            onTemplateSelect={setSelectedTemplate}
+            onNext={() => setCurrentStep(2)}
+            onBack={() => setCurrentStep(0)}
+          />
         );
       case 2:
-        console.log('🏠 App - Rendering Resume Customizer (step 2), hasData:', !!resumeData);
-        return resumeData ? (
-          <ErrorBoundary>
-            <ResumeCustomizer
-              resumeData={resumeData}
-              selectedTemplate={selectedTemplate}
-              customizations={customizations}
-              onCustomizationsUpdate={handleCustomizationsUpdate}
-              onResumeDataUpdate={handleResumeDataUpdate}
-              onExport={handleExport}
-              onBack={prevStep}
-              onSaveDraft={saveAsNewDraft}
-              onQuickSave={quickSaveDraft}
-              onSaveAsNew={saveAsNewDraft}
-              currentDraftId={currentDraftId}
-            />
-          </ErrorBoundary>
-        ) : (
-          (() => {
-            console.log('🏠 App - Step 2 but no resumeData, showing loading screen');
-            return (
-              <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading resume data...</p>
-                </div>
-              </div>
-            );
-          })()
+        return resumeData && (
+          <ResumeCustomizer
+            resumeData={resumeData}
+            selectedTemplate={selectedTemplate}
+            customizations={customizations}
+            onCustomizationsUpdate={setCustomizations}
+            onResumeDataUpdate={setResumeData}
+            onExport={handleExport}
+            onBack={() => setCurrentStep(1)}
+          />
         );
       default:
-        console.log('🏠 App - Unknown step:', currentStep);
-        return <div>Step not found</div>;
+        return null;
     }
   };
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50">
-        <ProtectedRoute>
-          {currentStep > 0 && !isTransitioning && (
-            <ProgressIndicator
-              currentStep={currentStep}
-              totalSteps={STEPS.length}
-              steps={STEPS}
-              onOpenDraftManager={() => setShowDraftManager(true)}
-              currentDraftId={currentDraftId}
-            />
-          )}
-          
-          {renderCurrentStep()}
-          
-          {/* User Profile Button - Fixed position - Only for authenticated users */}
-          {!showUserProfile && (
-            <button
-              onClick={() => setShowUserProfile(true)}
-              className="fixed top-6 right-6 bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl z-40"
-              title="User Profile"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </button>
-          )}
-
-          {/* User Profile Modal - Only for authenticated users */}
-          <UserProfilePage
-            isOpen={showUserProfile}
-            onClose={() => setShowUserProfile(false)}
-            showConfirmation={showConfirmation}
+      <ProtectedRoute>
+        {currentStep > 0 && !isTransitioning && (
+          <ProgressIndicator
+            currentStep={currentStep}
+            totalSteps={STEPS.length}
+            steps={STEPS}
+            onOpenDraftManager={() => setShowDraftManager(true)}
+            currentDraftId={currentDraftId}
           />
-        </ProtectedRoute>
+        )}
+        {renderStep()}
 
-        {/* Draft Manager Modal */}
+        <UserProfilePage isOpen={showUserProfile} onClose={() => setShowUserProfile(false)} showConfirmation={showConfirmation} />
+
         <DraftManagerComponent
           isOpen={showDraftManager}
           onClose={() => setShowDraftManager(false)}
@@ -630,35 +194,21 @@ function App() {
           showConfirmation={showConfirmation}
         />
 
-        {/* Save Draft Prompt */}
-        <DraftSavePrompt
-          isOpen={showSavePrompt}
-          onSave={handleSavePromptSave}
-          onSkip={handleSavePromptSkip}
-          onCancel={() => setShowSavePrompt(false)}
-          defaultName={resumeData?.personalInfo.name ? `${resumeData.personalInfo.name} Resume` : ''}
-        />
+        <DraftSavePrompt isOpen={showSavePrompt} onSave={() => {}} onCancel={() => setShowSavePrompt(false)} />
 
-        {/* Toast Notification */}
-        <ToastNotification
-          toast={toast}
-          onClose={hideToast}
-        />
-
-        {/* Unified Confirmation Dialog */}
+        <ToastNotification toast={toast} onClose={hideToast} />
         <ConfirmationDialog
           isOpen={confirmation.isOpen}
           title={confirmation.title}
           message={confirmation.message}
           confirmText={confirmation.confirmText}
           cancelText={confirmation.cancelText}
-          type={confirmation.type}
           onConfirm={confirmation.onConfirm}
           onCancel={confirmation.onCancel}
         />
-      </div>
+      </ProtectedRoute>
     </ErrorBoundary>
   );
-}
+};
 
 export default App;

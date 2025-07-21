@@ -26,6 +26,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   const { user, signOut } = useAuth();
 
   const handleSignOut = async () => {
+    console.log('🔓 AppHeader: Sign out button clicked - handleSignOut triggered');
+    console.log('🔓 AppHeader: Current state - user:', !!user, 'currentStep:', currentStep);
     console.log('🔓 AppHeader: Sign out button clicked');
     
     const confirmed = await showConfirmation({

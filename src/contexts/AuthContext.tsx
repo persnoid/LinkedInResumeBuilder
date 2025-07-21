@@ -218,8 +218,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signOut = async () => {
     try {
       console.log('🔐 AuthProvider - signOut started');
-      // Don't set loading to true for sign out - it can get stuck
-      console.log('🔐 AuthProvider - Setting loading to true for signOut');
       
       // Check if user is currently authenticated
       if (!user) {
@@ -232,14 +230,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       console.log('🔐 AuthProvider - Starting sign out process for user:', user?.email);
 
-      // Set loading to true only after we confirm there's a user to sign out
       cleanupBrowserExtensions();
-      setLoading(true);
+      setLoading(true); // Set loading state
       
+      console.log('🔐 AuthProvider - Calling supabase.auth.signOut()');
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error('🔐 AuthProvider - Sign out error from Supabase:', error);
+        // Even with error, continue with local cleanup
       }
       
       console.log('🔐 AuthProvider - Supabase sign out completed, clearing local state');
@@ -248,6 +247,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       setSession(null);
       
+      // FORCE clear any cached auth data
+      try {
+        localStorage.removeItem('supabase.auth.token');
+        sessionStorage.clear();
+      } catch (e) {
+        console.warn('🔐 AuthProvider - Could not clear storage:', e);
+      }
+      
       console.log('🔐 AuthProvider - Local auth state cleared');
       
       return { error };
@@ -255,20 +262,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('Sign out error:', error);
       // CRITICAL: Clear state even on exception
       console.log('🔐 AuthProvider - Exception during sign out, clearing state anyway');
-    } finally {
+      
+      // Force clear everything
+      setUser(null);
       setSession(null);
+      setLoading(false);
+      
+      try {
+        localStorage.removeItem('supabase.auth.token');
+        sessionStorage.clear();
+      } catch (e) {
+        console.warn('🔐 AuthProvider - Could not clear storage on error:', e);
+      }
+      
+      return { error: error as any };
+    } finally {
       // CRITICAL: Always set loading to false and clear state
       console.log('🔐 AuthProvider - signOut finally block, force completing sign out');
       setLoading(false);
-      // Force clear state to ensure sign out completes
-      setUser(null);
-      setSession(null);
       // Clean up any browser extension issues
       cleanupBrowserExtensions();
       console.log('🔐 AuthProvider - Sign out process completed');
     }
-    
-    return { error: null };
   };
 
   const resetPassword = async (email: string) => {

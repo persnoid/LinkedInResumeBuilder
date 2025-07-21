@@ -81,7 +81,12 @@ const App: React.FC = () => {
 
   // SINGLE useEffect to handle all authentication and initialization
   useEffect(() => {
-    console.log('🏠 App - Auth state changed:', { hasUser: !!user, userEmail: user?.email });
+    console.log('🏠 App - Auth state changed:', { 
+      hasUser: !!user, 
+      userEmail: user?.email,
+      isInitialized,
+      showLandingPage 
+    });
     
     if (user) {
       // User is authenticated
@@ -100,7 +105,7 @@ const App: React.FC = () => {
       }
     } else {
       // No user - show landing page
-      console.log('🏠 App - No user, showing landing page');
+      console.log('🏠 App - No user, showing landing page and resetting state');
       // CRITICAL FIX: Only show landing page if not already showing it
       if (!showLandingPage) {
         console.log('🏠 App - Showing landing page for unauthenticated user');
@@ -108,9 +113,17 @@ const App: React.FC = () => {
       }
       setShowAuthModal(false);
       setIsInitialized(false);
+      // CRITICAL: Reset all app state when user signs out
       setResumeData(null);
       setCurrentDraftId(null);
       setCurrentStep(0);
+      setCustomizations({
+        colors: { primary: '#1f2937', secondary: '#6b7280', accent: '#3b82f6' },
+        typography: { fontFamily: 'Inter, sans-serif' },
+        spacing: {},
+        sections: {}
+      });
+      setIsTransitioning(false);
     }
   }, [user, isInitialized]);
 

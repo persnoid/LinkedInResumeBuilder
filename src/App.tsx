@@ -232,6 +232,7 @@ const App: React.FC = () => {
 
   const handleContinueWithExistingData = () => {
     if (resumeData) {
+      console.log('🏠 App - Continue with existing data, moving to template selection');
       setCurrentStep(1);
     }
   };
@@ -308,6 +309,8 @@ const App: React.FC = () => {
           <LinkedInInput 
             onDataExtracted={handleLinkedInData} 
             onOpenDraftManager={() => setShowDraftManager(true)} 
+            existingResumeData={resumeData}
+            onContinueWithExisting={handleContinueWithExistingData}
             existingResumeData={resumeData}
             onContinueWithExisting={handleContinueWithExistingData}
           />

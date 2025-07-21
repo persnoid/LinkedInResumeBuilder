@@ -72,15 +72,31 @@ const App: React.FC = () => {
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
   const [showLandingPage, setShowLandingPage] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   const { toast, showToast, hideToast } = useToast();
   const { confirmation, showConfirmation } = useConfirmation();
   const { user } = useAuth();
 
-  // Hide landing page when user is authenticated
+  // Handle authentication state changes
   React.useEffect(() => {
     if (user) {
+      console.log('🏠 App - User authenticated, hiding landing page:', user.email);
       setShowLandingPage(false);
+      setIsAuthenticating(false);
+      
+      // If user just signed in, transition to main app
+      if (showAuthModal) {
+        setShowAuthModal(false);
+        // Small delay to ensure smooth transition
+        setTimeout(() => {
+          setCurrentStep(0); // Start at LinkedIn Input step
+        }, 100);
+      }
+    } else {
+      console.log('🏠 App - No user, showing landing page');
+      setShowLandingPage(true);
+      setIsAuthenticating(false);
     }
   }, [user]);
 
@@ -134,24 +150,37 @@ const App: React.FC = () => {
 
   const handleGetStarted = () => {
     if (user) {
+      console.log('🏠 App - User already authenticated, going to app');
       setShowLandingPage(false);
       setCurrentStep(0);
     } else {
+      console.log('🏠 App - No user, showing signup modal');
+      setIsAuthenticating(true);
       setAuthModalMode('signup');
       setShowAuthModal(true);
     }
   };
 
   const handleSignIn = () => {
+    console.log('🏠 App - Opening signin modal');
+    setIsAuthenticating(true);
     setAuthModalMode('signin');
     setShowAuthModal(true);
   };
 
   const handleAuthModalClose = () => {
+    console.log('🏠 App - Auth modal closing, user:', !!user);
     setShowAuthModal(false);
-    // If user just signed up/in, hide landing page
+    setIsAuthenticating(false);
+    
+    // If user is authenticated after modal closes, transition to app
     if (user) {
+      console.log('🏠 App - User authenticated after modal close, transitioning to app');
       setShowLandingPage(false);
+      setCurrentStep(0);
+    } else {
+      console.log('🏠 App - No user after modal close, staying on landing page');
+      setShowLandingPage(true);
     }
   };
 
@@ -176,8 +205,16 @@ const App: React.FC = () => {
   };
 
   const renderStep = () => {
-    // Show landing page for non-authenticated users or when explicitly requested
-    if (showLandingPage && !user) {
+    console.log('🏠 App - renderStep called:', {
+      showLandingPage,
+      hasUser: !!user,
+      currentStep,
+      isTransitioning,
+      isAuthenticating
+    });
+
+    // Show landing page for non-authenticated users
+    if (showLandingPage || (!user && !isAuthenticating)) {
       return (
         <LandingPage 
           onGetStarted={handleGetStarted}
@@ -186,9 +223,36 @@ const App: React.FC = () => {
       );
     }
 
-    if (isTransitioning) {
-      return <div className="flex items-center justify-center h-full">Loading...</div>;
+    // Show loading during authentication
+    if (isAuthenticating && !user) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center">
+          <div className="text-center text-white">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto mb-4"></div>
+            <p className="text-lg">Signing you in...</p>
+          </div>
+        </div>
+      );
     }
+
+    // Ensure user is authenticated before showing main app
+    if (!user) {
+      console.log('🏠 App - No user but not on landing page, redirecting to landing');
+      setShowLandingPage(true);
+      return null;
+    }
+
+    if (isTransitioning) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+            <p className="text-lg text-gray-600">Loading your draft...</p>
+          </div>
+        </div>
+      );
+    }
+    
     switch (currentStep) {
       case 0:
         return <LinkedInInput onDataExtracted={handleLinkedInData} onOpenDraftManager={() => setShowDraftManager(true)} />;

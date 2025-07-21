@@ -208,6 +208,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         success: !error, 
         error: error?.message 
       });
+      
+      if (!error) {
+        console.log('🔐 AuthProvider - Sign in successful, auth state will update via listener');
+      }
+      
       return { error };
     } catch (error) {
       console.error('Sign in error:', error);

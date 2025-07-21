@@ -109,6 +109,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           setError(error.message);
         } else {
           setSuccess('Successfully signed in!');
+          console.log('🔐 AuthModal - Sign in successful, closing modal in 1 second');
           setTimeout(() => {
             onClose();
             resetForm();
@@ -122,6 +123,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           setError(error.message);
         } else {
           setSuccess('Account created successfully! Please check your email to verify your account.');
+          // Don't auto-close for signup - user needs to verify email
         }
       } else if (mode === 'reset') {
         const { error } = await resetPassword(email);

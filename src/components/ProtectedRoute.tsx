@@ -36,6 +36,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     effectiveIsAuthenticated,
     hasUser: !!user,
     userEmail: user?.email,
+    allowUnauthenticated,
     timestamp: new Date().toISOString()
   });
 
@@ -57,7 +58,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [effectiveLoading]);
 
-  if (effectiveLoading && !allowUnauthenticated) {
+  // Only show loading screen if we're actually loading auth and not allowing unauthenticated access
+  if (effectiveLoading && !allowUnauthenticated && !user) {
     console.log('🔒 ProtectedRoute - Rendering loading screen');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center relative overflow-hidden">
@@ -138,8 +140,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
+  // If not authenticated and not allowing unauthenticated access, let App handle it
   if (!effectiveIsAuthenticated && !allowUnauthenticated) {
-    // For non-authenticated users, the App component will handle showing landing page
+    console.log('🔒 ProtectedRoute - Not authenticated, letting App component handle routing');
     return null;
   }
 

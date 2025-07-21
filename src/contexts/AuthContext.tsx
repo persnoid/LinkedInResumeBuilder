@@ -234,7 +234,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(true); // Set loading state
       
       console.log('🔐 AuthProvider - Calling supabase.auth.signOut()');
-      const { error } = await supabase.auth.signOut();
+      
+      // Add timeout to prevent hanging
+      const signOutPromise = supabase.auth.signOut();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Sign out timeout')), 5000)
+      );
+      
+      let error = null;
+      try {
+        const result = await Promise.race([signOutPromise, timeoutPromise]);
+        error = (result as any)?.error || null;
+        console.log('🔐 AuthProvider - Supabase sign out completed successfully');
+      } catch (timeoutError) {
+        console.warn('🔐 AuthProvider - Supabase sign out timed out or failed:', timeoutError);
+        error = timeoutError;
+      }
       
       if (error) {
         console.error('🔐 AuthProvider - Sign out error from Supabase:', error);
@@ -250,12 +265,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // FORCE clear any cached auth data
       try {
         localStorage.removeItem('supabase.auth.token');
+        localStorage.clear(); // Clear all localStorage to be sure
         sessionStorage.clear();
+        console.log('🔐 AuthProvider - Local storage cleared');
       } catch (e) {
         console.warn('🔐 AuthProvider - Could not clear storage:', e);
       }
       
       console.log('🔐 AuthProvider - Local auth state cleared');
+      
+      // Force trigger auth state change if listener doesn't fire
+      setTimeout(() => {
+        console.log('🔐 AuthProvider - Force checking auth state after sign out');
+        if (user) {
+          console.log('🔐 AuthProvider - User still exists after timeout, force clearing');
+          setUser(null);
+          setSession(null);
+        }
+      }, 1000);
       
       return { error };
     } catch (error) {
@@ -270,6 +297,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       try {
         localStorage.removeItem('supabase.auth.token');
+        localStorage.clear();
         sessionStorage.clear();
       } catch (e) {
         console.warn('🔐 AuthProvider - Could not clear storage on error:', e);

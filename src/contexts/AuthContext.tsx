@@ -235,6 +235,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       console.log('🔐 AuthProvider - Calling supabase.auth.signOut()');
       
+      // Flag to prevent race conditions
+      let signOutCompleted = false;
+      
       // Add timeout to prevent hanging
       const signOutPromise = supabase.auth.signOut();
       const timeoutPromise = new Promise((_, reject) => 
@@ -246,9 +249,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const result = await Promise.race([signOutPromise, timeoutPromise]);
         error = (result as any)?.error || null;
         console.log('🔐 AuthProvider - Supabase sign out completed successfully');
+        signOutCompleted = true;
       } catch (timeoutError) {
         console.warn('🔐 AuthProvider - Supabase sign out timed out or failed:', timeoutError);
         error = timeoutError;
+        signOutCompleted = true; // Still mark as completed to prevent timeout cleanup
       }
       
       if (error) {
@@ -274,13 +279,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       console.log('🔐 AuthProvider - Local auth state cleared');
       
-      // Force trigger auth state change if listener doesn't fire
+      // Force trigger auth state change if listener doesn't fire (only if not already completed)
       setTimeout(() => {
-        console.log('🔐 AuthProvider - Force checking auth state after sign out');
-        if (user) {
-          console.log('🔐 AuthProvider - User still exists after timeout, force clearing');
-          setUser(null);
-          setSession(null);
+        if (!signOutCompleted) {
+          console.log('🔐 AuthProvider - Force checking auth state after sign out');
+          if (user) {
+            console.log('🔐 AuthProvider - User still exists after timeout, force clearing');
+            setUser(null);
+            setSession(null);
+          }
+        } else {
+          console.log('🔐 AuthProvider - Sign out already completed, skipping force cleanup');
         }
       }, 1000);
       

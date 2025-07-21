@@ -280,6 +280,39 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Quick Continue Section - Show if user has existing data */}
+            {existingResumeData && existingResumeData.personalInfo.name && (
+              <div className="lg:col-span-3 mb-6">
+                <div className="bg-green-50 border border-green-200 rounded-2xl p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                        {existingResumeData.personalInfo.photo ? (
+                          <img src={existingResumeData.personalInfo.photo} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="w-6 h-6 text-gray-400" />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-green-900">Welcome back!</h3>
+                        <p className="text-green-700">
+                          Continue working on your resume for <span className="font-medium">{existingResumeData.personalInfo.name}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={onContinueWithExisting}
+                        className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center"
+                      >
+                        <CheckCircle className="w-5 h-5 mr-2" />
+                        Continue with Existing Resume
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             {/* Main Upload Section */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-2xl shadow-xl p-8">

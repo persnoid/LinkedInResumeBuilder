@@ -326,6 +326,8 @@ const App: React.FC = () => {
           <LinkedInInput 
             onDataExtracted={handleLinkedInData} 
             onOpenDraftManager={() => setShowDraftManager(true)} 
+            existingResumeData={resumeData}
+            onContinueWithExisting={handleContinueWithExistingData}
           />
         );
       case 1:

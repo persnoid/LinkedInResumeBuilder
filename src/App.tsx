@@ -214,6 +214,12 @@ const App: React.FC = () => {
     }
   };
 
+  const handleContinueWithExistingData = () => {
+    if (resumeData) {
+      setCurrentStep(1);
+    }
+  };
+
   const renderStep = () => {
     console.log('🏠 App - renderStep called:', {
       showLandingPage,
@@ -248,6 +254,8 @@ const App: React.FC = () => {
     // Ensure user is authenticated before showing main app
     if (!user) {
       return null;
+    }
+
     const showHeader = user && !isTransitioning;
 
     return (

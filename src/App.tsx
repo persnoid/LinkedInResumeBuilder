@@ -200,6 +200,8 @@ const App: React.FC = () => {
             onTemplateSelect={setSelectedTemplate}
             onNext={() => setCurrentStep(2)}
             onBack={() => setCurrentStep(0)}
+            onSaveDraft={() => {}}
+            currentDraftId={currentDraftId}
           />
         );
       case 2:
@@ -212,6 +214,8 @@ const App: React.FC = () => {
             onResumeDataUpdate={setResumeData}
             onExport={handleExport}
             onBack={() => setCurrentStep(1)}
+            onSaveDraft={() => {}}
+            currentDraftId={currentDraftId}
           />
         );
       default:

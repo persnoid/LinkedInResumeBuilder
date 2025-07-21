@@ -7,13 +7,11 @@ import { ResumeData } from '../types/resume';
 
 interface LinkedInInputProps {
   onDataExtracted: (data: ResumeData) => void;
-  onNext: () => void;
   onOpenDraftManager: () => void;
 }
 
 export const LinkedInInput: React.FC<LinkedInInputProps> = ({
   onDataExtracted,
-  onNext,
   onOpenDraftManager
 }) => {
   const [linkedinUrl, setLinkedinUrl] = useState('');

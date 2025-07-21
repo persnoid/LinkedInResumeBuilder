@@ -214,7 +214,7 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <ProtectedRoute allowUnauthenticated={showLandingPage}>
         {!showLandingPage && (
-        {currentStep > 0 && !isTransitioning && (
+          currentStep > 0 && !isTransitioning && (
           <ProgressIndicator
             currentStep={currentStep}
             totalSteps={STEPS.length}
@@ -222,7 +222,7 @@ const App: React.FC = () => {
             onOpenDraftManager={() => setShowDraftManager(true)}
             currentDraftId={currentDraftId}
           />
-        )}
+          )
         )}
         {renderStep()}
 

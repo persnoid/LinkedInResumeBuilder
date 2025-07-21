@@ -92,33 +92,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           event,
           userEmail: session?.user?.email,
           hasSession: !!session,
-          currentLoading: loading,
           timestamp: new Date().toISOString()
         });
         
-        // CRITICAL: For SIGNED_OUT event, immediately clear state and stop loading
-        if (event === 'SIGNED_OUT') {
-          console.log('🔐 AuthProvider - SIGNED_OUT event detected, force clearing state');
-          setSession(null);
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-        
-        // For other events, update session and user first
+        // Update session and user for all events
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (event === 'SIGNED_IN' && session?.user) {
+        // Handle specific events
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           // Ensure user profile exists
-          try {
-            await ensureProfile(session.user);
-          } catch (error) {
-            console.error('Error ensuring profile:', error);
+          if (session?.user) {
+            try {
+              await ensureProfile(session.user);
+            } catch (error) {
+              console.error('Error ensuring profile:', error);
+            }
           }
         }
-        
-        // Set loading to false after processing auth state change
+
         console.log('🔐 AuthProvider - Setting loading to false after auth state change');
         setLoading(false);
       }

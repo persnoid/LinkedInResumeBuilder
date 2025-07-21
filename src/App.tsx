@@ -71,87 +71,62 @@ const App: React.FC = () => {
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
-  const [showLandingPage, setShowLandingPage] = useState(true);
+  const [showLandingPage, setShowLandingPage] = useState(!user); // Initialize based on user state
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const [hasCheckedUserData, setHasCheckedUserData] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const { toast, showToast, hideToast } = useToast();
   const { confirmation, showConfirmation } = useConfirmation();
   const { user } = useAuth();
 
-  // Handle authentication state changes
-  React.useEffect(() => {
+  // SINGLE useEffect to handle all authentication and initialization
+  useEffect(() => {
+    console.log('🏠 App - Auth state changed:', { hasUser: !!user, userEmail: user?.email });
+    
     if (user) {
-      console.log('🏠 App - User authenticated, hiding landing page:', user.email);
+      // User is authenticated
+      console.log('🏠 App - User authenticated, initializing app');
       setShowLandingPage(false);
-      setIsAuthenticating(false);
+      setShowAuthModal(false);
       
-      // If user just signed in, transition to main app
-      if (showAuthModal) {
-        setShowAuthModal(false);
-        // Small delay to ensure smooth transition
-        setTimeout(() => {
-          setCurrentStep(0); // Start at LinkedIn Input step
-        }, 100);
+      // Load user data only once
+      if (!isInitialized) {
+        console.log('🏠 App - Loading user data...');
+        loadUserData();
       }
     } else {
+      // No user - show landing page
       console.log('🏠 App - No user, showing landing page');
       setShowLandingPage(true);
-      setIsAuthenticating(false);
+      setShowAuthModal(false);
+      setIsInitialized(false);
+      setResumeData(null);
+      setCurrentDraftId(null);
+      setCurrentStep(0);
     }
-  }, [user]);
+  }, [user, isInitialized]);
 
-  // Load primary resume data on user change
-  useEffect(() => {
-    const initializeData = async () => {
-      console.log('🏠 App - initializeData called with user:', !!user, user?.email);
-      if (user) {
-        try {
-          console.log('🏠 App - Loading user data from Supabase...');
-          const data = await SupabaseDraftManager.getResumeData(user);
-          const recentDrafts = await SupabaseDraftManager.getRecentDrafts(1, user);
-          console.log('🏠 App - User data loaded successfully:', !!data);
-          console.log('🏠 App - Recent drafts found:', recentDrafts.length);
-          
-          setResumeData(data);
-          setCurrentDraftId(null);
-          
-          // Smart routing based on user's existing data
-          if (recentDrafts.length > 0) {
-            // User has recent drafts - show them the option to continue
-            console.log('🏠 App - User has recent drafts, staying on LinkedInInput with drafts visible');
-            setCurrentStep(0); // LinkedIn Input with drafts sidebar
-          } else if (data && data.personalInfo.name) {
-            // User has some resume data but no recent drafts - go to templates
-            console.log('🏠 App - User has resume data, going to template selection');
-            setCurrentStep(1);
-          } else {
-            // New user - start from LinkedIn Input
-            console.log('🏠 App - New user, starting at LinkedIn Input');
-            setCurrentStep(0);
-          }
-          
-          setHasCheckedUserData(true);
-        } catch (error: any) {
-          console.error('🏠 App - Failed to load user data:', error);
-          // Don't show error toast immediately - user might not be fully authenticated yet
-          // Just log the error and continue
-          setCurrentStep(0); // Default to LinkedIn Input on error
-          setHasCheckedUserData(true);
-        }
-      } else {
-        console.log('🏠 App - No user, clearing data');
-        setResumeData(null);
-        setCurrentDraftId(null);
-        setHasCheckedUserData(false);
-      }
-    };
-    
-    // Add a small delay to ensure auth context is fully initialized
-    const timer = setTimeout(initializeData, 500);
-    return () => clearTimeout(timer);
-  }, [user]);
+  const loadUserData = async () => {
+    try {
+      console.log('🏠 App - Loading user data from Supabase...');
+      const data = await SupabaseDraftManager.getResumeData(user);
+      const recentDrafts = await SupabaseDraftManager.getRecentDrafts(1, user);
+      
+      console.log('🏠 App - User data loaded:', { hasData: !!data, draftsCount: recentDrafts.length });
+      
+      setResumeData(data);
+      setCurrentDraftId(null);
+      
+      // Always start at LinkedInInput for authenticated users
+      setCurrentStep(0);
+      setIsInitialized(true);
+      
+    } catch (error: any) {
+      console.error('🏠 App - Failed to load user data:', error);
+      setCurrentStep(0);
+      setIsInitialized(true);
+    }
+  };
 
   const loadDraftData = async (draft: DraftResume) => {
     setIsTransitioning(true);
@@ -180,7 +155,6 @@ const App: React.FC = () => {
       setCurrentStep(0);
     } else {
       console.log('🏠 App - No user, showing signup modal');
-      setIsAuthenticating(true);
       setAuthModalMode('signup');
       setShowAuthModal(true);
     }
@@ -188,7 +162,6 @@ const App: React.FC = () => {
 
   const handleSignIn = () => {
     console.log('🏠 App - Opening signin modal');
-    setIsAuthenticating(true);
     setAuthModalMode('signin');
     setShowAuthModal(true);
   };
@@ -196,17 +169,7 @@ const App: React.FC = () => {
   const handleAuthModalClose = () => {
     console.log('🏠 App - Auth modal closing, user:', !!user);
     setShowAuthModal(false);
-    setIsAuthenticating(false);
-    
-    // If user is authenticated after modal closes, transition to app
-    if (user) {
-      console.log('🏠 App - User authenticated after modal close, transitioning to app');
-      setShowLandingPage(false);
-      setCurrentStep(0);
-    } else {
-      console.log('🏠 App - No user after modal close, staying on landing page');
-      setShowLandingPage(true);
-    }
+    // Don't manually manage state here - let the useEffect handle it
   };
 
   const handleLinkedInData = (data: ResumeData) => {
@@ -257,11 +220,11 @@ const App: React.FC = () => {
       hasUser: !!user,
       currentStep,
       isTransitioning,
-      isAuthenticating
+      isInitialized
     });
 
-    // Show landing page for non-authenticated users
-    if (showLandingPage || (!user && !isAuthenticating)) {
+    // Show landing page for non-authenticated users only
+    if (!user) {
       return (
         <LandingPage 
           onGetStarted={handleGetStarted}
@@ -270,13 +233,13 @@ const App: React.FC = () => {
       );
     }
 
-    // Show loading during authentication
-    if (isAuthenticating && !user) {
+    // Show loading while initializing user data
+    if (!isInitialized) {
       return (
         <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center">
           <div className="text-center text-white">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto mb-4"></div>
-            <p className="text-lg">Signing you in...</p>
+            <p className="text-lg">Loading your workspace...</p>
           </div>
         </div>
       );
@@ -284,12 +247,7 @@ const App: React.FC = () => {
 
     // Ensure user is authenticated before showing main app
     if (!user) {
-      console.log('🏠 App - No user but not on landing page, redirecting to landing');
-      setShowLandingPage(true);
       return null;
-    }
-
-    // Show header for authenticated users (except during transitions)
     const showHeader = user && !isTransitioning;
 
     return (

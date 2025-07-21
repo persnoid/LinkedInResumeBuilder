@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ProgressIndicator } from './components/ProgressIndicator';
 import { LinkedInInput } from './components/LinkedInInput';
 import { LandingPage } from './components/LandingPage';
+import { AppHeader } from './components/AppHeader';
 import { TemplateSelector } from './components/TemplateSelector';
 import { ResumeCustomizer } from './components/ResumeCustomizer';
 import { DraftManagerComponent } from './components/DraftManager';
@@ -190,6 +191,28 @@ const App: React.FC = () => {
     setCurrentStep(1);
   };
 
+  const handleGoToHome = async () => {
+    const confirmed = await showConfirmation({
+      title: 'Start Over',
+      message: 'Are you sure you want to start over? Any unsaved changes will be lost.',
+      confirmText: 'Start Over',
+      cancelText: 'Cancel',
+      type: 'warning'
+    });
+
+    if (confirmed) {
+      setCurrentStep(0);
+      setResumeData(null);
+      setCurrentDraftId(null);
+      setCustomizations({
+        colors: { primary: '#1f2937', secondary: '#6b7280', accent: '#3b82f6' },
+        typography: { fontFamily: 'Inter, sans-serif' },
+        spacing: {},
+        sections: {}
+      });
+    }
+  };
+
   const handleExport = async (format: 'pdf' | 'docx') => {
     if (!resumeData) return;
     try {
@@ -242,6 +265,26 @@ const App: React.FC = () => {
       return null;
     }
 
+    // Show header for authenticated users (except during transitions)
+    const showHeader = user && !isTransitioning;
+
+    return (
+      <>
+        {showHeader && (
+          <AppHeader
+            onOpenProfile={() => setShowUserProfile(true)}
+            onOpenDraftManager={() => setShowDraftManager(true)}
+            onGoToHome={handleGoToHome}
+            currentStep={currentStep}
+            showConfirmation={showConfirmation}
+          />
+        )}
+        {renderMainContent()}
+      </>
+    );
+  };
+
+  const renderMainContent = () => {
     if (isTransitioning) {
       return (
         <div className="min-h-screen flex items-center justify-center">
@@ -255,7 +298,12 @@ const App: React.FC = () => {
     
     switch (currentStep) {
       case 0:
-        return <LinkedInInput onDataExtracted={handleLinkedInData} onOpenDraftManager={() => setShowDraftManager(true)} />;
+        return (
+          <LinkedInInput 
+            onDataExtracted={handleLinkedInData} 
+            onOpenDraftManager={() => setShowDraftManager(true)} 
+          />
+        );
       case 1:
         return resumeData && (
           <TemplateSelector
@@ -290,8 +338,7 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <ProtectedRoute allowUnauthenticated={showLandingPage}>
-        {!showLandingPage && (
-          currentStep > 0 && !isTransitioning && (
+        {!showLandingPage && !isTransitioning && currentStep > 0 && (
           <ProgressIndicator
             currentStep={currentStep}
             totalSteps={STEPS.length}
@@ -299,7 +346,6 @@ const App: React.FC = () => {
             onOpenDraftManager={() => setShowDraftManager(true)}
             currentDraftId={currentDraftId}
           />
-          )
         )}
         {renderStep()}
 

@@ -43,7 +43,3 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   console.log('🔒 ProtectedRoute - Rendering children');
   return <>{children}</>;
 };
-
-  console.log('🔒 ProtectedRoute - User authenticated, rendering children');
-  return <>{children}</>;
-};

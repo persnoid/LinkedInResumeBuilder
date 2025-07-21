@@ -94,11 +94,11 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-purple-200 py-8 border-4 border-purple-500">
+    <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-6">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">🐛 DEBUG: Choose Your Template</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">Choose Your Template</h2>
             <p className="text-gray-600 text-lg">Select from our collection of professionally designed resume layouts. Your parsed data will automatically fill the templates.</p>
           </div>
           
@@ -113,7 +113,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         </div>
 
         {/* Data Preview Card - Show what was parsed */}
-        <div className="mb-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="mb-8 bg-blue-50 border border-blue-200 rounded-xl shadow-sm p-6">
           <div className="flex items-start space-x-6">
             <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
               {resumeData.personalInfo.photo ? (
@@ -147,9 +147,9 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           </div>
           
           {/* Debug info - Remove in production */}
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+          <div className="mt-4 p-3 bg-white rounded-lg border border-blue-200">
             <p className="text-sm text-blue-700">
-              <strong>Parsed Data Summary:</strong> 
+              <strong>Data Summary:</strong> 
               {resumeData.personalInfo.name ? ' ✓ Personal Info' : ' ✗ Personal Info'}
               {resumeData.summary ? ' ✓ Summary' : ' ✗ Summary'}
               {resumeData.experience?.length ? ` ✓ ${resumeData.experience.length} Experience` : ' ✗ Experience'}

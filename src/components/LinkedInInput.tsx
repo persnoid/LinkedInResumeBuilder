@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Linkedin, Upload, AlertCircle, CheckCircle, FileText, ExternalLink, Brain, Settings, FolderOpen } from 'lucide-react';
+import { Linkedin, Upload, AlertCircle, CheckCircle, FileText, ExternalLink, Brain, Settings, FolderOpen, User } from 'lucide-react';
 import { parsePDFFile, checkAIAvailability } from '../utils/pdfParser';
 import { SupabaseDraftManager } from '../utils/supabaseDraftManager';
 import { supabase } from '../lib/supabase';

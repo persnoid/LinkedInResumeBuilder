@@ -71,7 +71,7 @@ const App: React.FC = () => {
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
-  const [showLandingPage, setShowLandingPage] = useState(!user); // Initialize based on user state
+  const [showLandingPage, setShowLandingPage] = useState(true); // Always start with landing page
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -86,18 +86,26 @@ const App: React.FC = () => {
     if (user) {
       // User is authenticated
       console.log('🏠 App - User authenticated, initializing app');
-      setShowLandingPage(false);
+      // CRITICAL FIX: Only hide landing page if we're not already initialized
+      if (showLandingPage) {
+        console.log('🏠 App - Hiding landing page for authenticated user');
+        setShowLandingPage(false);
+      }
       setShowAuthModal(false);
       
       // Load user data only once
       if (!isInitialized) {
         console.log('🏠 App - Loading user data...');
-        loadUserData();
+        initializeData();
       }
     } else {
       // No user - show landing page
       console.log('🏠 App - No user, showing landing page');
-      setShowLandingPage(true);
+      // CRITICAL FIX: Only show landing page if not already showing it
+      if (!showLandingPage) {
+        console.log('🏠 App - Showing landing page for unauthenticated user');
+        setShowLandingPage(true);
+      }
       setShowAuthModal(false);
       setIsInitialized(false);
       setResumeData(null);
@@ -106,13 +114,19 @@ const App: React.FC = () => {
     }
   }, [user, isInitialized]);
 
-  const loadUserData = async () => {
+  const initializeData = async () => {
     try {
+      console.log('🏠 App - initializeData called with user:', !!user, user?.email);
+      if (!user) {
+        console.log('🏠 App - No user available for data initialization');
+        return;
+      }
+      
       console.log('🏠 App - Loading user data from Supabase...');
       const data = await SupabaseDraftManager.getResumeData(user);
       const recentDrafts = await SupabaseDraftManager.getRecentDrafts(1, user);
       
-      console.log('🏠 App - User data loaded:', { hasData: !!data, draftsCount: recentDrafts.length });
+      console.log('🏠 App - User data loaded successfully:', { hasData: !!data, draftsCount: recentDrafts.length });
       
       setResumeData(data);
       setCurrentDraftId(null);
@@ -122,7 +136,7 @@ const App: React.FC = () => {
       setIsInitialized(true);
       
     } catch (error: any) {
-      console.error('🏠 App - Failed to load user data:', error);
+      console.error('🏠 App - Failed to initialize user data:', error);
       setCurrentStep(0);
       setIsInitialized(true);
     }
@@ -169,7 +183,9 @@ const App: React.FC = () => {
   const handleAuthModalClose = () => {
     console.log('🏠 App - Auth modal closing, user:', !!user);
     setShowAuthModal(false);
-    // Don't manually manage state here - let the useEffect handle it
+    
+    // CRITICAL FIX: Don't change showLandingPage here - let useEffect handle it based on user state
+    // The user state is the single source of truth for whether to show landing page or main app
   };
 
   const handleLinkedInData = (data: ResumeData) => {

@@ -74,6 +74,7 @@ const App: React.FC = () => {
   const [showLandingPage, setShowLandingPage] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [hasCheckedUserData, setHasCheckedUserData] = useState(false);
 
   const { toast, showToast, hideToast } = useToast();
   const { confirmation, showConfirmation } = useConfirmation();
@@ -109,18 +110,41 @@ const App: React.FC = () => {
         try {
           console.log('🏠 App - Loading user data from Supabase...');
           const data = await SupabaseDraftManager.getResumeData(user);
+          const recentDrafts = await SupabaseDraftManager.getRecentDrafts(1, user);
           console.log('🏠 App - User data loaded successfully:', !!data);
+          console.log('🏠 App - Recent drafts found:', recentDrafts.length);
+          
           setResumeData(data);
           setCurrentDraftId(null);
+          
+          // Smart routing based on user's existing data
+          if (recentDrafts.length > 0) {
+            // User has recent drafts - show them the option to continue
+            console.log('🏠 App - User has recent drafts, staying on LinkedInInput with drafts visible');
+            setCurrentStep(0); // LinkedIn Input with drafts sidebar
+          } else if (data && data.personalInfo.name) {
+            // User has some resume data but no recent drafts - go to templates
+            console.log('🏠 App - User has resume data, going to template selection');
+            setCurrentStep(1);
+          } else {
+            // New user - start from LinkedIn Input
+            console.log('🏠 App - New user, starting at LinkedIn Input');
+            setCurrentStep(0);
+          }
+          
+          setHasCheckedUserData(true);
         } catch (error: any) {
           console.error('🏠 App - Failed to load user data:', error);
           // Don't show error toast immediately - user might not be fully authenticated yet
           // Just log the error and continue
+          setCurrentStep(0); // Default to LinkedIn Input on error
+          setHasCheckedUserData(true);
         }
       } else {
         console.log('🏠 App - No user, clearing data');
         setResumeData(null);
         setCurrentDraftId(null);
+        setHasCheckedUserData(false);
       }
     };
     

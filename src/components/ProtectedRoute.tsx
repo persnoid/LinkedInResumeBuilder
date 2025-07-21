@@ -1,20 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useRequireAuth } from '../contexts/AuthContext';
-import { AuthModal } from './AuthModal';
 import { Shield, Lock, Sparkles, Zap, Star, User } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  fallback?: React.ReactNode;
+  allowUnauthenticated?: boolean;
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
-  fallback 
+  allowUnauthenticated = false
 }) => {
   const { user, loading, isAuthenticated } = useRequireAuth();
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authModalInitialMode, setAuthModalInitialMode] = useState<'signin' | 'signup'>('signin');
   const [loadingProgress, setLoadingProgress] = useState(0);
   
   // Handle potential browser extension issues
@@ -60,24 +57,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [effectiveLoading]);
 
-  // Helper functions for modal management
-  const openSignInModal = () => {
-    console.log('🔒 ProtectedRoute - Opening Sign In modal');
-    setAuthModalInitialMode('signin');
-    setShowAuthModal(true);
-  };
-
-  const openSignUpModal = () => {
-    console.log('🔒 ProtectedRoute - Opening Sign Up modal');
-    setAuthModalInitialMode('signup');
-    setShowAuthModal(true);
-  };
-
-  const closeAuthModal = () => {
-    console.log('🔒 ProtectedRoute - Closing auth modal');
-    setShowAuthModal(false);
-  };
-  if (effectiveLoading) {
+  if (effectiveLoading && !allowUnauthenticated) {
     console.log('🔒 ProtectedRoute - Rendering loading screen');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center relative overflow-hidden">
@@ -158,110 +138,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  if (!effectiveIsAuthenticated) {
-    console.log('🔒 ProtectedRoute - User not authenticated, showing auth interface');
-    if (fallback) {
-      console.log('🔒 ProtectedRoute - Rendering custom fallback component');
-      return <>{fallback}</>;
-    }
-
-    console.log('🔒 ProtectedRoute - Rendering authentication interface');
-    return (
-      <>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-6 relative overflow-hidden">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-30">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-100/50 to-purple-100/50"></div>
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-200/30 rounded-full blur-3xl"></div>
-          </div>
-
-          <div className="max-w-md w-full z-10">
-            <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 text-center border border-white/20">
-              {/* Header Icon */}
-              <div className="relative mb-6">
-                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
-                  <Shield className="w-10 h-10 text-white" />
-                </div>
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
-                  <Sparkles className="w-3 h-3 text-white" />
-                </div>
-              </div>
-              
-              <h2 className="text-3xl font-bold text-gray-900 mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Welcome Back
-              </h2>
-              
-              <p className="text-gray-600 mb-8 leading-relaxed">
-                Sign in to access your saved resumes and create stunning professional documents with our AI-powered platform.
-              </p>
-              
-              <div className="space-y-4">
-                <button
-                  onClick={openSignInModal}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                >
-                  <Lock className="w-5 h-5 mr-3" />
-                  Sign In to Continue
-                </button>
-                
-                <p className="text-sm text-gray-500">
-                  New here?{' '}
-                  <button
-                    onClick={openSignUpModal}
-                    className="text-blue-600 hover:text-blue-700 font-medium underline decoration-2 underline-offset-4 hover:decoration-blue-700 transition-colors"
-                  >
-                    Create your free account
-                  </button>
-                </p>
-                
-                {/* Alternative: More prominent signup button */}
-                
-              </div>
-              
-              {/* Benefits Grid */}
-              <div className="mt-10 grid grid-cols-1 gap-4 text-left">
-                <div className="flex items-start space-x-3 p-3 bg-blue-50/50 rounded-xl">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Shield className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 text-sm">Secure Cloud Storage</h4>
-                    <p className="text-gray-600 text-xs">Your resumes are safely stored and accessible anywhere</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3 p-3 bg-purple-50/50 rounded-xl">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Sparkles className="w-4 h-4 text-purple-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 text-sm">AI-Powered Creation</h4>
-                    <p className="text-gray-600 text-xs">Intelligent content extraction and optimization</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3 p-3 bg-green-50/50 rounded-xl">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Zap className="w-4 h-4 text-green-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 text-sm">Real-time Collaboration</h4>
-                    <p className="text-gray-600 text-xs">Sync across devices and share with ease</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={closeAuthModal}
-          initialMode={authModalInitialMode}
-        />
-      </>
-    );
+  if (!effectiveIsAuthenticated && !allowUnauthenticated) {
+    // For non-authenticated users, the App component will handle showing landing page
+    return null;
   }
 
   console.log('🔒 ProtectedRoute - User authenticated, rendering children');

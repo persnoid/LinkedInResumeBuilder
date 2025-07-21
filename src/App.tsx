@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { ProgressIndicator } from './components/ProgressIndicator';
 import { LinkedInInput } from './components/LinkedInInput';
+import { LandingPage } from './components/LandingPage';
 import { TemplateSelector } from './components/TemplateSelector';
 import { ResumeCustomizer } from './components/ResumeCustomizer';
 import { DraftManagerComponent } from './components/DraftManager';
 import { DraftSavePrompt } from './components/DraftSavePrompt';
 import { UserProfilePage } from './pages/UserProfilePage';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { AuthModal } from './components/AuthModal';
 import { ToastNotification, useToast } from './components/ToastNotification';
 import { ConfirmationDialog } from './components/ConfirmationDialog';
 import { useConfirmation } from './hooks/useConfirmation';
@@ -66,11 +68,21 @@ const App: React.FC = () => {
   const [showDraftManager, setShowDraftManager] = useState(false);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
+  const [showLandingPage, setShowLandingPage] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const { toast, showToast, hideToast } = useToast();
   const { confirmation, showConfirmation } = useConfirmation();
   const { user } = useAuth();
+
+  // Hide landing page when user is authenticated
+  React.useEffect(() => {
+    if (user) {
+      setShowLandingPage(false);
+    }
+  }, [user]);
 
   // Load primary resume data on user change
   useEffect(() => {
@@ -111,6 +123,29 @@ const App: React.FC = () => {
     showToast('Draft loaded!', 'success');
   };
 
+  const handleGetStarted = () => {
+    if (user) {
+      setShowLandingPage(false);
+      setCurrentStep(0);
+    } else {
+      setAuthModalMode('signup');
+      setShowAuthModal(true);
+    }
+  };
+
+  const handleSignIn = () => {
+    setAuthModalMode('signin');
+    setShowAuthModal(true);
+  };
+
+  const handleAuthModalClose = () => {
+    setShowAuthModal(false);
+    // If user just signed up/in, hide landing page
+    if (user) {
+      setShowLandingPage(false);
+    }
+  };
+
   const handleLinkedInData = (data: ResumeData) => {
     setResumeData(data);
     setCurrentDraftId(null);
@@ -132,6 +167,16 @@ const App: React.FC = () => {
   };
 
   const renderStep = () => {
+    // Show landing page for non-authenticated users or when explicitly requested
+    if (showLandingPage && !user) {
+      return (
+        <LandingPage 
+          onGetStarted={handleGetStarted}
+          onSignIn={handleSignIn}
+        />
+      );
+    }
+
     if (isTransitioning) {
       return <div className="flex items-center justify-center h-full">Loading...</div>;
     }
@@ -167,7 +212,8 @@ const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <ProtectedRoute>
+      <ProtectedRoute allowUnauthenticated={showLandingPage}>
+        {!showLandingPage && (
         {currentStep > 0 && !isTransitioning && (
           <ProgressIndicator
             currentStep={currentStep}
@@ -177,7 +223,14 @@ const App: React.FC = () => {
             currentDraftId={currentDraftId}
           />
         )}
+        )}
         {renderStep()}
+
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={handleAuthModalClose}
+          initialMode={authModalMode}
+        />
 
         <UserProfilePage isOpen={showUserProfile} onClose={() => setShowUserProfile(false)} showConfirmation={showConfirmation} />
 

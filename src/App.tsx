@@ -86,21 +86,30 @@ const App: React.FC = () => {
 
   // Load primary resume data on user change
   useEffect(() => {
-    const init = async () => {
+    const initializeData = async () => {
+      console.log('🏠 App - initializeData called with user:', !!user, user?.email);
       if (user) {
         try {
+          console.log('🏠 App - Loading user data from Supabase...');
           const data = await SupabaseDraftManager.getResumeData(user);
+          console.log('🏠 App - User data loaded successfully:', !!data);
           setResumeData(data);
           setCurrentDraftId(null);
-        } catch {
-          showToast('Failed to load data.', 'error');
+        } catch (error: any) {
+          console.error('🏠 App - Failed to load user data:', error);
+          // Don't show error toast immediately - user might not be fully authenticated yet
+          // Just log the error and continue
         }
       } else {
+        console.log('🏠 App - No user, clearing data');
         setResumeData(null);
         setCurrentDraftId(null);
       }
     };
-    init();
+    
+    // Add a small delay to ensure auth context is fully initialized
+    const timer = setTimeout(initializeData, 500);
+    return () => clearTimeout(timer);
   }, [user]);
 
   const loadDraftData = async (draft: DraftResume) => {

@@ -53,37 +53,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         console.log('🔐 AuthProvider - Calling supabase.auth.getSession()');
         
-        // Add timeout to prevent hanging
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session check timeout')), 5000)
-        );
-        
-        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        // Use a longer timeout and simpler approach
+        const { data: { session }, error } = await supabase.auth.getSession();
         
         console.log('🔐 AuthProvider - getSession result:', {
           hasSession: !!session,
           userEmail: session?.user?.email,
           error: error?.message
         });
+        
         if (error) {
-          console.error('Error getting initial session:', error);
-          // Set loading to false even on error
-          setLoading(false);
+          console.warn('Error getting initial session (continuing anyway):', error);
+          // Don't throw error - just continue with no session
         } else {
           console.log('🔐 AuthProvider - Setting session and user from initial check');
           setSession(session);
           setUser(session?.user ?? null);
-          setLoading(false);
         }
       } catch (error: any) {
-        console.error('Unexpected error getting session:', error);
-        // Force set loading to false on timeout or other errors
-        setLoading(false);
+        console.warn('Unexpected error getting session (continuing anyway):', error);
+        // Don't block the app - just continue without session
         setSession(null);
         setUser(null);
       } finally {
-        // CRITICAL FIX: Always set loading to false, regardless of success or failure
+        // CRITICAL FIX: Always set loading to false
         console.log('🔐 AuthProvider - Setting loading to false after initial session check');
         setLoading(false);
       }

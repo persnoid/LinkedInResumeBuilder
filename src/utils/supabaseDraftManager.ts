@@ -35,7 +35,7 @@ export class SupabaseDraftManager {
   /**
    * Check authentication with timeout
    */
-  private static async checkAuth(providedUser?: User | null, timeout: number = 3000): Promise<User> {
+  private static async checkAuth(providedUser?: User | null, timeout: number = 10000): Promise<User> {
     console.log('🗄️ SupabaseDraftManager: checkAuth called with providedUser:', !!providedUser);
     
     // If user is provided from AuthContext, use it directly
@@ -46,13 +46,8 @@ export class SupabaseDraftManager {
 
     console.log('🗄️ SupabaseDraftManager: No provided user, checking Supabase session...');
     try {
-      // Add timeout to prevent hanging
-      const sessionPromise = supabase.auth.getSession();
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Authentication check timed out. Please try again.')), timeout)
-      );
-      
-      const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+      // Simplified auth check without Promise.race
+      const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) {
         console.error('🗄️ SupabaseDraftManager: Auth error:', error);

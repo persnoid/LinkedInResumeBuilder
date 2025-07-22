@@ -85,6 +85,10 @@ useEffect(() => {
 
   const loadDrafts = async () => {
     console.log('🗂️ DraftManager: loadDrafts() START - isLoading before:', isLoading);
+    
+    // Add outer timeout protection for the entire loading process
+    const OUTER_TIMEOUT = 25000; // 25 seconds total timeout
+    
     try {
       setIsLoading(true);
       console.log('🗂️ DraftManager: loadDrafts() - isLoading set to TRUE');
@@ -155,20 +159,33 @@ useEffect(() => {
         return;
       }
       
-      const supabaseDrafts = await SupabaseDraftManager.getAllDrafts(user);
-      console.log('🗂️ DraftManager: Successfully loaded', supabaseDrafts.length, 'drafts from Supabase');
+      // Wrap the Supabase call in a timeout race
+      const loadPromise = SupabaseDraftManager.getAllDrafts(user);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Draft loading timed out - please check your connection and try again')), OUTER_TIMEOUT)
+      );
       
-      setDrafts(supabaseDrafts);
-      console.log('🗂️ DraftManager: setDrafts called with', supabaseDrafts.length, 'drafts');
-      setError(null);
-      setWarning(null);
+      const supabaseDrafts = await Promise.race([loadPromise, timeoutPromise]) as any;
       
-      if (supabaseDrafts.length === 0) {
-        setWarning('No drafts found. Create your first draft by saving your current work.');
+      if (Array.isArray(supabaseDrafts)) {
+        console.log('🗂️ DraftManager: Successfully loaded', supabaseDrafts.length, 'drafts from Supabase');
+        setDrafts(supabaseDrafts);
+        console.log('🗂️ DraftManager: setDrafts called with', supabaseDrafts.length, 'drafts');
+        setError(null);
+        setWarning(null);
+        
+        if (supabaseDrafts.length === 0) {
+          setWarning('No drafts found. Create your first draft by saving your current work.');
+        }
+      } else {
+        throw new Error('Invalid response from draft service');
       }
     } catch (error) {
       console.error('🗂️ DraftManager: Error loading drafts:', error);
-      setError('Failed to load drafts. Please try again.');
+      const errorMessage = error instanceof Error && error.message.includes('timed out') 
+        ? 'Request timed out. Please check your internet connection and try again.'
+        : 'Failed to load drafts. Please try again.';
+      setError(errorMessage);
       setDrafts([]);
     } finally {
       setIsLoading(false);

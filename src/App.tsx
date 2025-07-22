@@ -133,23 +133,42 @@ const App: React.FC = () => {
         return;
       }
       
-      console.log('🏠 App - Loading user data from Supabase...');
-      const data = await SupabaseDraftManager.getResumeData(user);
-      const recentDrafts = await SupabaseDraftManager.getRecentDrafts(1, user);
+      console.log('🏠 App - Loading user data from Supabase with timeout protection...');
       
-      console.log('🏠 App - User data loaded successfully:', { hasData: !!data, draftsCount: recentDrafts.length });
+      // Add timeout protection to prevent initialization from hanging
+      const INIT_TIMEOUT = 10000; // 10 seconds timeout for initialization
       
-      setResumeData(data);
+      const initPromise = (async () => {
+        const data = await SupabaseDraftManager.getResumeData(user);
+        const recentDrafts = await SupabaseDraftManager.getRecentDrafts(1, user);
+        return { data, recentDrafts };
+      })();
+      
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Initialization timeout - continuing with default state')), INIT_TIMEOUT)
+      );
+      
+      try {
+        const { data, recentDrafts } = await Promise.race([initPromise, timeoutPromise]) as any;
+        console.log('🏠 App - User data loaded successfully:', { hasData: !!data, draftsCount: recentDrafts.length });
+        setResumeData(data);
+      } catch (timeoutError) {
+        console.warn('🏠 App - Initialization timed out, continuing with default state:', timeoutError);
+        setResumeData(null);
+        showToast('Welcome! Some features may load slowly due to network conditions.', 'info', 5000);
+      }
+      
       setCurrentDraftId(null);
-      
-      // Always start at LinkedInInput for authenticated users
       setCurrentStep(0);
       setIsInitialized(true);
       
     } catch (error: any) {
-      console.error('🏠 App - Failed to initialize user data:', error);
+      console.error('🏠 App - Failed to initialize user data (continuing anyway):', error);
+      setResumeData(null);
+      setCurrentDraftId(null);
       setCurrentStep(0);
       setIsInitialized(true);
+      showToast('Welcome! Some data could not be loaded, but you can still create resumes.', 'warning', 5000);
     }
   };
 

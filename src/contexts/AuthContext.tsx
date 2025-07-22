@@ -98,6 +98,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           event,
           userEmail: session?.user?.email,
           hasSession: !!session,
+          sessionDetails: session ? {
+            accessToken: session.access_token ? `${session.access_token.substring(0, 20)}...` : null,
+            refreshToken: session.refresh_token ? `${session.refresh_token.substring(0, 20)}...` : null,
+            expiresAt: session.expires_at,
+            expiresIn: session.expires_in,
+            tokenType: session.token_type,
+            userId: session.user?.id
+          } : null,
+          userMetadata: session?.user?.user_metadata || null,
           timestamp: new Date().toISOString()
         });
         
@@ -108,6 +117,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           
           // Handle specific events
           if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            console.log('🔐 AuthProvider - Processing SIGNED_IN/TOKEN_REFRESHED event:', {
+              eventType: event,
+              hasValidSession: !!(session && session.access_token),
+              userEmail: session?.user?.email,
+              expiresAt: session?.expires_at,
+              currentTime: Date.now() / 1000 // Unix timestamp
+            });
             // Ensure user profile exists
             if (session?.user) {
               try {
@@ -120,6 +136,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           
           if (event === 'SIGNED_OUT') {
             console.log('🔐 AuthProvider - SIGNED_OUT event received, clearing all state');
+            console.log('🔐 AuthProvider - SIGNED_OUT details:', {
+              previousUser: user?.email || 'none',
+              sessionBeforeSignOut: session ? 'had session' : 'no session'
+            });
             setSession(null);
             setUser(null);
             // Clear any cached storage
@@ -129,6 +149,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             } catch (e) {
               console.warn('Could not clear storage on sign out:', e);
             }
+          }
+          
+          if (event === 'TOKEN_REFRESHED') {
+            console.log('🔐 AuthProvider - TOKEN_REFRESHED event details:', {
+              newExpiresAt: session?.expires_at,
+              newAccessToken: session?.access_token ? `${session.access_token.substring(0, 20)}...` : null,
+              refreshSuccessful: !!(session && session.access_token)
+            });
           }
         } catch (error) {
           console.error('Error in auth state change handler:', error);
@@ -215,6 +243,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (!error) {
         console.log('🔐 AuthProvider - Sign in successful, auth state will update via listener');
+        // Check the actual session state after successful sign in
+        try {
+          const { data: { session: currentSession } } = await supabase.auth.getSession();
+          console.log('🔐 AuthProvider - Post-signIn session check:', {
+            hasSession: !!currentSession,
+            userEmail: currentSession?.user?.email,
+            accessToken: currentSession?.access_token ? `${currentSession.access_token.substring(0, 20)}...` : null,
+            expiresAt: currentSession?.expires_at,
+            expiresIn: currentSession?.expires_in
+          });
+        } catch (sessionCheckError) {
+          console.error('🔐 AuthProvider - Error checking session after signIn:', sessionCheckError);
+        }
       }
       
       return { error };
@@ -241,6 +282,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
       
       console.log('🔐 AuthProvider - Starting sign out process for user:', user?.email);
+      
+      // Log current session state before sign out
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        console.log('🔐 AuthProvider - Session state before signOut:', {
+          hasSession: !!currentSession,
+          userEmail: currentSession?.user?.email,
+          accessToken: currentSession?.access_token ? `${currentSession.access_token.substring(0, 20)}...` : null,
+          expiresAt: currentSession?.expires_at
+        });
+      } catch (preSignOutError) {
+        console.error('🔐 AuthProvider - Error checking session before signOut:', preSignOutError);
+      }
 
       cleanupBrowserExtensions();
       setLoading(true); // Set loading state
@@ -261,6 +315,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const result = await Promise.race([signOutPromise, timeoutPromise]);
         error = (result as any)?.error || null;
         console.log('🔐 AuthProvider - Supabase sign out completed successfully');
+        
+        // Check session state after sign out
+        try {
+          const { data: { session: postSignOutSession } } = await supabase.auth.getSession();
+          console.log('🔐 AuthProvider - Session state after signOut:', {
+            hasSession: !!postSignOutSession,
+            shouldBeNull: !postSignOutSession
+          });
+        } catch (postSignOutError) {
+          console.error('🔐 AuthProvider - Error checking session after signOut:', postSignOutError);
+        }
+        
         signOutCompleted = true;
       } catch (timeoutError) {
         console.warn('🔐 AuthProvider - Supabase sign out timed out or failed:', timeoutError);

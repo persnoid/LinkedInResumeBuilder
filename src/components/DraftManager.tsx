@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, FolderOpen, Trash2, Download, Upload, Clock, FileText, X, Edit3, Check } from 'lucide-react';
 import { SupabaseDraftManager } from '../utils/supabaseDraftManager';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { DraftResume, ResumeData } from '../types/resume';
 import { useTranslation } from '../hooks/useTranslation';
@@ -101,6 +102,59 @@ useEffect(() => {
       }
 
       console.log('🗂️ DraftManager: User is authenticated, loading from Supabase...');
+      
+      // CRITICAL: Check actual Supabase session state before making API calls
+      try {
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
+        
+        console.log('🗂️ DraftManager: Pre-API Supabase session check:', {
+          hasSession: !!currentSession,
+          hasUser: !!currentUser,
+          sessionError: sessionError?.message || null,
+          userError: userError?.message || null,
+          userEmail: currentUser?.email || 'none',
+          sessionUserEmail: currentSession?.user?.email || 'none',
+          accessToken: currentSession?.access_token ? `${currentSession.access_token.substring(0, 20)}...` : null,
+          expiresAt: currentSession?.expires_at,
+          currentTime: Date.now() / 1000,
+          isExpired: currentSession?.expires_at ? (currentSession.expires_at < Date.now() / 1000) : 'unknown',
+          contextUserEmail: user?.email,
+          sessionTokenType: currentSession?.token_type
+        });
+        
+        if (!currentSession || !currentSession.access_token) {
+          console.error('🗂️ DraftManager: No valid session found, cannot proceed with API calls');
+          setError('Session expired. Please sign in again.');
+          setDrafts([]);
+          setIsLoading(false);
+          return;
+        }
+        
+        if (sessionError) {
+          console.error('🗂️ DraftManager: Session error detected:', sessionError);
+          setError('Authentication error. Please sign in again.');
+          setDrafts([]);
+          setIsLoading(false);
+          return;
+        }
+        
+        if (userError) {
+          console.error('🗂️ DraftManager: User error detected:', userError);
+          setError('User authentication error. Please sign in again.');
+          setDrafts([]);
+          setIsLoading(false);
+          return;
+        }
+        
+      } catch (sessionCheckError) {
+        console.error('🗂️ DraftManager: Exception while checking session:', sessionCheckError);
+        setError('Failed to verify authentication. Please try again.');
+        setDrafts([]);
+        setIsLoading(false);
+        return;
+      }
+      
       const supabaseDrafts = await SupabaseDraftManager.getAllDrafts(user);
       console.log('🗂️ DraftManager: Successfully loaded', supabaseDrafts.length, 'drafts from Supabase');
       

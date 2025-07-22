@@ -5,7 +5,6 @@ interface ProgressIndicatorProps {
   currentStep: number;
   totalSteps: number;
   steps: string[];
-  onOpenDraftManager?: () => void;
   currentDraftId?: string | undefined;
 }
 
@@ -77,7 +76,11 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
             </div>
           )}
         </div>
-      </div>
-    </div>
-  );
-};
+        
+        {/* Just show draft saved indicator */}
+        {currentDraftId && (
+          <div className="flex items-center text-sm text-green-600 bg-green-50 px-3 py-1 rounded-full ml-6">
+            <Save className="w-4 h-4 mr-1" />
+            Draft Saved
+          </div>
+        )}

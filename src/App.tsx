@@ -363,7 +363,6 @@ const App: React.FC = () => {
             currentStep={currentStep}
             totalSteps={STEPS.length}
             steps={STEPS}
-            onOpenDraftManager={() => setShowDraftManager(true)}
             currentDraftId={currentDraftId}
           />
         )}

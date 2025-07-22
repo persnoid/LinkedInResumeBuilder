@@ -62,7 +62,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo and Home */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-6">
           <button
             onClick={onGoToHome}
             className="flex items-center space-x-3 hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors"
@@ -73,15 +73,11 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             <span className="text-lg font-bold text-gray-900">Resume Builder</span>
           </button>
           
-          {currentStep > 0 && (
-            <button
-              onClick={onGoToHome}
-              className="text-gray-500 hover:text-gray-700 text-sm flex items-center transition-colors"
-            >
-              <Home className="w-4 h-4 mr-1" />
-              Start Over
-            </button>
-          )}
+          {/* User Info - Show who's signed in */}
+          <div className="text-sm text-gray-600 flex items-center">
+            <User className="w-4 h-4 mr-1" />
+            {user.email}
+          </div>
         </div>
 
         {/* User Controls */}
@@ -95,29 +91,34 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             Drafts
           </button>
 
-          {/* User Menu */}
-          <div className="flex items-center space-x-2">
+          {/* Start Over - Secondary action */}
+          {currentStep > 0 && (
             <button
-              onClick={onOpenProfile}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
+              onClick={onGoToHome}
+              className="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
             >
-              <User className="w-4 h-4 mr-2" />
-              Profile
+              <Home className="w-4 h-4 mr-2" />
+              Start Over
             </button>
-            
-            <button
-              onClick={handleSignOut}
-              className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </button>
-          </div>
+          )}
 
-          {/* User Info */}
-          <div className="text-sm text-gray-600 ml-2">
-            {user.email}
-          </div>
+          {/* Profile Settings */}
+          <button
+            onClick={onOpenProfile}
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
+          >
+            <User className="w-4 h-4 mr-2" />
+            Profile
+          </button>
+          
+          {/* Sign Out - Destructive action, separate */}
+          <button
+            onClick={handleSignOut}
+            className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </button>
         </div>
       </div>
     </header>

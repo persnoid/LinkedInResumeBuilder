@@ -527,18 +527,6 @@ useEffect(() => {
           {/* Import/Export */}
           {user && (
             <div className="mb-6 flex space-x-3">
-              <label className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center text-sm cursor-pointer transition-colors">
-                <Upload className="w-4 h-4 mr-2" />
-                Import Draft
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleImportDraft}
-                  className="hidden"
-                  disabled={isLoading}
-                />
-              </label>
-              
               <button
                 onClick={refreshDrafts}
                 disabled={isLoading}
@@ -684,14 +672,6 @@ useEffect(() => {
                             ) : (
                               'Load'
                             )}
-                          </button>
-                          <button
-                            onClick={() => handleExportDraft(draft.id)}
-                            className="text-gray-500 hover:text-gray-700 transition-colors"
-                            title="Export draft"
-                            disabled={isLoading}
-                          >
-                            <Download className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteDraft(draft.id)}

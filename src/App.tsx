@@ -297,6 +297,14 @@ const App: React.FC = () => {
             showConfirmation={showConfirmation}
           />
         )}
+        {showHeader && currentStep > 0 && (
+          <ProgressIndicator
+            currentStep={currentStep}
+            totalSteps={STEPS.length}
+            steps={STEPS}
+            currentDraftId={currentDraftId}
+          />
+        )}
         {renderMainContent()}
       </>
     );
@@ -358,14 +366,6 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <ProtectedRoute allowUnauthenticated={showLandingPage}>
-        {!showLandingPage && !isTransitioning && currentStep > 0 && (
-          <ProgressIndicator
-            currentStep={currentStep}
-            totalSteps={STEPS.length}
-            steps={STEPS}
-            currentDraftId={currentDraftId}
-          />
-        )}
         {renderStep()}
 
         <AuthModal

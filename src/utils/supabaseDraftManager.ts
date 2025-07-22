@@ -30,7 +30,7 @@ interface SupabaseDraft {
 }
 
 export class SupabaseDraftManager {
-  private static readonly QUERY_TIMEOUT = 5000; // 5 seconds
+  private static readonly QUERY_TIMEOUT = 15000; // 15 seconds - more reasonable for network conditions
 
   /**
    * Check authentication with timeout
@@ -81,18 +81,20 @@ export class SupabaseDraftManager {
       const user = await this.checkAuth(providedUser);
       console.log('🗄️ SupabaseDraftManager: Getting drafts for user:', user.email);
 
-      // Create a timeout promise
-      const queryPromise = supabase
-        .from('drafts')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
+      // Try with retry logic for better reliability
+      const { data, error } = await this.executeWithRetry(async () => {
+        const queryPromise = supabase
+          .from('drafts')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('updated_at', { ascending: false });
 
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Query timeout - please check your internet connection')), this.QUERY_TIMEOUT)
-      );
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Database query timeout - please check your connection')), this.QUERY_TIMEOUT)
+        );
 
-      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
+        return Promise.race([queryPromise, timeoutPromise]) as any;
+      }, 2); // Retry up to 2 times
 
       if (error) {
         console.error('🗄️ SupabaseDraftManager: Database error:', error);
@@ -121,6 +123,40 @@ export class SupabaseDraftManager {
       });
       throw error;
     }
+  }
+
+  /**
+   * Execute a function with retry logic
+   */
+  private static async executeWithRetry<T>(
+    fn: () => Promise<T>, 
+    maxRetries: number = 2,
+    delay: number = 1000
+  ): Promise<T> {
+    let lastError: any;
+    
+    for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+      try {
+        console.log(`🗄️ SupabaseDraftManager: Executing query (attempt ${attempt}/${maxRetries + 1})`);
+        const result = await fn();
+        if (attempt > 1) {
+          console.log(`🗄️ SupabaseDraftManager: Query succeeded on attempt ${attempt}`);
+        }
+        return result;
+      } catch (error: any) {
+        lastError = error;
+        console.warn(`🗄️ SupabaseDraftManager: Attempt ${attempt} failed:`, error.message);
+        
+        // Don't retry on the last attempt
+        if (attempt <= maxRetries) {
+          console.log(`🗄️ SupabaseDraftManager: Retrying in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay *= 2; // Exponential backoff
+        }
+      }
+    }
+    
+    throw lastError;
   }
 
   /**

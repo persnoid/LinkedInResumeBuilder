@@ -148,21 +148,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
-  // Reduced safety timeout and better handling
-  useEffect(() => {
-    const safetyTimeout = setTimeout(() => {
-      if (loading) {
-        console.warn('🔐 AuthProvider - Safety timeout: auth is stuck, forcing loading to false');
-        setLoading(false);
-        // Force clear everything if stuck
-        setSession(null);
-        setUser(null);
-      }
-    }, 5000); // Reduced to 5 seconds
-
-    return () => clearTimeout(safetyTimeout);
-  }, [loading]);
-
   // Ensure user profile exists in the profiles table
   const ensureProfile = async (user: User) => {
     try {

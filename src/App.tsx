@@ -105,11 +105,11 @@ const App: React.FC = () => {
     } else {
       // No user - show landing page
       console.log('🏠 App - No user, showing landing page and resetting state');
-      console.log('🏠 App - Showing landing page for unauthenticated user');
+      
+      // IMMEDIATE state reset to prevent inconsistent states
       setShowLandingPage(true);
       setShowAuthModal(false);
       setIsInitialized(false);
-      // CRITICAL: Reset all app state when user signs out
       setResumeData(null);
       setCurrentDraftId(null);
       setCurrentStep(0);
@@ -120,6 +120,8 @@ const App: React.FC = () => {
         sections: {}
       });
       setIsTransitioning(false);
+      
+      console.log('🏠 App - All state reset immediately, showing landing page');
     }
   }, [user]); // Remove isInitialized dependency to prevent loops
 

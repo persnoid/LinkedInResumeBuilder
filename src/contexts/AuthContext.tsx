@@ -53,8 +53,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         console.log('🔐 AuthProvider - Calling supabase.auth.getSession()');
         
-        // Use a longer timeout and simpler approach
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Add timeout to prevent hanging on getSession
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('getSession timeout')), 3000)
+        );
+        
+        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
         
         console.log('🔐 AuthProvider - getSession result:', {
           hasSession: !!session,
@@ -64,7 +69,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         if (error) {
           console.warn('Error getting initial session (continuing anyway):', error);
-          // Don't throw error - just continue with no session
+          setSession(null);
+          setUser(null);
         } else {
           console.log('🔐 AuthProvider - Setting session and user from initial check');
           setSession(session);
@@ -72,7 +78,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } catch (error: any) {
         console.warn('Unexpected error getting session (continuing anyway):', error);
-        // Don't block the app - just continue without session
+        console.log('🔐 AuthProvider - Timeout or error, clearing session');
         setSession(null);
         setUser(null);
       } finally {
@@ -95,26 +101,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           timestamp: new Date().toISOString()
         });
         
-        // Update session and user for all events
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Handle specific events
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          // Ensure user profile exists
-          if (session?.user) {
-            try {
-              await ensureProfile(session.user);
-            } catch (error) {
-              console.error('Error ensuring profile:', error);
+        try {
+          // Update session and user for all events
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          // Handle specific events
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            // Ensure user profile exists
+            if (session?.user) {
+              try {
+                await ensureProfile(session.user);
+              } catch (error) {
+                console.error('Error ensuring profile:', error);
+              }
             }
           }
+          
+          if (event === 'SIGNED_OUT') {
+            console.log('🔐 AuthProvider - SIGNED_OUT event received, clearing all state');
+            setSession(null);
+            setUser(null);
+            // Clear any cached storage
+            try {
+              localStorage.removeItem('supabase.auth.token');
+              sessionStorage.clear();
+            } catch (e) {
+              console.warn('Could not clear storage on sign out:', e);
+            }
+          }
+        } catch (error) {
+          console.error('Error in auth state change handler:', error);
+        } finally {
+          console.log('🔐 AuthProvider - Setting loading to false after auth state change');
+          setLoading(false);
         }
-
-        console.log('🔐 AuthProvider - Setting loading to false after auth state change');
-        setLoading(false);
       }
     );
+        
 
     console.log('🔐 AuthProvider - Auth state change listener set up successfully');
 
@@ -124,14 +148,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
-  // Add a safety timeout to ensure loading never stays true forever
+  // Reduced safety timeout and better handling
   useEffect(() => {
     const safetyTimeout = setTimeout(() => {
       if (loading) {
-        console.warn('🔐 AuthProvider - Safety timeout: forcing loading to false after 10 seconds');
+        console.warn('🔐 AuthProvider - Safety timeout: auth is stuck, forcing loading to false');
         setLoading(false);
+        // Force clear everything if stuck
+        setSession(null);
+        setUser(null);
       }
-    }, 10000); // 10 second safety timeout
+    }, 5000); // Reduced to 5 seconds
 
     return () => clearTimeout(safetyTimeout);
   }, [loading]);

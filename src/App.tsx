@@ -91,26 +91,22 @@ const App: React.FC = () => {
     if (user) {
       // User is authenticated
       console.log('🏠 App - User authenticated, initializing app');
-      // CRITICAL FIX: Only hide landing page if we're not already initialized
-      if (showLandingPage) {
-        console.log('🏠 App - Hiding landing page for authenticated user');
-        setShowLandingPage(false);
-      }
+      console.log('🏠 App - Hiding landing page for authenticated user');
+      setShowLandingPage(false);
       setShowAuthModal(false);
       
       // Load user data only once
       if (!isInitialized) {
         console.log('🏠 App - Loading user data...');
         initializeData();
+      } else {
+        console.log('🏠 App - User data already initialized, skipping reload');
       }
     } else {
       // No user - show landing page
       console.log('🏠 App - No user, showing landing page and resetting state');
-      // CRITICAL FIX: Only show landing page if not already showing it
-      if (!showLandingPage) {
-        console.log('🏠 App - Showing landing page for unauthenticated user');
-        setShowLandingPage(true);
-      }
+      console.log('🏠 App - Showing landing page for unauthenticated user');
+      setShowLandingPage(true);
       setShowAuthModal(false);
       setIsInitialized(false);
       // CRITICAL: Reset all app state when user signs out
@@ -125,7 +121,7 @@ const App: React.FC = () => {
       });
       setIsTransitioning(false);
     }
-  }, [user, isInitialized]);
+  }, [user]); // Remove isInitialized dependency to prevent loops
 
   const initializeData = async () => {
     try {

@@ -322,8 +322,6 @@ const App: React.FC = () => {
             onOpenDraftManager={() => setShowDraftManager(true)} 
             existingResumeData={resumeData}
             onContinueWithExisting={handleContinueWithExistingData}
-            existingResumeData={resumeData}
-            onContinueWithExisting={handleContinueWithExistingData}
           />
         );
       case 1:

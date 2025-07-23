@@ -125,15 +125,22 @@ export class SupabaseDraftManager {
    */
   private static async executeWithRetry<T>(
     fn: () => Promise<T>, 
-    maxRetries: number = 2,
-    delay: number = 1000
+    maxRetries: number = 3,
+    delay: number = 2000
   ): Promise<T> {
     let lastError: any;
     
     for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
       try {
         console.log(`🗄️ SupabaseDraftManager: Executing query (attempt ${attempt}/${maxRetries + 1})`);
-        const result = await fn();
+        
+        // Add timeout wrapper for each attempt
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Database query timeout - please check your connection')), this.QUERY_TIMEOUT)
+        );
+        
+        const result = await Promise.race([fn(), timeoutPromise]) as T;
+        
         if (attempt > 1) {
           console.log(`🗄️ SupabaseDraftManager: Query succeeded on attempt ${attempt}`);
         }
@@ -146,7 +153,7 @@ export class SupabaseDraftManager {
         if (attempt <= maxRetries) {
           console.log(`🗄️ SupabaseDraftManager: Retrying in ${delay}ms...`);
           await new Promise(resolve => setTimeout(resolve, delay));
-          delay *= 2; // Exponential backoff
+          delay = Math.min(delay * 1.5, 10000); // Exponential backoff with max 10s
         }
       }
     }

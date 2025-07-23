@@ -355,7 +355,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <button
                         onClick={() => handleDeleteResume(resume.id)}
                         className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
-                    onClick={onStartLinkedInInput}
+                        disabled={resume.id === 'demo-1'}
+                        title={resume.id === 'demo-1' ? 'Cannot delete demo data' : 'Delete resume'}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

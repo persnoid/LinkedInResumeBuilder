@@ -296,7 +296,7 @@ const App: React.FC = () => {
       spacing: {},
       sections: {}
     });
-    setCurrentStep(0);
+    setCurrentStep(0.5); // Go directly to LinkedIn Input
   };
 
   const renderMainContent = () => {
@@ -317,7 +317,7 @@ const App: React.FC = () => {
           <Dashboard 
             onCreateNew={() => {
               setResumeData(null);
-              setCurrentStep(0.5); // Go to LinkedInInput
+              setCurrentStep(0.5); // Go directly to LinkedInInput
             }}
             onEditResume={handleEditResume}
             onStartLinkedInInput={() => {

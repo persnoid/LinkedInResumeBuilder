@@ -30,12 +30,12 @@ interface SupabaseDraft {
 }
 
 export class SupabaseDraftManager {
-  private static readonly QUERY_TIMEOUT = 30000; // 30 seconds - more generous timeout
+  private static readonly QUERY_TIMEOUT = 15000; // 15 seconds timeout
 
   /**
    * Check authentication with timeout
    */
-  private static async checkAuth(providedUser?: User | null, timeout: number = 15000): Promise<User> {
+  private static async checkAuth(providedUser?: User | null): Promise<User> {
     console.log('🗄️ SupabaseDraftManager: checkAuth called with providedUser:', !!providedUser);
     
     // If user is provided from AuthContext, use it directly
@@ -46,8 +46,13 @@ export class SupabaseDraftManager {
 
     console.log('🗄️ SupabaseDraftManager: No provided user, checking Supabase session...');
     try {
-      // Simplified auth check without Promise.race
-      const { data: { session }, error } = await supabase.auth.getSession();
+      // Add timeout to prevent hanging
+      const authPromise = supabase.auth.getSession();
+      const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Auth check timeout')), 5000)
+      );
+      
+      const { data: { session }, error } = await Promise.race([authPromise, timeoutPromise]);
       
       if (error) {
         console.error('🗄️ SupabaseDraftManager: Auth error:', error);
@@ -125,18 +130,18 @@ export class SupabaseDraftManager {
    */
   private static async executeWithRetry<T>(
     fn: () => Promise<T>, 
-    maxRetries: number = 3,
-    delay: number = 2000
+    maxRetries: number = 2,
+    delay: number = 1000
   ): Promise<T> {
     let lastError: any;
     
-    for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`🗄️ SupabaseDraftManager: Executing query (attempt ${attempt}/${maxRetries + 1})`);
+        console.log(`🗄️ SupabaseDraftManager: Executing query (attempt ${attempt}/${maxRetries})`);
         
         // Add timeout wrapper for each attempt
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Database query timeout - please check your connection')), this.QUERY_TIMEOUT)
+          setTimeout(() => reject(new Error('Query timeout')), this.QUERY_TIMEOUT)
         );
         
         const result = await Promise.race([fn(), timeoutPromise]) as T;
@@ -149,11 +154,10 @@ export class SupabaseDraftManager {
         lastError = error;
         console.warn(`🗄️ SupabaseDraftManager: Attempt ${attempt} failed:`, error.message);
         
-        // Don't retry on the last attempt
-        if (attempt <= maxRetries) {
-          console.log(`🗄️ SupabaseDraftManager: Retrying in ${delay}ms...`);
+        // Retry if not the last attempt
+        if (attempt < maxRetries) {
           await new Promise(resolve => setTimeout(resolve, delay));
-          delay = Math.min(delay * 1.5, 10000); // Exponential backoff with max 10s
+          delay *= 1.5; // Exponential backoff
         }
       }
     }

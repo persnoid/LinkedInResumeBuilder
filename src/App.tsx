@@ -345,7 +345,8 @@ const App: React.FC = () => {
       case 0.5:
         return (
           <LinkedInInput 
-            onDataExtracted={handleLinkedInData} 
+            onDataExtracted={handleLinkedInData}
+            onBack={() => setCurrentStep(0)}
           />
         );
       case 1:

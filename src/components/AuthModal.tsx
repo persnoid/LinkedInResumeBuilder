@@ -114,7 +114,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           setTimeout(() => {
             onClose();
             resetForm();
-          }, 1000);
+          }, 500);
         }
       } else if (mode === 'signup') {
         const { error } = await signUp(email, password, {

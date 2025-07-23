@@ -142,6 +142,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             });
             setSession(null);
             setUser(null);
+            setLoading(false); // Ensure loading is reset on sign out
             // Clear any cached storage
             try {
               localStorage.removeItem('supabase.auth.token');
@@ -252,10 +253,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log('🔐 AuthProvider - signOut started');
       
-      // IMMEDIATE UI feedback - set loading and clear state right away
-      setLoading(true);
-      console.log('🔐 AuthProvider - Setting loading=true for immediate feedback');
-      
       // Check if user is currently authenticated
       if (!user) {
         console.log('🔐 AuthProvider - No user to sign out, clearing local state');
@@ -268,10 +265,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       console.log('🔐 AuthProvider - Starting sign out process for user:', user?.email);
       
-      // IMMEDIATELY clear local state for better UX - don't wait for Supabase
-      console.log('🔐 AuthProvider - Immediately clearing local state for fast UX');
-      setUser(null);
-      setSession(null);
+      // Set loading state for sign-out process
+      setLoading(true);
       
       // Clear storage immediately too
       try {
@@ -281,101 +276,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } catch (e) {
         console.warn('🔐 AuthProvider - Could not clear storage immediately:', e);
       }
-      
-      // Log current session state before sign out
-      try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        console.log('🔐 AuthProvider - Session state before signOut:', {
-          hasSession: !!currentSession,
-          userEmail: currentSession?.user?.email,
-          accessToken: currentSession?.access_token ? `${currentSession.access_token.substring(0, 20)}...` : null,
-          expiresAt: currentSession?.expires_at
-        });
-      } catch (preSignOutError) {
-        console.error('🔐 AuthProvider - Error checking session before signOut:', preSignOutError);
-      }
 
       cleanupBrowserExtensions();
       
       console.log('🔐 AuthProvider - Calling supabase.auth.signOut()');
       
-      // Flag to prevent race conditions
-      let signOutCompleted = false;
-      
-      // Reduced timeout for better UX - don't wait too long
-      const signOutPromise = supabase.auth.signOut();
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Sign out timeout')), 2000) // Reduced from 5s to 2s
-      );
-      
-      let error = null;
-      try {
-        console.log('🔐 AuthProvider - Racing signOut vs 2s timeout...');
-        const result = await Promise.race([signOutPromise, timeoutPromise]);
-        error = (result as any)?.error || null;
-        console.log('🔐 AuthProvider - Supabase sign out completed successfully within timeout');
-        
-        // Check session state after sign out
-        try {
-          const { data: { session: postSignOutSession } } = await supabase.auth.getSession();
-          console.log('🔐 AuthProvider - Session state after signOut:', {
-            hasSession: !!postSignOutSession,
-            shouldBeNull: !postSignOutSession
-          });
-        } catch (postSignOutError) {
-          console.error('🔐 AuthProvider - Error checking session after signOut:', postSignOutError);
-        }
-        
-        signOutCompleted = true;
-      } catch (timeoutError) {
-        console.warn('🔐 AuthProvider - Supabase sign out timed out after 2s (continuing anyway):', timeoutError);
-        error = timeoutError;
-        signOutCompleted = true; // Still mark as completed to prevent timeout cleanup
-      }
+      // Call Supabase sign out (this will trigger the auth state change listener)
+      const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.warn('🔐 AuthProvider - Sign out error from Supabase (local state already cleared):', error);
+        console.error('🔐 AuthProvider - Sign out error from Supabase:', error);
+        throw error;
       }
       
-      console.log('🔐 AuthProvider - Sign out process completed (state was cleared immediately)');
-      
-      // Force trigger auth state change if listener doesn't fire (only if not already completed)
-      setTimeout(() => {
-        if (!signOutCompleted) {
-          console.log('🔐 AuthProvider - Force checking auth state after sign out');
-          if (user) {
-            console.log('🔐 AuthProvider - User still exists after timeout, force clearing');
-            setUser(null);
-            setSession(null);
-          }
-        } else {
-          console.log('🔐 AuthProvider - Sign out already completed, skipping force cleanup');
-        }
-      }, 1000);
+      console.log('🔐 AuthProvider - Supabase sign out completed successfully');
       
       return { error };
     } catch (error) {
       console.error('Sign out error:', error);
-      // CRITICAL: Ensure state is cleared even on exception
-      console.log('🔐 AuthProvider - Exception during sign out, clearing state anyway');
-      
-      // Ensure state is cleared
-      setUser(null);
-      setSession(null);
-      
-      try {
-        localStorage.removeItem('supabase.auth.token');
-        sessionStorage.clear();
-      } catch (e) {
-        console.warn('🔐 AuthProvider - Could not clear storage on error:', e);
-      }
-      
       return { error: error as any };
     } finally {
-      // CRITICAL: Always set loading to false and clear state
+      // Always reset loading state
       console.log('🔐 AuthProvider - signOut finally block, ensuring loading=false');
       setLoading(false);
-      // Clean up any browser extension issues
       cleanupBrowserExtensions();
       console.log('🔐 AuthProvider - Sign out process completed');
     }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, FileText, CheckCircle, Clock, Edit3, Trash2, Calendar, User, Zap, Palette, Download, Brain, Home, LogOut } from 'lucide-react';
+import { Plus, FileText, CheckCircle, Clock, Edit3, Trash2, Calendar, User, Zap, Palette, Download, Brain, Home, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { SupabaseDraftManager } from '../utils/supabaseDraftManager';
 import { ResumeData } from '../types/resume';
@@ -41,6 +41,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [resumes, setResumes] = useState<ResumeItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     completed: 0,
@@ -272,40 +273,45 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         {/* User Profile at Bottom */}
         <div className="absolute bottom-6 left-6 right-6">
-          <div className="space-y-3">
-            {/* User Actions */}
-            <div className="space-y-2">
-              <button
-                onClick={onOpenProfile}
-                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
-              >
-                <User className="w-4 h-4 mr-2" />
-                Profile Settings
-              </button>
-              
-              <button
-                onClick={onGoToHome}
-                className="w-full bg-yellow-100 hover:bg-yellow-200 text-yellow-700 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
-              >
-                <Home className="w-4 h-4 mr-2" />
-                Start Over
-              </button>
-              
-              <button
-                onClick={handleSignOut}
-                className="w-full bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </button>
-            </div>
+          <div className="relative">
+            {/* Collapsible User Menu */}
+            {showUserMenu && (
+              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+                <button
+                  onClick={onOpenProfile}
+                  className="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 flex items-center text-sm font-medium transition-colors border-b border-gray-100"
+                >
+                  <User className="w-4 h-4 mr-3 text-gray-500" />
+                  Profile Settings
+                </button>
+                
+                <button
+                  onClick={onGoToHome}
+                  className="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 flex items-center text-sm font-medium transition-colors border-b border-gray-100"
+                >
+                  <Home className="w-4 h-4 mr-3 text-gray-500" />
+                  Start Over
+                </button>
+                
+                <button
+                  onClick={handleSignOut}
+                  className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 flex items-center text-sm font-medium transition-colors"
+                >
+                  <LogOut className="w-4 h-4 mr-3 text-red-500" />
+                  Sign Out
+                </button>
+              </div>
+            )}
             
-            {/* User Profile Info */}
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+            {/* User Profile Info - Clickable to toggle menu */}
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="w-full flex items-center space-x-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+            >
               <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
                 <User className="w-5 h-5 text-white" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 text-left">
                 <div className="font-medium text-sm text-gray-900 truncate">
                   {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
                 </div>
@@ -313,7 +319,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   {user?.email}
                 </div>
               </div>
-            </div>
+              {/* Chevron icon to indicate dropdown */}
+              <div className={`transform transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`}>
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </button>
           </div>
         </div>
       </div>

@@ -37,6 +37,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onGoToHome,
   showConfirmation
 }) => {
+  const { user, signOut } = useAuth();
   const [resumes, setResumes] = useState<ResumeItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

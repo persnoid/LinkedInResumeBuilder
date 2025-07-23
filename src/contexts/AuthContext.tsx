@@ -161,6 +161,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } catch (error) {
           console.error('Error in auth state change handler:', error);
         } finally {
+          // CRITICAL FIX: Always set loading to false for ALL auth events
           console.log('🔐 AuthProvider - Setting loading to false after auth state change');
           setLoading(false);
         }

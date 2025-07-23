@@ -333,7 +333,7 @@ const App: React.FC = () => {
           <Dashboard 
             onCreateNew={() => {
               setResumeData(null);
-              setCurrentStep(0);
+              setCurrentStep(0.5); // Go to LinkedInInput
             }}
             onEditResume={handleEditResume}
             onStartLinkedInInput={() => {

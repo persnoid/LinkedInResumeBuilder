@@ -105,7 +105,6 @@ const App: React.FC = () => {
       setShowAuthModal(false);
       setIsInitialized(false);
       setResumeData(null);
-      setCurrentDraftId(null);
       setCurrentStep(0);
       setCustomizations({
         colors: { primary: '#1f2937', secondary: '#6b7280', accent: '#3b82f6' },

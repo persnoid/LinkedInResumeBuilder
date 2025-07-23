@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ProgressIndicator } from './components/ProgressIndicator';
 import { LinkedInInput } from './components/LinkedInInput';
+import { Dashboard } from './components/Dashboard';
 import { LandingPage } from './components/LandingPage';
 import { AppHeader } from './components/AppHeader';
 import { TemplateSelector } from './components/TemplateSelector';
@@ -295,6 +296,13 @@ const App: React.FC = () => {
     );
   };
 
+  const handleEditResume = (resumeData: ResumeData, template: string, customizations: any) => {
+    setResumeData(resumeData);
+    setSelectedTemplate(template);
+    setCustomizations(customizations);
+    setCurrentStep(1); // Go to template selector
+  };
+
   const renderMainContent = () => {
     if (isTransitioning) {
       return (
@@ -309,7 +317,15 @@ const App: React.FC = () => {
     
     switch (currentStep) {
       case 0:
-        return (
+        return resumeData ? (
+          <Dashboard 
+            onCreateNew={() => {
+              setResumeData(null);
+              setCurrentStep(0);
+            }}
+            onEditResume={handleEditResume}
+          />
+        ) : (
           <LinkedInInput 
             onDataExtracted={handleLinkedInData} 
             existingResumeData={resumeData}

@@ -467,7 +467,6 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                       <div
                         key={draft.id}
                         className="p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors cursor-pointer"
-                        onClick={handleOpenDraftManager}
                       >
                         <div className="font-medium text-gray-900 text-sm truncate">
                           {draft.name}
@@ -482,7 +481,6 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
                     ))}
                   </div>
                   <button
-                    onClick={handleOpenDraftManager}
                     className="w-full mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium"
                   >
                     View all drafts →

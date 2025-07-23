@@ -7,6 +7,7 @@ import { ResumeData } from '../types/resume';
 interface DashboardProps {
   onCreateNew: () => void;
   onEditResume: (resumeData: ResumeData, template: string, customizations: any) => void;
+  onStartLinkedInInput: () => void;
 }
 
 interface ResumeItem {
@@ -21,7 +22,8 @@ interface ResumeItem {
 
 export const Dashboard: React.FC<DashboardProps> = ({
   onCreateNew,
-  onEditResume
+  onEditResume,
+  onStartLinkedInInput
 }) => {
   const { user } = useAuth();
   const [resumes, setResumes] = useState<ResumeItem[]>([]);
@@ -353,7 +355,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <button
                         onClick={() => handleDeleteResume(resume.id)}
                         className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
-                        title="Delete resume"
+                    onClick={onStartLinkedInInput}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

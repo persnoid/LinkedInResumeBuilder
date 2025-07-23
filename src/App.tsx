@@ -303,6 +303,18 @@ const App: React.FC = () => {
     setCurrentStep(1); // Go to template selector
   };
 
+  const handleCreateNewResume = () => {
+    setResumeData(null);
+    setSelectedTemplate('azurill');
+    setCustomizations({
+      colors: { primary: '#1f2937', secondary: '#6b7280', accent: '#3b82f6' },
+      typography: { fontFamily: 'Inter, sans-serif' },
+      spacing: {},
+      sections: {}
+    });
+    setCurrentStep(0);
+  };
+
   const renderMainContent = () => {
     if (isTransitioning) {
       return (
@@ -317,19 +329,23 @@ const App: React.FC = () => {
     
     switch (currentStep) {
       case 0:
-        return resumeData ? (
+        return (
           <Dashboard 
             onCreateNew={() => {
               setResumeData(null);
               setCurrentStep(0);
             }}
             onEditResume={handleEditResume}
+            onStartLinkedInInput={() => {
+              setResumeData(null);
+              setCurrentStep(0.5); // Use 0.5 as a special step for LinkedInInput
+            }}
           />
-        ) : (
+        );
+      case 0.5:
+        return (
           <LinkedInInput 
             onDataExtracted={handleLinkedInData} 
-            existingResumeData={resumeData}
-            onContinueWithExisting={handleContinueWithExistingData}
           />
         );
       case 1:

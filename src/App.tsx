@@ -191,7 +191,7 @@ const App: React.FC = () => {
 
   const handleLinkedInData = (data: ResumeData) => {
     setResumeData(data);
-    setCurrentStep(2);
+    setCurrentStep(1);
   };
 
   const handleGoToHome = async () => {
@@ -317,36 +317,36 @@ const App: React.FC = () => {
           <Dashboard 
             onCreateNew={() => {
               setResumeData(null);
-              setCurrentStep(1); // Go to LinkedInInput as first step of create resume
+              setCurrentStep(0.5); // Go to LinkedInInput
             }}
             onEditResume={handleEditResume}
             onStartLinkedInInput={() => {
               setResumeData(null);
-              setCurrentStep(1); // LinkedInInput is now step 1
+              setCurrentStep(0.5); // Use 0.5 as a special step for LinkedInInput
             }}
             onOpenProfile={() => setShowUserProfile(true)}
             onGoToHome={handleGoToHome}
             showConfirmation={showConfirmation}
           />
         );
-      case 1:
+      case 0.5:
         return (
           <LinkedInInput 
             onDataExtracted={handleLinkedInData}
             onBack={() => setCurrentStep(0)}
           />
         );
-      case 2:
+      case 1:
         return resumeData && (
           <TemplateSelector
             resumeData={resumeData}
             selectedTemplate={selectedTemplate}
             onTemplateSelect={setSelectedTemplate}
-            onNext={() => setCurrentStep(3)}
+            onNext={() => setCurrentStep(2)}
             onBack={() => setCurrentStep(0)}
           />
         );
-      case 3:
+      case 2:
         return resumeData && (
           <ResumeCustomizer
             resumeData={resumeData}
@@ -355,7 +355,7 @@ const App: React.FC = () => {
             onCustomizationsUpdate={setCustomizations}
             onResumeDataUpdate={setResumeData}
             onExport={handleExport}
-            onBack={() => setCurrentStep(2)}
+            onBack={() => setCurrentStep(1)}
           />
         );
       default:

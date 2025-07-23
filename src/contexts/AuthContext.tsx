@@ -257,11 +257,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } catch (sessionCheckError) {
           console.error('🔐 AuthProvider - Error checking session after signIn:', sessionCheckError);
         }
+        // CRITICAL FIX: Ensure loading is set to false after successful sign in
+        console.log('🔐 AuthProvider - Sign in completed, setting loading to false');
+        setLoading(false);
+      } else {
+        console.log('🔐 AuthProvider - Sign in failed, setting loading to false');
+        setLoading(false);
       }
       
       return { error };
     } catch (error) {
       console.error('Sign in error:', error);
+      setLoading(false); // Ensure loading is false even on exception
       return { error: error as AuthError };
     } finally {
       console.log('🔐 AuthProvider - signIn finally block, setting loading to false');

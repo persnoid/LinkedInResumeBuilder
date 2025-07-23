@@ -5,8 +5,6 @@ import { LandingPage } from './components/LandingPage';
 import { AppHeader } from './components/AppHeader';
 import { TemplateSelector } from './components/TemplateSelector';
 import { ResumeCustomizer } from './components/ResumeCustomizer';
-import { DraftManagerComponent } from './components/DraftManager';
-import { DraftSavePrompt } from './components/DraftSavePrompt';
 import { UserProfilePage } from './pages/UserProfilePage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuthModal } from './components/AuthModal';
@@ -14,8 +12,7 @@ import { ToastNotification, useToast } from './components/ToastNotification';
 import { ConfirmationDialog } from './components/ConfirmationDialog';
 import { useConfirmation } from './hooks/useConfirmation';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
-import { SupabaseDraftManager } from './utils/supabaseDraftManager';
-import { ResumeData, DraftResume, Customizations } from './types/resume';
+import { ResumeData, Customizations } from '../types/resume';
 import { useAuth } from './contexts/AuthContext';
 
 class ErrorBoundary extends React.Component<{}, { hasError: boolean }> {
@@ -65,9 +62,6 @@ const App: React.FC = () => {
     spacing: {},
     sections: {}
   });
-  const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
-  const [showDraftManager, setShowDraftManager] = useState(false);
-  const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
@@ -140,8 +134,7 @@ const App: React.FC = () => {
       
       const initPromise = (async () => {
         const data = await SupabaseDraftManager.getResumeData(user);
-        const recentDrafts = await SupabaseDraftManager.getRecentDrafts(1, user);
-        return { data, recentDrafts };
+        return { data };
       })();
       
       const timeoutPromise = new Promise((_, reject) => 
@@ -149,8 +142,8 @@ const App: React.FC = () => {
       );
       
       try {
-        const { data, recentDrafts } = await Promise.race([initPromise, timeoutPromise]) as any;
-        console.log('🏠 App - User data loaded successfully:', { hasData: !!data, draftsCount: recentDrafts.length });
+        const { data } = await Promise.race([initPromise, timeoutPromise]) as any;
+        console.log('🏠 App - User data loaded successfully:', { hasData: !!data });
         setResumeData(data);
       } catch (timeoutError) {
         console.warn('🏠 App - Initialization timed out, continuing with default state:', timeoutError);
@@ -158,38 +151,16 @@ const App: React.FC = () => {
         showToast('Welcome! Some features may load slowly due to network conditions.', 'info', 5000);
       }
       
-      setCurrentDraftId(null);
       setCurrentStep(0);
       setIsInitialized(true);
       
     } catch (error: any) {
       console.error('🏠 App - Failed to initialize user data (continuing anyway):', error);
       setResumeData(null);
-      setCurrentDraftId(null);
       setCurrentStep(0);
       setIsInitialized(true);
       showToast('Welcome! Some data could not be loaded, but you can still create resumes.', 'warning', 5000);
     }
-  };
-
-  const loadDraftData = async (draft: DraftResume) => {
-    setIsTransitioning(true);
-    setResumeData(draft.resumeData);
-    setSelectedTemplate(draft.selectedTemplate);
-    setCustomizations(draft.customizations);
-    setCurrentDraftId(draft.id);
-    setShowDraftManager(false);
-
-    let step = draft.step;
-    if (step === 0 && draft.resumeData) step = 1;
-    step = Math.min(Math.max(step, 0), 2);
-
-    await new Promise(r => setTimeout(r, 300));
-    setCurrentStep(step);
-    await new Promise(r => setTimeout(r, 200));
-
-    setIsTransitioning(false);
-    showToast('Draft loaded!', 'success');
   };
 
   const handleGetStarted = () => {
@@ -220,7 +191,6 @@ const App: React.FC = () => {
 
   const handleLinkedInData = (data: ResumeData) => {
     setResumeData(data);
-    setCurrentDraftId(null);
     setCurrentStep(1);
   };
 
@@ -236,7 +206,6 @@ const App: React.FC = () => {
     if (confirmed) {
       setCurrentStep(0);
       setResumeData(null);
-      setCurrentDraftId(null);
       setCustomizations({
         colors: { primary: '#1f2937', secondary: '#6b7280', accent: '#3b82f6' },
         typography: { fontFamily: 'Inter, sans-serif' },
@@ -310,7 +279,6 @@ const App: React.FC = () => {
         {showHeader && (
           <AppHeader
             onOpenProfile={() => setShowUserProfile(true)}
-            onOpenDraftManager={() => setShowDraftManager(true)}
             onGoToHome={handleGoToHome}
             currentStep={currentStep}
             showConfirmation={showConfirmation}
@@ -321,7 +289,6 @@ const App: React.FC = () => {
             currentStep={currentStep}
             totalSteps={STEPS.length}
             steps={STEPS}
-            currentDraftId={currentDraftId}
           />
         )}
         {renderMainContent()}
@@ -346,7 +313,6 @@ const App: React.FC = () => {
         return (
           <LinkedInInput 
             onDataExtracted={handleLinkedInData} 
-            onOpenDraftManager={() => setShowDraftManager(true)} 
             existingResumeData={resumeData}
             onContinueWithExisting={handleContinueWithExistingData}
           />
@@ -359,8 +325,6 @@ const App: React.FC = () => {
             onTemplateSelect={setSelectedTemplate}
             onNext={() => setCurrentStep(2)}
             onBack={() => setCurrentStep(0)}
-            onSaveDraft={() => {}}
-            currentDraftId={currentDraftId}
           />
         );
       case 2:
@@ -373,8 +337,6 @@ const App: React.FC = () => {
             onResumeDataUpdate={setResumeData}
             onExport={handleExport}
             onBack={() => setCurrentStep(1)}
-            onSaveDraft={() => {}}
-            currentDraftId={currentDraftId}
           />
         );
       default:
@@ -394,21 +356,6 @@ const App: React.FC = () => {
         />
 
         <UserProfilePage isOpen={showUserProfile} onClose={() => setShowUserProfile(false)} showConfirmation={showConfirmation} />
-
-        <DraftManagerComponent
-          isOpen={showDraftManager}
-          onClose={() => setShowDraftManager(false)}
-          onLoadDraft={loadDraftData}
-          currentResumeData={resumeData}
-          currentTemplate={selectedTemplate}
-          currentCustomizations={customizations}
-          currentStep={currentStep}
-          currentDraftId={currentDraftId}
-          showToast={showToast}
-          showConfirmation={showConfirmation}
-        />
-
-        <DraftSavePrompt isOpen={showSavePrompt} onSave={() => {}} onCancel={() => setShowSavePrompt(false)} />
 
         <ToastNotification toast={toast} onClose={hideToast} />
         <ConfirmationDialog

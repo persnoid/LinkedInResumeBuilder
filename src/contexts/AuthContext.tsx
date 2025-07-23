@@ -280,16 +280,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log('🔐 AuthProvider - signOut started');
       
+      // IMMEDIATE UI feedback - set loading and clear state right away
+      setLoading(true);
+      console.log('🔐 AuthProvider - Setting loading=true for immediate feedback');
+      
       // Check if user is currently authenticated
       if (!user) {
         console.log('🔐 AuthProvider - No user to sign out, clearing local state');
         setUser(null);
         setSession(null);
+        setLoading(false);
         console.log('🔐 AuthProvider - No user found, sign out complete');
         return { error: null };
       }
       
       console.log('🔐 AuthProvider - Starting sign out process for user:', user?.email);
+      
+      // IMMEDIATELY clear local state for better UX - don't wait for Supabase
+      console.log('🔐 AuthProvider - Immediately clearing local state for fast UX');
+      setUser(null);
+      setSession(null);
+      
+      // Clear storage immediately too
+      try {
+        localStorage.removeItem('supabase.auth.token');
+        sessionStorage.clear();
+        console.log('🔐 AuthProvider - Local storage cleared immediately');
+      } catch (e) {
+        console.warn('🔐 AuthProvider - Could not clear storage immediately:', e);
+      }
       
       // Log current session state before sign out
       try {
@@ -305,24 +324,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       cleanupBrowserExtensions();
-      setLoading(true); // Set loading state
       
       console.log('🔐 AuthProvider - Calling supabase.auth.signOut()');
       
       // Flag to prevent race conditions
       let signOutCompleted = false;
       
-      // Add timeout to prevent hanging
+      // Reduced timeout for better UX - don't wait too long
       const signOutPromise = supabase.auth.signOut();
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Sign out timeout')), 5000)
+        setTimeout(() => reject(new Error('Sign out timeout')), 2000) // Reduced from 5s to 2s
       );
       
       let error = null;
       try {
+        console.log('🔐 AuthProvider - Racing signOut vs 2s timeout...');
         const result = await Promise.race([signOutPromise, timeoutPromise]);
         error = (result as any)?.error || null;
-        console.log('🔐 AuthProvider - Supabase sign out completed successfully');
+        console.log('🔐 AuthProvider - Supabase sign out completed successfully within timeout');
         
         // Check session state after sign out
         try {
@@ -337,33 +356,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         signOutCompleted = true;
       } catch (timeoutError) {
-        console.warn('🔐 AuthProvider - Supabase sign out timed out or failed:', timeoutError);
+        console.warn('🔐 AuthProvider - Supabase sign out timed out after 2s (continuing anyway):', timeoutError);
         error = timeoutError;
         signOutCompleted = true; // Still mark as completed to prevent timeout cleanup
       }
       
       if (error) {
-        console.error('🔐 AuthProvider - Sign out error from Supabase:', error);
-        // Even with error, continue with local cleanup
+        console.warn('🔐 AuthProvider - Sign out error from Supabase (local state already cleared):', error);
       }
       
-      console.log('🔐 AuthProvider - Supabase sign out completed, clearing local state');
-      
-      // CRITICAL: Always clear local state regardless of Supabase result
-      setUser(null);
-      setSession(null);
-      
-      // FORCE clear any cached auth data
-      try {
-        localStorage.removeItem('supabase.auth.token');
-        localStorage.clear(); // Clear all localStorage to be sure
-        sessionStorage.clear();
-        console.log('🔐 AuthProvider - Local storage cleared');
-      } catch (e) {
-        console.warn('🔐 AuthProvider - Could not clear storage:', e);
-      }
-      
-      console.log('🔐 AuthProvider - Local auth state cleared');
+      console.log('🔐 AuthProvider - Sign out process completed (state was cleared immediately)');
       
       // Force trigger auth state change if listener doesn't fire (only if not already completed)
       setTimeout(() => {
@@ -382,17 +384,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { error };
     } catch (error) {
       console.error('Sign out error:', error);
-      // CRITICAL: Clear state even on exception
+      // CRITICAL: Ensure state is cleared even on exception
       console.log('🔐 AuthProvider - Exception during sign out, clearing state anyway');
       
-      // Force clear everything
+      // Ensure state is cleared
       setUser(null);
       setSession(null);
-      setLoading(false);
       
       try {
         localStorage.removeItem('supabase.auth.token');
-        localStorage.clear();
         sessionStorage.clear();
       } catch (e) {
         console.warn('🔐 AuthProvider - Could not clear storage on error:', e);
@@ -401,7 +401,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { error: error as any };
     } finally {
       // CRITICAL: Always set loading to false and clear state
-      console.log('🔐 AuthProvider - signOut finally block, force completing sign out');
+      console.log('🔐 AuthProvider - signOut finally block, ensuring loading=false');
       setLoading(false);
       // Clean up any browser extension issues
       cleanupBrowserExtensions();

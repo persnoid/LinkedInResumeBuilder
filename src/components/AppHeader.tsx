@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface AppHeaderProps {
   onOpenProfile: () => void;
-  onOpenDraftManager: () => void;
   onGoToHome: () => void;
   currentStep: number;
   showConfirmation: (options: {
@@ -18,7 +17,6 @@ interface AppHeaderProps {
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
   onOpenProfile,
-  onOpenDraftManager,
   onGoToHome,
   currentStep,
   showConfirmation
@@ -82,15 +80,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
         {/* User Controls */}
         <div className="flex items-center space-x-3">
-          {/* Draft Manager */}
-          <button
-            onClick={onOpenDraftManager}
-            className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors"
-          >
-            <FolderOpen className="w-4 h-4 mr-2" />
-            Drafts
-          </button>
-
           {/* Start Over - Secondary action */}
           {currentStep > 0 && (
             <button

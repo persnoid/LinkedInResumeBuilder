@@ -7,14 +7,12 @@ import { ResumeData } from '../types/resume';
 
 interface LinkedInInputProps {
   onDataExtracted: (data: ResumeData) => void;
-  onOpenDraftManager: () => void;
   existingResumeData?: ResumeData | null;
   onContinueWithExisting?: () => void;
 }
 
 export const LinkedInInput: React.FC<LinkedInInputProps> = ({
   onDataExtracted,
-  onOpenDraftManager,
   existingResumeData,
   onContinueWithExisting
 }) => {
@@ -35,41 +33,6 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
   });
   const [recentDrafts, setRecentDrafts] = useState<any[]>([]);
 
-  // Check AI availability on component mount
-  useEffect(() => {
-    const checkAI = async () => {
-      try {
-        const status = await checkAIAvailability();
-        setAiStatus(status);
-      } catch (error) {
-        console.error('Error checking AI availability:', error);
-        setAiStatus({
-          aiAvailable: false,
-          openaiConfigured: false,
-          message: 'AI service unavailable - please check your configuration'
-        });
-      }
-    };
-    
-    checkAI();
-    
-    // Load recent drafts
-    loadRecentDraftsFromSupabase();
-  }, []);
-
-  const loadRecentDraftsFromSupabase = async () => {
-    try {
-      // Try to get current user for the recent drafts call
-      const { data: { session } } = await supabase.auth.getSession();
-      const recent = await SupabaseDraftManager.getRecentDrafts(3, session?.user);
-      console.log('🔗 LinkedInInput: Recent drafts loaded from Supabase:', recent.length);
-      setRecentDrafts(recent);
-    } catch (error) {
-      console.error('🔗 LinkedInInput: Error loading recent drafts from Supabase:', error);
-      console.log('🔗 LinkedInInput: No recent drafts available (user may not be signed in)');
-      setRecentDrafts([]);
-    }
-  };
 
   const handleExtractData = async () => {
     if (!linkedinUrl.includes('linkedin.com')) {
@@ -224,30 +187,6 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
     }, 1000);
   };
 
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (error) {
-      return 'Invalid date';
-    }
-  };
-
-  const handleOpenDraftManager = () => {
-    // Refresh recent drafts before opening
-    console.log('🔗 LinkedInInput: Opening draft manager');
-    try {
-      loadRecentDraftsFromSupabase();
-    } catch (error) {
-      console.error('🔗 LinkedInInput: Error refreshing drafts:', error);
-    }
-    onOpenDraftManager();
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
       <div className="min-h-[calc(100vh-6rem)] flex items-center justify-center">
@@ -284,41 +223,8 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Quick Continue Section - Show if user has existing data */}
-            {existingResumeData && existingResumeData.personalInfo.name && (
-              <div className="lg:col-span-3 mb-6">
-                <div className="bg-green-50 border border-green-200 rounded-2xl p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                        {existingResumeData.personalInfo.photo ? (
-                          <img src={existingResumeData.personalInfo.photo} alt="Profile" className="w-full h-full object-cover" />
-                        ) : (
-                          <User className="w-6 h-6 text-gray-400" />
-                        )}
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-green-900">Welcome back!</h3>
-                        <p className="text-green-700">
-                          Continue working on your resume for <span className="font-medium">{existingResumeData.personalInfo.name}</span>
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={onContinueWithExisting}
-                        className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center"
-                      >
-                        <CheckCircle className="w-5 h-5 mr-2" />
-                        Continue with Existing Resume
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
             {/* Main Upload Section */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-3">
               <div className="bg-white rounded-2xl shadow-xl p-8">
                 <div className="space-y-6">
                   {/* LinkedIn URL Input */}

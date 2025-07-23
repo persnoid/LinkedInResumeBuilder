@@ -272,19 +272,10 @@ const App: React.FC = () => {
       return null;
     }
 
-    const showHeader = user && !isTransitioning;
 
     return (
       <>
-        {showHeader && (
-          <AppHeader
-            onOpenProfile={() => setShowUserProfile(true)}
-            onGoToHome={handleGoToHome}
-            currentStep={currentStep}
-            showConfirmation={showConfirmation}
-          />
-        )}
-        {showHeader && currentStep > 0 && (
+        {currentStep > 0 && (
           <ProgressIndicator
             currentStep={currentStep}
             totalSteps={STEPS.length}
@@ -340,6 +331,9 @@ const App: React.FC = () => {
               setResumeData(null);
               setCurrentStep(0.5); // Use 0.5 as a special step for LinkedInInput
             }}
+            onOpenProfile={() => setShowUserProfile(true)}
+            onGoToHome={handleGoToHome}
+            showConfirmation={showConfirmation}
           />
         );
       case 0.5:

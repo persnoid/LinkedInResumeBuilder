@@ -110,11 +110,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         } else {
           setSuccess('Successfully signed in!');
           console.log('🔐 AuthModal - Sign in successful, closing modal in 1 second');
-          // CRITICAL FIX: Close immediately without timeout to prevent timing issues
+          // Close modal after brief success message
           setTimeout(() => {
             onClose();
             resetForm();
-          }, 500); // Reduced timeout to prevent state confusion
+          }, 1000);
         }
       } else if (mode === 'signup') {
         const { error } = await signUp(email, password, {

@@ -160,10 +160,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         } catch (error) {
           console.error('Error in auth state change handler:', error);
-        } finally {
-          // CRITICAL FIX: Always set loading to false for ALL auth events
-          console.log('🔐 AuthProvider - Setting loading to false after auth state change');
-          setLoading(false);
         }
       }
     );
@@ -242,36 +238,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         error: error?.message 
       });
       
-      if (!error) {
-        console.log('🔐 AuthProvider - Sign in successful, auth state will update via listener');
-        // Check the actual session state after successful sign in
-        try {
-          const { data: { session: currentSession } } = await supabase.auth.getSession();
-          console.log('🔐 AuthProvider - Post-signIn session check:', {
-            hasSession: !!currentSession,
-            userEmail: currentSession?.user?.email,
-            accessToken: currentSession?.access_token ? `${currentSession.access_token.substring(0, 20)}...` : null,
-            expiresAt: currentSession?.expires_at,
-            expiresIn: currentSession?.expires_in
-          });
-        } catch (sessionCheckError) {
-          console.error('🔐 AuthProvider - Error checking session after signIn:', sessionCheckError);
-        }
-        // CRITICAL FIX: Ensure loading is set to false after successful sign in
-        console.log('🔐 AuthProvider - Sign in completed, setting loading to false');
-        setLoading(false);
-      } else {
-        console.log('🔐 AuthProvider - Sign in failed, setting loading to false');
-        setLoading(false);
-      }
-      
       return { error };
     } catch (error) {
       console.error('Sign in error:', error);
-      setLoading(false); // Ensure loading is false even on exception
       return { error: error as AuthError };
     } finally {
-      console.log('🔐 AuthProvider - signIn finally block, setting loading to false');
+      console.log('🔐 AuthProvider - signIn finally block');
       setLoading(false);
     }
   };

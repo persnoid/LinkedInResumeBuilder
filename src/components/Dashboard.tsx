@@ -28,6 +28,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const { user } = useAuth();
   const [resumes, setResumes] = useState<ResumeItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState({
     total: 0,
     completed: 0,
@@ -43,9 +44,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const loadResumes = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       
       // Load drafts from Supabase and convert to resume items
-      const drafts = await SupabaseDraftManager.getAllDrafts(user);
+      console.log('📊 Dashboard: Loading drafts from Supabase...');
+      
+      // Add timeout protection for the entire loading process
+      const loadPromise = SupabaseDraftManager.getAllDrafts(user);
+      const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Loading timeout - using demo data')), 10000)
+      );
+      
+      const drafts = await Promise.race([loadPromise, timeoutPromise]);
       
       const resumeItems: ResumeItem[] = drafts.map(draft => ({
         id: draft.id,
@@ -69,15 +79,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
         inProgress
       });
       
+      console.log('📊 Dashboard: Successfully loaded', resumeItems.length, 'resumes');
+      
     } catch (error) {
-      console.error('Error loading resumes:', error);
-      // Show sample data for demo purposes
+      console.warn('📊 Dashboard: Error loading resumes, using demo data:', error);
+      setError('Connection issue - showing demo data. Check your internet connection.');
+      
+      // Show demo data as fallback
       const sampleResume: ResumeItem = {
-        id: 'demo-1',
-        name: 'Software Engineer Resume - Demo',
+        id: 'demo',
+        name: 'Software Engineer Resume - Demo', 
         status: 'completed',
-        template: 'Modern',
-        updatedAt: '2025-07-23T10:30:00Z',
+        template: 'azurill',
+        updatedAt: new Date().toISOString(),
         resumeData: {
           personalInfo: {
             name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User',
@@ -110,6 +124,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const handleDeleteResume = async (resumeId: string) => {
+    // Prevent deleting demo data
+    if (resumeId === 'demo') {
+      console.log('📊 Dashboard: Cannot delete demo data');
+      return;
+    }
+    
     const confirmed = confirm('Are you sure you want to delete this resume?');
     if (confirmed) {
       try {
@@ -140,6 +160,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Connection Error Banner */}
+      {error && (
+        <div className="bg-orange-50 border-l-4 border-orange-400 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-orange-700">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Sidebar */}
       <div className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 z-10">
         <div className="p-6">
@@ -310,10 +346,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {resumes.map((resume) => (
-                  <div key={resume.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                  <div key={resume.id} className={`border rounded-lg p-6 hover:shadow-md transition-shadow ${
+                    resume.id === 'demo' ? 'border-orange-200 bg-orange-50' : 'border-gray-200'
+                  }`}>
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 mb-2">{resume.name}</h3>
+                        <div className="flex items-center space-x-2 mb-2">
+                          <h3 className="font-semibold text-gray-900">{resume.name}</h3>
+                          {resume.id === 'demo' && (
+                            <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
+                              Demo
+                            </span>
+                          )}
+                        </div>
                         <div className="flex items-center space-x-3">
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                             resume.status === 'completed' 
@@ -355,8 +400,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <button
                         onClick={() => handleDeleteResume(resume.id)}
                         className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
-                        disabled={resume.id === 'demo-1'}
-                        title={resume.id === 'demo-1' ? 'Cannot delete demo data' : 'Delete resume'}
+                        disabled={resume.id === 'demo'}
+                        title={resume.id === 'demo' ? 'Cannot delete demo data' : 'Delete resume'}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

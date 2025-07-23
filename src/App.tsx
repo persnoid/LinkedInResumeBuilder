@@ -275,13 +275,6 @@ const App: React.FC = () => {
 
     return (
       <>
-        {currentStep > 0 && (
-          <ProgressIndicator
-            currentStep={currentStep}
-            totalSteps={STEPS.length}
-            steps={STEPS}
-          />
-        )}
         {renderMainContent()}
       </>
     );

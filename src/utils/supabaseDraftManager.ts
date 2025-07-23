@@ -30,12 +30,12 @@ interface SupabaseDraft {
 }
 
 export class SupabaseDraftManager {
-  private static readonly QUERY_TIMEOUT = 15000; // 15 seconds - more reasonable for network conditions
+  private static readonly QUERY_TIMEOUT = 30000; // 30 seconds - more generous timeout
 
   /**
    * Check authentication with timeout
    */
-  private static async checkAuth(providedUser?: User | null, timeout: number = 10000): Promise<User> {
+  private static async checkAuth(providedUser?: User | null, timeout: number = 15000): Promise<User> {
     console.log('🗄️ SupabaseDraftManager: checkAuth called with providedUser:', !!providedUser);
     
     // If user is provided from AuthContext, use it directly
@@ -81,20 +81,15 @@ export class SupabaseDraftManager {
       const user = await this.checkAuth(providedUser);
       console.log('🗄️ SupabaseDraftManager: Getting drafts for user:', user.email);
 
-      // Try with retry logic for better reliability
+      // Try with improved retry and timeout logic
       const { data, error } = await this.executeWithRetry(async () => {
-        const queryPromise = supabase
+        console.log('🗄️ SupabaseDraftManager: Executing Supabase query...');
+        return await supabase
           .from('drafts')
           .select('*')
           .eq('user_id', user.id)
           .order('updated_at', { ascending: false });
-
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Database query timeout - please check your connection')), this.QUERY_TIMEOUT)
-        );
-
-        return Promise.race([queryPromise, timeoutPromise]) as any;
-      }, 2); // Retry up to 2 times
+      }, 3, 2000); // Retry up to 3 times with 2 second delay
 
       if (error) {
         console.error('🗄️ SupabaseDraftManager: Database error:', error);

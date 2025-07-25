@@ -2169,8 +2169,8 @@ export const reactiveTemplates: TemplateConfig[] = [
       styles: {
         page: {
           margin: '0',
-          padding: '32px',
-          background: '#ffffff'
+          padding: '16px',
+          background: '#FFFFFF'
         },
         typography: {
           fontFamily: 'Inter, sans-serif',

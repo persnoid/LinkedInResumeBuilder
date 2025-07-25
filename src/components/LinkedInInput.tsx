@@ -16,7 +16,8 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
   existingResumeData,
   onContinueWithExisting
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isParsingFile, setIsParsingFile] = useState(false);
+  const [isCheckingAI, setIsCheckingAI] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -28,13 +29,14 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
   }>({
     aiAvailable: false,
     openaiConfigured: false,
-    message: 'AI service unavailable'
+    message: 'Checking AI service...'
   });
 
   // Check AI availability on component mount
   useEffect(() => {
     const checkAI = async () => {
       try {
+        setIsCheckingAI(true);
         const status = await checkAIAvailability();
         console.log('🔗 LinkedInInput: AI status check result:', status);
         setAiStatus(status);
@@ -45,6 +47,8 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
           openaiConfigured: false,
           message: 'AI service unavailable - please check your configuration'
         });
+      } finally {
+        setIsCheckingAI(false);
       }
     };
 
@@ -75,7 +79,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
       return;
     }
 
-    setIsLoading(true);
+    setIsParsingFile(true);
     setError('');
     setSuccess(false);
     setUploadProgress(0);
@@ -101,7 +105,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
       setHasData(true);
       
       setTimeout(() => {
-        setIsLoading(false);
+        setIsParsingFile(false);
         setSuccess(true);
         onDataExtracted(extractedData);
         console.log('🔗 LinkedInInput: Data extracted and passed to parent');
@@ -109,7 +113,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
       
     } catch (error) {
       console.error('🔗 LinkedInInput: PDF parsing error:', error);
-      setIsLoading(false);
+      setIsParsingFile(false);
       setUploadProgress(0);
       setError(error instanceof Error ? error.message : 'Failed to process PDF file');
     }
@@ -119,7 +123,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
   };
 
   const handleSkipToSample = () => {
-    setIsLoading(true);
+    setIsParsingFile(true);
     setError('');
     
     // Provide sample data for users who want to try the tool
@@ -180,7 +184,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
     };
     
     setTimeout(() => {
-      setIsLoading(false);
+      setIsParsingFile(false);
       setSuccess(true);
       setHasData(true);
       onDataExtracted(sampleData);
@@ -190,6 +194,28 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
 
   return (
     <div className="max-w-2xl mx-auto p-8">
+      {/* AI Status Banner - Non-blocking */}
+      {isCheckingAI && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center text-blue-700 text-sm">
+          <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent mr-2"></div>
+          Checking AI service availability...
+        </div>
+      )}
+
+      {!isCheckingAI && !aiStatus.aiAvailable && (
+        <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg flex items-center text-orange-700 text-sm">
+          <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+          {aiStatus.message}
+        </div>
+      )}
+
+      {!isCheckingAI && aiStatus.aiAvailable && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center text-green-700 text-sm">
+          <CheckCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+          {aiStatus.message}
+        </div>
+      )}
+
       {/* Upload Section */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">
         <div className="text-center mb-8">
@@ -219,7 +245,7 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
         )}
 
         {/* Upload Progress */}
-        {isLoading && uploadProgress > 0 && (
+        {isParsingFile && uploadProgress > 0 && (
           <div className="mb-6">
             <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
               <span>🤖 AI Processing PDF...</span>
@@ -243,15 +269,17 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
           <h3 className="text-lg font-medium text-gray-900 mb-2">Drop your LinkedIn PDF here</h3>
           <p className="text-gray-500 mb-6">or click to browse your files</p>
           
-          <label className="bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors cursor-pointer inline-flex items-center">
+          <label className={`bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors cursor-pointer inline-flex items-center ${
+            isParsingFile || success ? 'opacity-50 cursor-not-allowed' : ''
+          }`}>
             <Upload className="w-4 h-4 mr-2" />
-            Choose File
+            {isParsingFile ? 'Processing...' : 'Choose File'}
             <input
               type="file"
               accept=".pdf"
               onChange={handleFileUpload}
               className="hidden"
-              disabled={isLoading || success}
+              disabled={isParsingFile || success}
             />
           </label>
           
@@ -263,11 +291,13 @@ export const LinkedInInput: React.FC<LinkedInInputProps> = ({
       <div className="flex items-center justify-between">
         <button
           onClick={handleSkipToSample}
-          disabled={isLoading || success}
-          className="text-gray-600 hover:text-gray-800 font-medium text-sm flex items-center transition-colors disabled:opacity-50"
+          disabled={isParsingFile || success}
+          className={`text-gray-600 hover:text-gray-800 font-medium text-sm flex items-center transition-colors ${
+            isParsingFile || success ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
           <Settings className="w-4 h-4 mr-2" />
-          Try with Sample Data
+          {isParsingFile ? 'Loading Sample...' : 'Try with Sample Data'}
         </button>
         
         <button

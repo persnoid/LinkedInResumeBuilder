@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, FileText, CheckCircle, Clock, Edit3, Trash2, Calendar, User, Zap, Palette, Download, Brain, Home, LogOut, ChevronDown } from 'lucide-react';
+import { Plus, FileText, CheckCircle, Clock, Edit3, Trash2, Calendar, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { SupabaseDraftManager } from '../utils/supabaseDraftManager';
 import { ResumeData } from '../types/resume';
@@ -37,11 +37,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onGoToHome,
   showConfirmation
 }) => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [resumes, setResumes] = useState<ResumeItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showUserMenu, setShowUserMenu] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     completed: 0,
@@ -171,26 +170,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
     }
   };
 
-  const handleSignOut = async () => {
-    const confirmed = await showConfirmation({
-      title: 'Sign Out',
-      message: 'Are you sure you want to sign out? Any unsaved changes will be lost.',
-      confirmText: 'Sign Out',
-      cancelText: 'Cancel',
-      type: 'warning'
-    });
-
-    if (confirmed) {
-      try {
-        await signOut();
-      } catch (error) {
-        console.error('Sign out error:', error);
-      }
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
       {/* Connection Error Banner */}
       {error && (
         <div className="bg-orange-50 border-l-4 border-orange-400 p-4">
@@ -207,131 +188,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       )}
       
-      {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 z-10">
-        <div className="p-6">
-          {/* Logo */}
-          <div className="flex items-center space-x-3 mb-8">
-            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
-              <FileText className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">ResumeAI</h1>
-              <p className="text-sm text-gray-500">LinkedIn Resume Generator</p>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <div className="space-y-2 mb-8">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Navigation</h3>
-            <div className="bg-blue-50 text-blue-700 px-3 py-2 rounded-lg flex items-center">
-              <FileText className="w-4 h-4 mr-3" />
-              <div>
-                <div className="font-medium">Dashboard</div>
-                <div className="text-xs text-blue-600">Your resume drafts</div>
-              </div>
-            </div>
-            <button 
-              onClick={onCreateNew}
-              className="w-full text-left text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-lg flex items-center transition-colors"
-            >
-              <Plus className="w-4 h-4 mr-3" />
-              <div>
-                <div className="font-medium">Create Resume</div>
-                <div className="text-xs text-gray-500">Generate new resume</div>
-              </div>
-            </button>
-          </div>
-
-          {/* Features */}
-          <div className="space-y-2">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Features</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center text-green-600">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                <Brain className="w-4 h-4 mr-2" />
-                AI-Powered Parsing
-              </div>
-              <div className="flex items-center text-blue-600">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                <FileText className="w-4 h-4 mr-2" />
-                6 Professional Templates
-              </div>
-              <div className="flex items-center text-purple-600">
-                <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
-                <Palette className="w-4 h-4 mr-2" />
-                Live Customization
-              </div>
-              <div className="flex items-center text-orange-600">
-                <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
-                <Download className="w-4 h-4 mr-2" />
-                PDF Export Ready
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* User Profile at Bottom */}
-        <div className="absolute bottom-6 left-6 right-6">
-          <div className="relative">
-            {/* Collapsible User Menu */}
-            {showUserMenu && (
-              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
-                <button
-                  onClick={onOpenProfile}
-                  className="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 flex items-center text-sm font-medium transition-colors border-b border-gray-100"
-                >
-                  <User className="w-4 h-4 mr-3 text-gray-500" />
-                  Profile Settings
-                </button>
-                
-                <button
-                  onClick={onGoToHome}
-                  className="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 flex items-center text-sm font-medium transition-colors border-b border-gray-100"
-                >
-                  <Home className="w-4 h-4 mr-3 text-gray-500" />
-                  Start Over
-                </button>
-                
-                <button
-                  onClick={handleSignOut}
-                  className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 flex items-center text-sm font-medium transition-colors"
-                >
-                  <LogOut className="w-4 h-4 mr-3 text-red-500" />
-                  Sign Out
-                </button>
-              </div>
-            )}
-            
-            {/* User Profile Info - Clickable to toggle menu */}
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="w-full flex items-center space-x-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1 min-w-0 text-left">
-                <div className="font-medium text-sm text-gray-900 truncate">
-                  {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
-                </div>
-                <div className="text-xs text-gray-500 truncate">
-                  {user?.email}
-                </div>
-              </div>
-              {/* Chevron icon to indicate dropdown */}
-              <div className={`transform transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`}>
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
-      <div className="ml-64 p-8">
+      <div className="flex-1 p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>

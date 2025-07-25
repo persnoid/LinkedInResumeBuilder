@@ -86,9 +86,6 @@ useEffect(() => {
   const loadDrafts = async () => {
     console.log('🗂️ DraftManager: loadDrafts() START - isLoading before:', isLoading);
     
-    // Add outer timeout protection for the entire loading process
-    const OUTER_TIMEOUT = 25000; // 25 seconds total timeout
-    
     try {
       setIsLoading(true);
       console.log('🗂️ DraftManager: loadDrafts() - isLoading set to TRUE');
@@ -107,65 +104,8 @@ useEffect(() => {
 
       console.log('🗂️ DraftManager: User is authenticated, loading from Supabase...');
       
-      // CRITICAL: Check actual Supabase session state before making API calls
-      try {
-        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
-        const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
-        
-        console.log('🗂️ DraftManager: Pre-API Supabase session check:', {
-          hasSession: !!currentSession,
-          hasUser: !!currentUser,
-          sessionError: sessionError?.message || null,
-          userError: userError?.message || null,
-          userEmail: currentUser?.email || 'none',
-          sessionUserEmail: currentSession?.user?.email || 'none',
-          accessToken: currentSession?.access_token ? `${currentSession.access_token.substring(0, 20)}...` : null,
-          expiresAt: currentSession?.expires_at,
-          currentTime: Date.now() / 1000,
-          isExpired: currentSession?.expires_at ? (currentSession.expires_at < Date.now() / 1000) : 'unknown',
-          contextUserEmail: user?.email,
-          sessionTokenType: currentSession?.token_type
-        });
-        
-        if (!currentSession || !currentSession.access_token) {
-          console.error('🗂️ DraftManager: No valid session found, cannot proceed with API calls');
-          setError('Session expired. Please sign in again.');
-          setDrafts([]);
-          setIsLoading(false);
-          return;
-        }
-        
-        if (sessionError) {
-          console.error('🗂️ DraftManager: Session error detected:', sessionError);
-          setError('Authentication error. Please sign in again.');
-          setDrafts([]);
-          setIsLoading(false);
-          return;
-        }
-        
-        if (userError) {
-          console.error('🗂️ DraftManager: User error detected:', userError);
-          setError('User authentication error. Please sign in again.');
-          setDrafts([]);
-          setIsLoading(false);
-          return;
-        }
-        
-      } catch (sessionCheckError) {
-        console.error('🗂️ DraftManager: Exception while checking session:', sessionCheckError);
-        setError('Failed to verify authentication. Please try again.');
-        setDrafts([]);
-        setIsLoading(false);
-        return;
-      }
-      
-      // Wrap the Supabase call in a timeout race
-      const loadPromise = SupabaseDraftManager.getAllDrafts(user);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Draft loading timed out - please check your connection and try again')), OUTER_TIMEOUT)
-      );
-      
-      const supabaseDrafts = await Promise.race([loadPromise, timeoutPromise]) as any;
+      // Load drafts from Supabase - let SupabaseDraftManager handle all error cases
+      const supabaseDrafts = await SupabaseDraftManager.getAllDrafts(user);
       
       if (Array.isArray(supabaseDrafts)) {
         console.log('🗂️ DraftManager: Successfully loaded', supabaseDrafts.length, 'drafts from Supabase');
@@ -178,13 +118,28 @@ useEffect(() => {
           setWarning('No drafts found. Create your first draft by saving your current work.');
         }
       } else {
-        throw new Error('Invalid response from draft service');
+        console.error('🗂️ DraftManager: Invalid response format from SupabaseDraftManager');
+        setError('Invalid data received from server. Please try again.');
+        setDrafts([]);
       }
     } catch (error) {
       console.error('🗂️ DraftManager: Error loading drafts:', error);
-      const errorMessage = error instanceof Error && error.message.includes('timed out') 
-        ? 'Request timed out. Please check your internet connection and try again.'
-        : 'Failed to load drafts. Please try again.';
+      
+      // More specific error handling
+      let errorMessage = 'Failed to load drafts. Please try again.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Authentication') || error.message.includes('session')) {
+          errorMessage = 'Please sign in again to access your drafts.';
+        } else if (error.message.includes('Network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your internet connection.';
+        } else if (error.message.includes('timeout')) {
+          errorMessage = 'Request timed out. Please try again.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       setError(errorMessage);
       setDrafts([]);
     } finally {

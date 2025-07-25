@@ -12,10 +12,11 @@ export const supabase = createClient(
   supabaseAnonKey,
   {
     auth: {
-      persistSession: true,     // keep session in localStorage
-      autoRefreshToken: true,   // refresh tokens automatically
-      detectSessionInUrl: false,// for SPAs
-      multiTab: false           // 🔥 disable multi‑tab to avoid stale callbacks
+      persistSession: true,      // Keep session in localStorage
+      autoRefreshToken: true,    // Refresh tokens automatically
+      detectSessionInUrl: false, // For SPAs - don't detect session from URL
+      multiTab: false,           // Disable multi-tab to avoid conflicts
+      flowType: 'implicit'       // Use implicit flow for better compatibility
     }
   }
 );

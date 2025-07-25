@@ -137,29 +137,12 @@ const App: React.FC = () => {
         return;
       }
       
-      console.log('🏠 App - Loading user data from Supabase with timeout protection...');
+      console.log('🏠 App - Loading user data from Supabase...');
       
-      // Add timeout protection to prevent initialization from hanging
-      const INIT_TIMEOUT = 10000; // 10 seconds timeout for initialization
-      
-      const initPromise = (async () => {
-        const data = await SupabaseDraftManager.getResumeData(user);
-        return { data };
-      })();
-      
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Initialization timeout - continuing with default state')), INIT_TIMEOUT)
-      );
-      
-      try {
-        const { data } = await Promise.race([initPromise, timeoutPromise]) as any;
-        console.log('🏠 App - User data loaded successfully:', { hasData: !!data });
-        setResumeData(data);
-      } catch (timeoutError) {
-        console.warn('🏠 App - Initialization timed out, continuing with default state:', timeoutError);
-        setResumeData(null);
-        showToast('Welcome! Some features may load slowly due to network conditions.', 'info', 5000);
-      }
+      // Load user data - let SupabaseDraftManager handle all error cases
+      const data = await SupabaseDraftManager.getResumeData(user);
+      console.log('🏠 App - User data loaded successfully:', { hasData: !!data });
+      setResumeData(data);
       
       setCurrentStep(0);
       setIsInitialized(true);
@@ -169,7 +152,15 @@ const App: React.FC = () => {
       setResumeData(null);
       setCurrentStep(0);
       setIsInitialized(true);
-      showToast('Welcome! Some data could not be loaded, but you can still create resumes.', 'warning', 5000);
+      
+      // More specific error messaging
+      if (error.message?.includes('Authentication') || error.message?.includes('session')) {
+        showToast('Please sign in again to access your saved data.', 'warning');
+      } else if (error.message?.includes('Network') || error.message?.includes('fetch')) {
+        showToast('Network issue detected. You can still create resumes.', 'info');
+      } else {
+        showToast('Welcome! Creating a fresh start for you.', 'info');
+      }
     }
   };
 

@@ -177,6 +177,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Ensure user profile exists in the profiles table
   const ensureProfile = async (user: User) => {
     try {
+      console.log('🔐 AuthContext - ensureProfile: Checking profile for user:', user.email);
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -185,6 +186,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (error && error.code === 'PGRST116') {
         // Profile doesn't exist, create it
+        console.log('🔐 AuthContext - ensureProfile: Creating new profile');
         const { error: insertError } = await supabase
           .from('profiles')
           .insert({
@@ -196,14 +198,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (insertError) {
           console.error('Error creating profile:', insertError);
+          // Don't throw - let the app continue even if profile creation fails
         } else {
           console.log('Profile created successfully');
         }
       } else if (error) {
         console.error('Error checking profile:', error);
+        // Don't throw - let the app continue even if profile check fails
+      } else {
+        console.log('🔐 AuthContext - ensureProfile: Profile exists');
       }
     } catch (error) {
       console.error('Unexpected error ensuring profile:', error);
+      // Don't throw - let the app continue even if there's an unexpected error
     }
   };
 

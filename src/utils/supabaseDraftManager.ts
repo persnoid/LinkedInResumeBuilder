@@ -30,7 +30,8 @@ interface SupabaseDraft {
 }
 
 export class SupabaseDraftManager {
-  private static readonly QUERY_TIMEOUT = 15000; // 15 seconds timeout
+  private static readonly QUERY_TIMEOUT = 10000; // 10 seconds timeout
+  private static readonly MAX_RETRIES = 2; // Reduced from 3 to avoid long waits
 
   /**
    * Check authentication with timeout
@@ -46,22 +47,16 @@ export class SupabaseDraftManager {
 
     console.log('🗄️ SupabaseDraftManager: No provided user, checking Supabase session...');
     try {
-      // Add timeout to prevent hanging
-      const authPromise = supabase.auth.getSession();
-      const timeoutPromise = new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('Auth check timeout')), 5000)
-      );
-      
-      const { data: { session }, error } = await Promise.race([authPromise, timeoutPromise]);
+      const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) {
         console.error('🗄️ SupabaseDraftManager: Auth error:', error);
-        throw new Error(`Authentication error: ${error.message}`);
+        throw new Error(`Authentication failed: ${error.message}. Please sign in again.`);
       }
       
       if (!session?.user) {
         console.error('🗄️ SupabaseDraftManager: No authenticated user');
-        throw new Error('No authenticated user found. Please sign in.');
+        throw new Error('Session expired. Please sign in again to access your data.');
       }
       
       console.log('🗄️ SupabaseDraftManager: Auth check successful for user:', session.user.email);
@@ -70,7 +65,6 @@ export class SupabaseDraftManager {
       console.error('🗄️ SupabaseDraftManager: Exception in checkAuth:', {
         error,
         message: error.message,
-        stack: error.stack,
         timestamp: new Date().toISOString()
       });
       throw error;
@@ -86,7 +80,6 @@ export class SupabaseDraftManager {
       const user = await this.checkAuth(providedUser);
       console.log('🗄️ SupabaseDraftManager: Getting drafts for user:', user.email);
 
-      // Try with improved retry and timeout logic
       const { data, error } = await this.executeWithRetry(async () => {
         console.log('🗄️ SupabaseDraftManager: Executing Supabase query...');
         return await supabase
@@ -94,11 +87,11 @@ export class SupabaseDraftManager {
           .select('*')
           .eq('user_id', user.id)
           .order('updated_at', { ascending: false });
-      }, 3, 2000); // Retry up to 3 times with 2 second delay
+      });
 
       if (error) {
         console.error('🗄️ SupabaseDraftManager: Database error:', error);
-        throw new Error(`Database error: ${error.message}`);
+        throw new Error(`Database error: ${error.message}. Please check your connection.`);
       }
 
       const drafts: DraftResume[] = (data || []).map((draft: SupabaseDraft) => ({
@@ -106,7 +99,7 @@ export class SupabaseDraftManager {
         name: draft.name,
         resumeData: this.transformFromSupabase(draft.resume_data),
         selectedTemplate: draft.selected_template,
-        customizations: draft.customizations || {},
+        customizations: this.validateCustomizations(draft.customizations),
         step: draft.step,
         createdAt: draft.created_at,
         updatedAt: draft.updated_at
@@ -118,7 +111,6 @@ export class SupabaseDraftManager {
       console.error('🗄️ SupabaseDraftManager: Exception in getAllDrafts:', {
         error,
         message: error.message,
-        stack: error.stack,
         timestamp: new Date().toISOString()
       });
       throw error;
@@ -129,10 +121,10 @@ export class SupabaseDraftManager {
    * Execute a function with retry logic
    */
   private static async executeWithRetry<T>(
-    fn: () => Promise<T>, 
-    maxRetries: number = 2,
-    delay: number = 1000
+    fn: () => Promise<T>
   ): Promise<T> {
+    const maxRetries = this.MAX_RETRIES;
+    let delay = 1000; // Start with 1 second delay
     let lastError: any;
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -141,7 +133,7 @@ export class SupabaseDraftManager {
         
         // Add timeout wrapper for each attempt
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Query timeout')), this.QUERY_TIMEOUT)
+          setTimeout(() => reject(new Error('Database query timed out. Please check your connection.')), this.QUERY_TIMEOUT)
         );
         
         const result = await Promise.race([fn(), timeoutPromise]) as T;
@@ -386,8 +378,18 @@ export class SupabaseDraftManager {
    * Transform frontend ResumeData to Supabase format
    */
   private static transformToSupabase(resumeData: ResumeData): any {
+    // Ensure all required fields exist with proper defaults
     return {
-      personal_info: resumeData.personalInfo || {},
+      personal_info: {
+        name: resumeData.personalInfo?.name || '',
+        title: resumeData.personalInfo?.title || '',
+        email: resumeData.personalInfo?.email || '',
+        phone: resumeData.personalInfo?.phone || '',
+        location: resumeData.personalInfo?.location || '',
+        website: resumeData.personalInfo?.website || '',
+        linkedin: resumeData.personalInfo?.linkedin || '',
+        photo: resumeData.personalInfo?.photo || ''
+      },
       summary: resumeData.summary || '',
       experience: resumeData.experience || [],
       education: resumeData.education || [],
@@ -402,24 +404,62 @@ export class SupabaseDraftManager {
    * Transform Supabase data to frontend ResumeData format
    */
   private static transformFromSupabase(supabaseData: any): ResumeData {
+    // Provide comprehensive defaults for all fields
+    const personalInfo = supabaseData.personal_info || {};
+    
     return {
-      personalInfo: supabaseData.personal_info || {
-        name: '',
-        title: '',
-        email: '',
-        phone: '',
-        location: '',
-        website: '',
-        linkedin: '',
-        photo: ''
+      personalInfo: {
+        name: personalInfo.name || '',
+        title: personalInfo.title || '',
+        email: personalInfo.email || '',
+        phone: personalInfo.phone || '',
+        location: personalInfo.location || '',
+        website: personalInfo.website || '',
+        linkedin: personalInfo.linkedin || '',
+        photo: personalInfo.photo || ''
       },
       summary: supabaseData.summary || '',
-      experience: supabaseData.experience || [],
-      education: supabaseData.education || [],
-      skills: supabaseData.skills || [],
-      certifications: supabaseData.certifications || [],
-      languages: supabaseData.languages || [],
+      experience: Array.isArray(supabaseData.experience) ? supabaseData.experience : [],
+      education: Array.isArray(supabaseData.education) ? supabaseData.education : [],
+      skills: Array.isArray(supabaseData.skills) ? supabaseData.skills : [],
+      certifications: Array.isArray(supabaseData.certifications) ? supabaseData.certifications : [],
+      languages: Array.isArray(supabaseData.languages) ? supabaseData.languages : [],
       customSections: supabaseData.custom_sections || {}
+    };
+  }
+
+  /**
+   * Validate and provide defaults for customizations
+   */
+  private static validateCustomizations(customizations: any): Customizations {
+    const defaults: Customizations = {
+      colors: { 
+        primary: '#1f2937', 
+        secondary: '#6b7280', 
+        accent: '#3b82f6' 
+      },
+      typography: { 
+        fontFamily: 'Inter, sans-serif' 
+      },
+      spacing: {},
+      sections: {}
+    };
+
+    if (!customizations || typeof customizations !== 'object') {
+      return defaults;
+    }
+
+    return {
+      colors: { 
+        ...defaults.colors, 
+        ...(customizations.colors || {}) 
+      },
+      typography: { 
+        ...defaults.typography, 
+        ...(customizations.typography || {}) 
+      },
+      spacing: customizations.spacing || {},
+      sections: customizations.sections || {}
     };
   }
 

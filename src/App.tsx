@@ -352,7 +352,7 @@ const App: React.FC = () => {
       setShowDraftSavePrompt(true);
     }
   };
-  const renderMainContent = () => {
+
   const handleSaveDraftPromptConfirm = async (draftName: string) => {
     console.log('💾 App - handleSaveDraftPromptConfirm called with name:', draftName);
     
@@ -386,7 +386,7 @@ const App: React.FC = () => {
     console.log('💾 App - handleSaveDraftPromptCancel called');
     setShowDraftSavePrompt(false);
   };
-
+  const renderMainContent = () => {
     if (isTransitioning) {
       return (
         <div className="min-h-screen flex items-center justify-center">

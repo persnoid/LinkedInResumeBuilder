@@ -385,9 +385,9 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
           : 'space-y-3'
       }`}>
         {contactItems.map((item, index) => (
-          <div key={index} className="contact-item flex items-center">
+          <div key={index} className="contact-item flex items-center gap-x-2">
             <item.icon 
-              className="w-3 h-3 mr-2 flex-shrink-0 print:w-2 print:h-2" 
+              className="w-3 h-3 flex-shrink-0 print:w-2 print:h-2" 
               style={{ 
                 color: styles.colors.accent,
                 fontSize: '8px' // Force small size for PDF
@@ -444,9 +444,9 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
           {/* COMPACT CONTACT INFO - Single row with flex wrap */}
           <div className="contact-info flex flex-wrap gap-x-6 gap-y-2 mt-4">
             {contactItems.map((item, index) => (
-              <div key={index} className="contact-item flex items-center">
+              <div key={index} className="contact-item flex items-center gap-x-2">
                 <item.icon 
-                  className="w-3 h-3 mr-1 print:w-2 print:h-2" 
+                  className="w-3 h-3 print:w-2 print:h-2" 
                   style={{ 
                     color: styles.colors.background,
                     fontSize: '8px' // Force small size for PDF

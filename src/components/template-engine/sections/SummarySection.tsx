@@ -43,7 +43,7 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
   return (
     <div className="summary-section">
       <h3 
-        className="section-title font-bold mb-3 uppercase tracking-wide flex items-center"
+        className="section-title font-bold mb-3 uppercase tracking-wide flex items-center gap-x-2"
         style={{ 
           fontSize: styles.typography.fontSize.heading3,
           color: styles.colors.primary,
@@ -56,22 +56,14 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
         }}
       >
         <User 
-          className="w-3 h-3 mr-2" 
+          className="w-3 h-3" 
           style={{ 
             marginTop: '-1px',
             verticalAlign: 'middle',
             display: 'inline-block'
           }} 
         />
-        <User 
-          className="w-3 h-3 mr-2" 
-          style={{ 
-            marginTop: '-1px',
-            verticalAlign: 'middle',
-            display: 'inline-block'
-          }} 
-        />
-        {config.name || 'Summary'}
+        <span>{config.name || 'Summary'}</span>
       </h3>
       
       <div 

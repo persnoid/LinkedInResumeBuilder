@@ -153,75 +153,27 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
     try {
       console.log('🔐 UserProfilePage: Sign out had error but continuing with UI cleanup');
       // Don't show error message - sign out will be forced in AuthContext
-      const confirmed = await showConfirmation({
-        title: 'Sign Out',
-        message: 'Are you sure you want to sign out? Any unsaved changes will be lost.',
-        confirmText: 'Sign Out',
-        cancelText: 'Cancel',
-        type: 'warning'
-      });
-
-      if (confirmed) {
-        setIsSigningOut(true);
-        try {
-          const { error } = await signOut();
-          
-          // Additional cleanup for browser extension issues
-          if (typeof window !== 'undefined') {
-            // Clear any potential localStorage that might cause extension conflicts
-            try {
-              localStorage.removeItem('supabase.auth.token');
-            } catch (e) { /* ignore */ }
-          }
-            
-          // Always proceed with UI cleanup regardless of error
-          console.log('👤 UserProfilePage: Proceeding with UI cleanup');
-          setSaveMessage('Signed out successfully!');
-            
-          // Close modal and reset form immediately
-          setTimeout(() => {
-            console.log('👤 UserProfilePage: Closing modal and resetting form');
-            
-            // Force clear any hanging state
-            try {
-              window.dispatchEvent(new Event('auth-cleared'));
-            } catch (e) { /* ignore */ }
-            onClose();
-            resetForm();
-          }, 100); // Reduced timeout to speed up UI response
-            
-          if (error) {
-            console.error('Sign out error:', error);
-            // Even on exception, proceed with UI cleanup
-            console.log('👤 UserProfilePage: Exception during sign out, but cleaning up UI anyway');
-            onClose();
-            resetForm();
-          } else {
-            // Successful sign out
-            console.log('👤 UserProfilePage: Sign out successful');
-            setSaveMessage('Signed out successfully!');
-            
-            // Close modal and reset form
-            setTimeout(() => {
-              console.log('👤 UserProfilePage: Closing modal and resetting form');
-              onClose();
-              resetForm();
-              // Optional: Force page reload to reset all state (can be removed if not needed)
-              // window.location.reload();
-            }, 500);
-          }
-        } catch (error) {
-          console.error('Sign out error:', error);
-          setSaveMessage('Failed to sign out. Please try again.');
-          setTimeout(() => setSaveMessage(''), 5000);
-        } finally {
-          setIsSigningOut(false);
-        }
-      }
+      setIsSigningOut(true);
+      
+      const { error } = await signOut();
+      
+      // Always proceed with UI cleanup regardless of error
+      console.log('👤 UserProfilePage: Proceeding with UI cleanup');
+      setSaveMessage('Signed out successfully!');
+      
+      // Close modal and reset form immediately
+      setTimeout(() => {
+        console.log('👤 UserProfilePage: Closing modal and resetting form');
+        onClose();
+        resetForm();
+      }, 100);
+      
     } catch (error) {
-      console.error('Confirmation dialog error:', error);
+      console.error('Sign out error:', error);
       setSaveMessage('An error occurred. Please try again.');
       setTimeout(() => setSaveMessage(''), 3000);
+    } finally {
+      setIsSigningOut(false);
     }
   };
 

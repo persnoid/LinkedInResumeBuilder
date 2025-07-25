@@ -6,51 +6,27 @@ interface AppHeaderProps {
   onOpenProfile: () => void;
   onGoToHome: () => void;
   currentStep: number;
-  showConfirmation: (options: {
-    title: string;
-    message: string;
-    confirmText?: string;
-    cancelText?: string;
-    type?: 'danger' | 'warning' | 'info';
-  }) => Promise<boolean>;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
   onOpenProfile,
   onGoToHome,
   currentStep,
-  showConfirmation
 }) => {
   const { user, signOut } = useAuth();
 
   const handleSignOut = async () => {
     console.log('🔓 AppHeader: Sign out button clicked - handleSignOut triggered');
     console.log('🔓 AppHeader: Current state - user:', !!user, 'currentStep:', currentStep);
-    console.log('🔓 AppHeader: Sign out button clicked');
     
-    const confirmed = await showConfirmation({
-      title: 'Sign Out',
-      message: 'Are you sure you want to sign out? Any unsaved changes will be lost.',
-      confirmText: 'Sign Out',
-      cancelText: 'Cancel',
-      type: 'warning'
-    });
-
-    console.log('🔓 AppHeader: Confirmation result:', confirmed);
-
-    if (confirmed) {
-      console.log('🔓 AppHeader: User confirmed sign out, proceeding...');
-      try {
-        await signOut();
-        console.log('🔓 AppHeader: Sign out completed successfully');
-      } catch (error) {
-        console.error('🔓 AppHeader: Sign out error:', error);
-        // Force sign out even if there's an error
-        console.log('🔓 AppHeader: Forcing sign out due to error');
-        window.location.reload(); // Force page reload to clear all state
-      }
-    } else {
-      console.log('🔓 AppHeader: User cancelled sign out');
+    try {
+      await signOut();
+      console.log('🔓 AppHeader: Sign out completed successfully');
+    } catch (error) {
+      console.error('🔓 AppHeader: Sign out error:', error);
+      // Force sign out even if there's an error
+      console.log('🔓 AppHeader: Forcing sign out due to error');
+      window.location.reload(); // Force page reload to clear all state
     }
   };
 

@@ -3,28 +3,22 @@ import { CheckCircle, Eye, Layout, Grid, Save, Palette, FileText, X, ZoomIn, Spa
 import { reactiveTemplates } from '../data/reactive-templates';
 import { TemplateConfig, ResumeData } from '../types/resume';
 import { TemplateRenderer } from './template-engine/TemplateRenderer';
+import { useResumeData } from '../contexts/ResumeDataContext';
 
 interface TemplateSelectorProps {
   resumeData: ResumeData;
   selectedTemplate: string;
-  onTemplateSelect: (templateId: string) => void;
   onNext: () => void;
   onBack: () => void;
-  onSaveDraft: () => void;
-  currentDraftId?: string | null;
-  currentDraftName?: string | null;
 }
 
 export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   resumeData,
   selectedTemplate,
-  onTemplateSelect,
   onNext,
   onBack,
-  onSaveDraft,
-  currentDraftId,
-  currentDraftName
 }) => {
+  const { setSelectedTemplate, saveDraft, activeDraftId, activeDraftName, customizations } = useResumeData();
   const [filter, setFilter] = useState<'all' | 'modern' | 'classic' | 'creative' | 'minimal' | 'professional'>('all');
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
 
@@ -100,11 +94,19 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
       {/* Save Draft Button */}
       <div className="mb-8 flex justify-end">
         <button
-          onClick={onSaveDraft}
+          onClick={async () => {
+            if (!resumeData) return;
+            try {
+              const draftName = activeDraftName || `${resumeData.personalInfo?.name || 'My'} Resume`;
+              await saveDraft(draftName, resumeData, selectedTemplate, customizations, 1, activeDraftId || undefined);
+            } catch (error) {
+              console.error('Error saving draft:', error);
+            }
+          }}
           className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center transition-colors shadow-sm hover:shadow-md"
         >
           <Save className="w-5 h-5 mr-2" />
-          {currentDraftId ? `Update ${currentDraftName || 'Draft'}` : 'Save Draft'}
+          {activeDraftId ? `Update ${activeDraftName || 'Draft'}` : 'Save Draft'}
         </button>
       </div>
       
@@ -147,7 +149,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   ? 'border-blue-500 ring-4 ring-blue-500 ring-opacity-20 shadow-lg'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
-              onClick={() => onTemplateSelect(template.id)}
+              onClick={() => setSelectedTemplate(template.id)}
             >
               {/* Selection Indicator */}
               {selectedTemplate === template.id && (
@@ -264,7 +266,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => {
-                    onTemplateSelect(previewTemplate);
+                    setSelectedTemplate(previewTemplate);
                     setPreviewTemplate(null);
                   }}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
@@ -313,7 +315,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 </button>
                 <button
                   onClick={() => {
-                    onTemplateSelect(previewTemplate);
+                    setSelectedTemplate(previewTemplate);
                     setPreviewTemplate(null);
                   }}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"

@@ -8,13 +8,6 @@ interface SidebarProps {
   onCreateNewResume: () => void;
   onOpenProfile: () => void;
   onGoToHome: () => void;
-  showConfirmation: (options: {
-    title: string;
-    message: string;
-    confirmText?: string;
-    cancelText?: string;
-    type?: 'danger' | 'warning' | 'info';
-  }) => Promise<boolean>;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -23,26 +16,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCreateNewResume,
   onOpenProfile,
   onGoToHome,
-  showConfirmation
 }) => {
   const { user, signOut } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const handleSignOut = async () => {
-    const confirmed = await showConfirmation({
-      title: 'Sign Out',
-      message: 'Are you sure you want to sign out? Any unsaved changes will be lost.',
-      confirmText: 'Sign Out',
-      cancelText: 'Cancel',
-      type: 'warning'
-    });
-
-    if (confirmed) {
-      try {
-        await signOut();
-      } catch (error) {
-        console.error('Sign out error:', error);
-      }
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Sign out error:', error);
     }
   };
 

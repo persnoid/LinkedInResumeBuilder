@@ -14,9 +14,9 @@ import { ToastNotification, useToast } from './components/ToastNotification';
 import { ConfirmationDialog } from './components/ConfirmationDialog';
 import { useConfirmation } from './hooks/useConfirmation';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
-import { SupabaseDraftManager } from './utils/supabaseDraftManager';
-import { ResumeData, Customizations } from '../types/resume';
+import { ResumeData } from '../types/resume';
 import { useAuth } from './contexts/AuthContext';
+import { useResumeData } from './contexts/ResumeDataContext';
 import { DraftSavePrompt } from './components/DraftSavePrompt';
 import { Sidebar } from './components/Sidebar';
 import { FileText, ArrowLeft, Brain, Palette, Upload, User } from 'lucide-react';
@@ -62,35 +62,41 @@ const App: React.FC = () => {
   const STEPS = ['LinkedIn Input', 'Choose Template', 'Customize & Export'];
 
   const [currentStep, setCurrentStep] = useState(0);
-  const [resumeData, setResumeData] = useState<ResumeData | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState('azurill');
-  const [customizations, setCustomizations] = useState<Customizations>({
-    colors: { primary: '#1f2937', secondary: '#6b7280', accent: '#3b82f6' },
-    typography: { fontFamily: 'Inter, sans-serif' },
-    spacing: {},
-    sections: {}
-  });
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
   const [showLandingPage, setShowLandingPage] = useState(true); // Always start with landing page
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
-  const [currentDraftName, setCurrentDraftName] = useState<string | null>(null);
   const [showDraftSavePrompt, setShowDraftSavePrompt] = useState(false);
   const [draftSavePromptDefaultName, setDraftSavePromptDefaultName] = useState('');
 
   const { toast, showToast, hideToast } = useToast();
   const { confirmation, showConfirmation } = useConfirmation();
   const { user } = useAuth();
+  const {
+    resumeData,
+    selectedTemplate,
+    customizations,
+    activeDraftId,
+    activeDraftName,
+    isLoading: dataLoading,
+    isDataLoaded,
+    error: dataError,
+    loadAllUserData,
+    updateResumeData,
+    saveDraft,
+    loadDraft,
+    clearData,
+    setSelectedTemplate,
+    setCustomizations
+  } = useResumeData();
 
   // SINGLE useEffect to handle all authentication and initialization
   useEffect(() => {
     console.log('🏠 App - Auth state changed:', { 
       hasUser: !!user, 
       userEmail: user?.email,
-      isInitialized,
+      isDataLoaded,
       showLandingPage 
     });
     
@@ -102,9 +108,9 @@ const App: React.FC = () => {
       setShowAuthModal(false);
       
       // Load user data only once
-      if (!isInitialized) {
+      if (!isDataLoaded) {
         console.log('🏠 App - Loading user data...');
-        initializeData();
+        loadAllUserData(user);
       } else {
         console.log('🏠 App - User data already initialized, skipping reload');
       }
@@ -115,55 +121,13 @@ const App: React.FC = () => {
       // IMMEDIATE state reset to prevent inconsistent states
       setShowLandingPage(true);
       setShowAuthModal(false);
-      setIsInitialized(false);
-      setResumeData(null);
       setCurrentStep(0);
-      setCustomizations({
-        colors: { primary: '#1f2937', secondary: '#6b7280', accent: '#3b82f6' },
-        typography: { fontFamily: 'Inter, sans-serif' },
-        spacing: {},
-        sections: {}
-      });
       setIsTransitioning(false);
+      clearData(); // Clear all data from context
       
       console.log('🏠 App - All state reset immediately, showing landing page');
     }
-  }, [user]); // Remove isInitialized dependency to prevent loops
-
-  const initializeData = async () => {
-    try {
-      console.log('🏠 App - initializeData called with user:', !!user, user?.email);
-      if (!user) {
-        console.log('🏠 App - No user available for data initialization');
-        return;
-      }
-      
-      console.log('🏠 App - Loading user data from Supabase...');
-      
-      // Load user data - let SupabaseDraftManager handle all error cases
-      const data = await SupabaseDraftManager.getResumeData(user);
-      console.log('🏠 App - User data loaded successfully:', { hasData: !!data });
-      setResumeData(data);
-      
-      setCurrentStep(0);
-      setIsInitialized(true);
-      
-    } catch (error: any) {
-      console.error('🏠 App - Failed to initialize user data (continuing anyway):', error);
-      setResumeData(null);
-      setCurrentStep(0);
-      setIsInitialized(true);
-      
-      // More specific error messaging
-      if (error.message?.includes('Authentication') || error.message?.includes('session')) {
-        showToast('Please sign in again to access your saved data.', 'warning');
-      } else if (error.message?.includes('Network') || error.message?.includes('fetch')) {
-        showToast('Network issue detected. You can still create resumes.', 'info');
-      } else {
-        showToast('Welcome! Creating a fresh start for you.', 'info');
-      }
-    }
-  };
+  }, [user, isDataLoaded, loadAllUserData, clearData]);
 
   const handleGetStarted = () => {
     if (user) {
@@ -192,7 +156,7 @@ const App: React.FC = () => {
   };
 
   const handleLinkedInData = (data: ResumeData) => {
-    setResumeData(data);
+    updateResumeData(data);
     setCurrentStep(1);
   };
 
@@ -207,13 +171,7 @@ const App: React.FC = () => {
 
     if (confirmed) {
       setCurrentStep(0);
-      setResumeData(null);
-      setCustomizations({
-        colors: { primary: '#1f2937', secondary: '#6b7280', accent: '#3b82f6' },
-        typography: { fontFamily: 'Inter, sans-serif' },
-        spacing: {},
-        sections: {}
-      });
+      clearData();
     }
   };
 
@@ -221,20 +179,13 @@ const App: React.FC = () => {
     if (!resumeData) return;
     try {
       if (format === 'pdf') {
-        await exportToPDF('resume-preview', `${resumeData.personalInfo.name}_Resume.pdf`);
+        await exportToPDF('resume-preview', `${resumeData.personalInfo.name}_Resume.pdf`, customizations);
       } else {
-        await exportToWord(resumeData, `${resumeData.personalInfo.name}_Resume.docx`);
+        await exportToWord(resumeData, `${resumeData.personalInfo.name}_Resume.pdf`);
       }
       showToast('Export successful!', 'success');
     } catch {
       showToast('Export failed.', 'error');
-    }
-  };
-
-  const handleContinueWithExistingData = () => {
-    if (resumeData) {
-      console.log('🏠 App - Continue with existing data, moving to template selection');
-      setCurrentStep(1);
     }
   };
 
@@ -244,7 +195,7 @@ const App: React.FC = () => {
       hasUser: !!user,
       currentStep,
       isTransitioning,
-      isInitialized
+      isDataLoaded
     });
 
     // Show landing page ONLY for non-authenticated users
@@ -271,7 +222,7 @@ const App: React.FC = () => {
     );
 
     // Show loading while initializing user data (but WITH sidebar)
-    if (!isInitialized) {
+    if (!isDataLoaded && dataLoading) {
       return (
         <PageLayout 
           sidebarContent={unifiedSidebar}
@@ -365,12 +316,8 @@ const App: React.FC = () => {
               <TemplateSelector
                 resumeData={resumeData}
                 selectedTemplate={selectedTemplate}
-                onTemplateSelect={setSelectedTemplate}
                 onNext={() => setCurrentStep(2)}
                 onBack={() => setCurrentStep(0)}
-                onSaveDraft={handleSaveDraft}
-                currentDraftId={currentDraftId}
-                currentDraftName={currentDraftName}
               />
             )}
             {currentStep === 2 && resumeData && (
@@ -378,13 +325,8 @@ const App: React.FC = () => {
                 resumeData={resumeData}
                 selectedTemplate={selectedTemplate}
                 customizations={customizations}
-                onCustomizationsUpdate={setCustomizations}
-                onResumeDataUpdate={setResumeData}
                 onExport={handleExport}
                 onBack={() => setCurrentStep(1)}
-                onSaveDraft={handleSaveDraft}
-                currentDraftId={currentDraftId}
-                currentDraftName={currentDraftName}
               />
             )}
           </div>
@@ -398,14 +340,12 @@ const App: React.FC = () => {
         return (
           <Dashboard 
             onCreateNew={() => {
-              setResumeData(null);
-              setCurrentDraftId(null);
+              clearData();
               setCurrentStep(0.5); // Go directly to LinkedIn Input
             }}
             onEditResume={handleEditResumeWithId}
             onStartLinkedInInput={() => {
-              setResumeData(null);
-              setCurrentDraftId(null);
+              clearData();
               setCurrentStep(0.5); // Use 0.5 as a special step for LinkedInInput
             }}
             onOpenProfile={() => setShowUserProfile(true)}
@@ -434,33 +374,12 @@ const App: React.FC = () => {
     }
   };
 
-  const handleEditResume = (resumeData: ResumeData, template: string, customizations: any) => {
-    setResumeData(resumeData);
-    setSelectedTemplate(template);
-    setCustomizations(customizations);
-    setCurrentStep(1); // Go to template selector
-  };
-
   const handleEditResumeWithId = (resumeData: ResumeData, template: string, customizations: any, draftId: string) => {
-    setResumeData(resumeData);
-    setSelectedTemplate(template);
-    setCustomizations(customizations);
-    setCurrentDraftId(draftId);
-    // Set the draft name from the resume data for updates
-    setCurrentDraftName(resumeData.personalInfo?.name ? `${resumeData.personalInfo.name} Resume` : 'My Resume');
+    loadDraft({ id: draftId, name: resumeData.personalInfo?.name ? `${resumeData.personalInfo.name} Resume` : 'My Resume', resumeData, selectedTemplate: template, customizations, step: 1, createdAt: '', updatedAt: '' });
     setCurrentStep(1); // Go to template selector
   };
   const handleCreateNewResume = () => {
-    setResumeData(null);
-    setSelectedTemplate('azurill');
-    setCustomizations({
-      colors: { primary: '#1f2937', secondary: '#6b7280', accent: '#3b82f6' },
-      typography: { fontFamily: 'Inter, sans-serif' },
-      spacing: {},
-      sections: {}
-    });
-    setCurrentDraftId(null);
-    setCurrentDraftName(null);
+    clearData();
     setCurrentStep(0.5); // Go directly to LinkedIn Input
   };
 
@@ -478,18 +397,17 @@ const App: React.FC = () => {
     }
 
     // If we have an existing draft ID, update it directly
-    if (currentDraftId) {
+    if (activeDraftId) {
       try {
         // Use the current draft name or fallback to a default
-        const draftName = currentDraftName || `${resumeData.personalInfo?.name || 'My'} Resume`;
-        await SupabaseDraftManager.saveDraft(
+        const draftName = activeDraftName || `${resumeData.personalInfo?.name || 'My'} Resume`;
+        await saveDraft(
           draftName,
           resumeData,
           selectedTemplate,
           customizations,
           currentStep,
-          currentDraftId,
-          user
+          activeDraftId
         );
         showToast('Draft updated successfully!', 'success');
       } catch (error) {
@@ -514,18 +432,15 @@ const App: React.FC = () => {
     }
 
     try {
-      const savedDraftId = await SupabaseDraftManager.saveDraft(
+      const savedDraftId = await saveDraft(
         draftName,
         resumeData,
         selectedTemplate,
         customizations,
         currentStep,
-        currentDraftId || undefined,
-        user
+        activeDraftId || undefined
       );
       
-      setCurrentDraftId(savedDraftId);
-      setCurrentDraftName(draftName);
       setShowDraftSavePrompt(false);
       showToast('Draft saved successfully!', 'success');
     } catch (error) {

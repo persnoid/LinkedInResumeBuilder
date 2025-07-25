@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, FileText, CheckCircle, Clock, Edit3, Trash2, Calendar, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { SupabaseDraftManager } from '../utils/supabaseDraftManager';
+import { useResumeData } from '../contexts/ResumeDataContext';
 import { ResumeData } from '../types/resume';
 
 interface DashboardProps {
@@ -38,38 +38,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
   showConfirmation
 }) => {
   const { user } = useAuth();
-  const [resumes, setResumes] = useState<ResumeItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { drafts, isLoading, error, deleteDraft } = useResumeData();
   const [stats, setStats] = useState({
     total: 0,
     completed: 0,
     inProgress: 0
   });
 
+  // Convert drafts to resume items and calculate stats
   useEffect(() => {
-    if (user) {
-      loadResumes();
-    }
-  }, [user]);
-
-  const loadResumes = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      // Load drafts from Supabase and convert to resume items
-      console.log('📊 Dashboard: Loading drafts from Supabase...');
-      
-      // Add timeout protection for the entire loading process
-      const loadPromise = SupabaseDraftManager.getAllDrafts(user);
-      const timeoutPromise = new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('Loading timeout - using demo data')), 10000)
-      );
-      
-      const drafts = await Promise.race([loadPromise, timeoutPromise]);
-      
-      const resumeItems: ResumeItem[] = drafts.map(draft => ({
+    const resumeItems: ResumeItem[] = drafts.map(draft => ({
         id: draft.id,
         name: draft.name,
         status: draft.step >= 2 ? 'completed' : 'in-progress',
@@ -79,8 +57,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         customizations: draft.customizations
       }));
 
-      setResumes(resumeItems);
-      
       // Calculate stats
       const completed = resumeItems.filter(r => r.status === 'completed').length;
       const inProgress = resumeItems.filter(r => r.status === 'in-progress').length;
@@ -91,57 +67,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
         inProgress
       });
       
-      console.log('📊 Dashboard: Successfully loaded', resumeItems.length, 'resumes');
-      
-    } catch (error) {
-      console.warn('📊 Dashboard: Error loading resumes, using demo data:', error);
-      setError('Connection issue - showing demo data. Check your internet connection.');
-      
-      // Show demo data as fallback
-      const sampleResume: ResumeItem = {
-        id: 'demo',
-        name: 'Software Engineer Resume - Demo', 
-        status: 'completed',
-        template: 'azurill',
-        updatedAt: new Date().toISOString(),
-        resumeData: {
-          personalInfo: {
-            name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User',
-            title: 'Software Engineer',
-            email: user?.email || '',
-            phone: '+1 (555) 123-4567',
-            location: 'San Francisco, CA',
-            linkedin: 'linkedin.com/in/profile',
-            website: ''
-          },
-          summary: 'Experienced software engineer with expertise in full-stack development.',
-          experience: [],
-          education: [],
-          skills: [],
-          certifications: [],
-          languages: []
-        },
-        customizations: {}
-      };
-      
-      setResumes([sampleResume]);
-      setStats({ total: 1, completed: 1, inProgress: 0 });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [drafts]);
 
+  const resumes = drafts.map(draft => ({
+    id: draft.id,
+    name: draft.name,
+    status: draft.step >= 2 ? 'completed' : 'in-progress',
+    template: draft.selectedTemplate,
+    updatedAt: draft.updatedAt,
+    resumeData: draft.resumeData,
+    customizations: draft.customizations
+  }));
   const handleEditResume = (resume: ResumeItem) => {
     onEditResume(resume.resumeData, resume.template, resume.customizations, resume.id);
   };
 
   const handleDeleteResume = async (resumeId: string) => {
-    // Prevent deleting demo data
-    if (resumeId === 'demo') {
-      console.log('📊 Dashboard: Cannot delete demo data');
-      return;
-    }
-    
     const confirmed = await showConfirmation({
       title: 'Delete Resume',
       message: 'Are you sure you want to delete this resume? This action cannot be undone.',
@@ -152,8 +93,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     
     if (confirmed) {
       try {
-        await SupabaseDraftManager.deleteDraft(resumeId, user);
-        await loadResumes();
+        await deleteDraft(resumeId);
       } catch (error) {
         console.error('Error deleting resume:', error);
       }

@@ -10,32 +10,31 @@ import { ResumePreview } from './ResumePreview';
 import { ConfirmationDialog } from './ConfirmationDialog';
 import { useConfirmation } from '../hooks/useConfirmation';
 import { exportToPDF } from '../utils/exportUtils';
+import { useResumeData } from '../contexts/ResumeDataContext';
 
 interface ResumeCustomizerProps {
   resumeData: ResumeData;
   selectedTemplate: string;
   customizations: Customizations;
-  onCustomizationsUpdate: (customizations: Customizations) => void;
-  onResumeDataUpdate: (data: ResumeData) => void;
   onExport: (format: 'pdf' | 'docx') => void;
   onBack: () => void;
-  onSaveDraft: () => void;
-  currentDraftId?: string | null;
-  currentDraftName?: string | null;
 }
 
 export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   resumeData,
   selectedTemplate,
   customizations,
-  onCustomizationsUpdate,
-  onResumeDataUpdate,
   onExport,
   onBack,
-  onSaveDraft,
-  currentDraftId,
-  currentDraftName
 }) => {
+  const { 
+    setCustomizations, 
+    updateResumeData, 
+    saveDraft, 
+    activeDraftId, 
+    activeDraftName 
+  } = useResumeData();
+  
   const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'sections'>('colors');
   const [isExporting, setIsExporting] = useState(false);
   const [editableResumeData, setEditableResumeData] = useState<ResumeData>(resumeData);
@@ -124,7 +123,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
       (newCustomizations as any)[field] = value;
     }
     
-    onCustomizationsUpdate(newCustomizations);
+    setCustomizations(newCustomizations);
   };
 
   // Handle resume data updates from editable components
@@ -132,7 +131,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
     console.log('ResumeCustomizer - Data updated:', updatedData); // Debug log
     setEditableResumeData(updatedData);
     // Also update the parent component's data
-    onResumeDataUpdate(updatedData);
+    updateResumeData(updatedData);
   };
 
   // Section management functions
@@ -320,11 +319,19 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           
           {/* Save Draft Button */}
           <button
-            onClick={onSaveDraft}
+            onClick={async () => {
+              if (!editableResumeData) return;
+              try {
+                const draftName = activeDraftName || `${editableResumeData.personalInfo?.name || 'My'} Resume`;
+                await saveDraft(draftName, editableResumeData, selectedTemplate, customizations, 2, activeDraftId || undefined);
+              } catch (error) {
+                console.error('Error saving draft:', error);
+              }
+            }}
             className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center transition-colors"
           >
             <Save className="w-3 h-3 mr-1" />
-            {currentDraftId ? `Update ${currentDraftName || 'Draft'}` : 'Save'}
+            {activeDraftId ? `Update ${activeDraftName || 'Draft'}` : 'Save'}
           </button>
         </div>
 

@@ -329,10 +329,11 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         height: isPreview ? '1123px' : 'auto',
         minHeight: isPreview ? '1123px' : '297mm',
         maxWidth: '794px',
-        margin: '0',
+        margin: '0 auto',
         boxShadow: isPreview ? 'none' : '0 0 10px rgba(0, 0, 0, 0.1)',
         overflow: 'hidden',
-        position: 'relative'
+        position: 'relative',
+        padding: '0'
       }}
     >
       {renderLayout()}

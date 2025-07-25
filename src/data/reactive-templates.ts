@@ -197,12 +197,12 @@ export const reactiveTemplates: TemplateConfig[] = [
           overlay: 'rgba(0, 0, 0, 0.5)'
         },
         spacing: {
-          section: '24px',
+          section: '20px',
           item: '12px',
           compact: '8px',
-          contentPadding: '32px',
-          sidebarColumnPadding: '32px',
-          mainColumnPadding: '32px',
+          contentPadding: '16px',
+          sidebarColumnPadding: '16px',
+          mainColumnPadding: '20px',
           xs: '4px',
           sm: '8px',
           md: '16px',
@@ -2169,8 +2169,8 @@ export const reactiveTemplates: TemplateConfig[] = [
       styles: {
         page: {
           margin: '0',
-          padding: '16px',
-          background: '#FFFFFF'
+          padding: '32px',
+          background: '#ffffff'
         },
         typography: {
           fontFamily: 'Inter, sans-serif',

@@ -18,6 +18,8 @@ import { ResumeData, Customizations } from '../types/resume';
 import { useAuth } from './contexts/AuthContext';
 import { FileText, ArrowLeft, Brain, Palette, Upload, User } from 'lucide-react';
 
+const RESUME_CREATION_STEPS = ['Upload & Parse', 'Choose Template', 'Customize & Export'];
+
 class ErrorBoundary extends React.Component<{}, { hasError: boolean }> {
   constructor(props: {}) {
     super(props);
@@ -313,6 +315,178 @@ const App: React.FC = () => {
       );
     }
     
+    // Resume creation steps with unified progress bar
+    if (currentStep === 0.5 || currentStep === 1 || currentStep === 2) {
+      const progressStep = currentStep === 0.5 ? 0 : currentStep === 1 ? 1 : 2;
+      const stepTitles = {
+        0.5: { title: 'Create New Resume', subtitle: 'Upload your LinkedIn profile' },
+        1: { title: 'Choose Your Template', subtitle: 'Select from professionally designed layouts' },
+        2: { title: 'Customize & Export', subtitle: 'Personalize your resume design' }
+      };
+      
+      const currentStepInfo = stepTitles[currentStep as keyof typeof stepTitles];
+      
+      // Unified sidebar for all resume creation steps
+      const resumeCreationSidebar = (
+        <>
+          {/* Logo */}
+          <div className="p-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                <FileText className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900">ResumeAI</h1>
+                <p className="text-xs text-gray-500">LinkedIn Resume Generator</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <div className="px-6 mb-8">
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">NAVIGATION</h3>
+            <div className="space-y-2">
+              <button
+                onClick={() => setCurrentStep(0)}
+                className="w-full text-left text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-lg flex items-center transition-colors"
+              >
+                <div className="w-4 h-4 bg-blue-100 rounded mr-3 flex items-center justify-center">
+                  <span className="text-xs text-blue-600">📊</span>
+                </div>
+                <div>
+                  <div className="font-medium text-sm">Dashboard</div>
+                  <div className="text-xs text-gray-500">Your resume drafts</div>
+                </div>
+              </button>
+              
+              <div className="bg-blue-50 text-blue-700 px-3 py-2 rounded-lg flex items-center">
+                <div className="w-4 h-4 bg-blue-500 rounded mr-3 flex items-center justify-center">
+                  <span className="text-xs text-white">✨</span>
+                </div>
+                <div>
+                  <div className="font-medium text-sm">Create Resume</div>
+                  <div className="text-xs text-blue-600">{RESUME_CREATION_STEPS[progressStep]}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Features */}
+          <div className="px-6 flex-1">
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">FEATURES</h3>
+            <div className="space-y-3">
+              <div className="flex items-center text-sm">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                <Brain className="w-4 h-4 mr-2 text-green-600" />
+                <span className="text-gray-700">AI-Powered Parsing</span>
+              </div>
+              <div className="flex items-center text-sm">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                <FileText className="w-4 h-4 mr-2 text-blue-600" />
+                <span className="text-gray-700">6 Professional Templates</span>
+              </div>
+              <div className="flex items-center text-sm">
+                <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+                <Palette className="w-4 h-4 mr-2 text-purple-600" />
+                <span className="text-gray-700">Live Customization</span>
+              </div>
+              <div className="flex items-center text-sm">
+                <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
+                <Upload className="w-4 h-4 mr-2 text-orange-600" />
+                <span className="text-gray-700">PDF Export Ready</span>
+              </div>
+            </div>
+          </div>
+
+          {/* User Profile */}
+          <div className="p-6 border-t border-gray-200">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-white font-semibold text-sm">
+                  {user?.user_metadata?.full_name?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-sm text-gray-900 truncate">
+                  {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
+                </div>
+                <div className="text-xs text-gray-500 truncate">
+                  {user?.email}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      );
+
+      // Unified main content with progress bar
+      const resumeCreationMain = (
+        <>
+          {/* Header with back button */}
+          <div className="bg-white border-b border-gray-200 px-8 py-6">
+            <div className="flex items-center space-x-4 mb-4">
+              <button
+                onClick={() => setCurrentStep(0)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{currentStepInfo.title}</h1>
+                <p className="text-gray-600">{currentStepInfo.subtitle}</p>
+              </div>
+            </div>
+            
+            {/* Progress Indicator */}
+            <ProgressIndicator
+              currentStep={progressStep}
+              totalSteps={3}
+              steps={RESUME_CREATION_STEPS}
+            />
+          </div>
+
+          {/* Main Content */}
+          <div className="flex-1">
+            {currentStep === 0.5 && (
+              <LinkedInInput 
+                onDataExtracted={handleLinkedInData}
+                onBack={() => setCurrentStep(0)}
+              />
+            )}
+            {currentStep === 1 && resumeData && (
+              <TemplateSelector
+                resumeData={resumeData}
+                selectedTemplate={selectedTemplate}
+                onTemplateSelect={setSelectedTemplate}
+                onNext={() => setCurrentStep(2)}
+                onBack={() => setCurrentStep(0)}
+                onSaveDraft={() => {}}
+              />
+            )}
+            {currentStep === 2 && resumeData && (
+              <ResumeCustomizer
+                resumeData={resumeData}
+                selectedTemplate={selectedTemplate}
+                customizations={customizations}
+                onCustomizationsUpdate={setCustomizations}
+                onResumeDataUpdate={setResumeData}
+                onExport={handleExport}
+                onBack={() => setCurrentStep(1)}
+                onSaveDraft={() => {}}
+              />
+            )}
+          </div>
+        </>
+      );
+
+      return (
+        <PageLayout 
+          sidebarContent={resumeCreationSidebar}
+          mainContent={resumeCreationMain}
+        />
+      );
+    }
+    
     switch (currentStep) {
       case 0:
         return (
@@ -331,279 +505,9 @@ const App: React.FC = () => {
             showConfirmation={showConfirmation}
           />
         );
-      case 0.5:
-        // LinkedIn Input with unified layout
-        const linkedInSidebar = (
-          <>
-            {/* Logo */}
-            <div className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold text-gray-900">ResumeAI</h1>
-                  <p className="text-xs text-gray-500">LinkedIn Resume Generator</p>
-                </div>
-              </div>
-            </div>
 
-            {/* Navigation */}
-            <div className="px-6 mb-8">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">NAVIGATION</h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => setCurrentStep(0)}
-                  className="w-full text-left text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-lg flex items-center transition-colors"
-                >
-                  <div className="w-4 h-4 bg-blue-100 rounded mr-3 flex items-center justify-center">
-                    <span className="text-xs text-blue-600">📊</span>
-                  </div>
-                  <div>
-                    <div className="font-medium text-sm">Dashboard</div>
-                    <div className="text-xs text-gray-500">Your resume drafts</div>
-                  </div>
-                </button>
-                
-                <div className="bg-blue-50 text-blue-700 px-3 py-2 rounded-lg flex items-center">
-                  <div className="w-4 h-4 bg-blue-500 rounded mr-3 flex items-center justify-center">
-                    <span className="text-xs text-white">✨</span>
-                  </div>
-                  <div>
-                    <div className="font-medium text-sm">Create Resume</div>
-                    <div className="text-xs text-blue-600">Generate new resume</div>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            {/* Features */}
-            <div className="px-6 flex-1">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">FEATURES</h3>
-              <div className="space-y-3">
-                <div className="flex items-center text-sm">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                  <Brain className="w-4 h-4 mr-2 text-green-600" />
-                  <span className="text-gray-700">AI-Powered Parsing</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  <FileText className="w-4 h-4 mr-2 text-blue-600" />
-                  <span className="text-gray-700">6 Professional Templates</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
-                  <Palette className="w-4 h-4 mr-2 text-purple-600" />
-                  <span className="text-gray-700">Live Customization</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
-                  <Upload className="w-4 h-4 mr-2 text-orange-600" />
-                  <span className="text-gray-700">PDF Export Ready</span>
-                </div>
-              </div>
-            </div>
 
-            {/* User Profile */}
-            <div className="p-6 border-t border-gray-200">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">
-                    {user?.user_metadata?.full_name?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || 'U'}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm text-gray-900 truncate">
-                    {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
-                  </div>
-                  <div className="text-xs text-gray-500 truncate">
-                    {user?.email}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        );
-
-        const linkedInMain = (
-          <>
-            {/* Header */}
-            <div className="bg-white border-b border-gray-200 px-8 py-6">
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => setCurrentStep(0)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </button>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Create New Resume</h1>
-                  <p className="text-gray-600">Upload your LinkedIn profile</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="flex-1">
-              <LinkedInInput 
-                onDataExtracted={handleLinkedInData}
-                onBack={() => setCurrentStep(0)}
-              />
-            </div>
-          </>
-        );
-
-        return (
-          <PageLayout 
-            sidebarContent={linkedInSidebar}
-            mainContent={linkedInMain}
-          />
-        );
-      case 1:
-        if (!resumeData) return null;
-        
-        // Template Selector with unified layout
-        const templateSidebar = (
-          <>
-            {/* Logo */}
-            <div className="p-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold text-gray-900">ResumeAI</h1>
-                  <p className="text-xs text-gray-500">LinkedIn Resume Generator</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Navigation */}
-            <div className="px-6 mb-8">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">NAVIGATION</h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => setCurrentStep(0)}
-                  className="w-full text-left text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-lg flex items-center transition-colors"
-                >
-                  <div className="w-4 h-4 bg-blue-100 rounded mr-3 flex items-center justify-center">
-                    <span className="text-xs text-blue-600">📊</span>
-                  </div>
-                  <div>
-                    <div className="font-medium text-sm">Dashboard</div>
-                    <div className="text-xs text-gray-500">Your resume drafts</div>
-                  </div>
-                </button>
-                
-                <div className="bg-blue-50 text-blue-700 px-3 py-2 rounded-lg flex items-center">
-                  <div className="w-4 h-4 bg-blue-500 rounded mr-3 flex items-center justify-center">
-                    <span className="text-xs text-white">🎨</span>
-                  </div>
-                  <div>
-                    <div className="font-medium text-sm">Choose Template</div>
-                    <div className="text-xs text-blue-600">Select your design</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Features */}
-            <div className="px-6 flex-1">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">FEATURES</h3>
-              <div className="space-y-3">
-                <div className="flex items-center text-sm">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                  <Brain className="w-4 h-4 mr-2 text-green-600" />
-                  <span className="text-gray-700">AI-Powered Parsing</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  <FileText className="w-4 h-4 mr-2 text-blue-600" />
-                  <span className="text-gray-700">6 Professional Templates</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
-                  <Palette className="w-4 h-4 mr-2 text-purple-600" />
-                  <span className="text-gray-700">Live Customization</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
-                  <Upload className="w-4 h-4 mr-2 text-orange-600" />
-                  <span className="text-gray-700">PDF Export Ready</span>
-                </div>
-              </div>
-            </div>
-
-            {/* User Profile */}
-            <div className="p-6 border-t border-gray-200">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">
-                    {resumeData.personalInfo.name?.charAt(0) || 'U'}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm text-gray-900 truncate">
-                    {resumeData.personalInfo.name || 'User'}
-                  </div>
-                  <div className="text-xs text-gray-500 truncate">
-                    {resumeData.personalInfo.email || 'user@example.com'}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        );
-
-        const templateMain = (
-          <>
-            {/* Header */}
-            <div className="bg-white border-b border-gray-200 px-8 py-6">
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => setCurrentStep(0)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </button>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Choose Your Template</h1>
-                  <p className="text-gray-600">Select from professionally designed layouts</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="flex-1">
-              <TemplateSelector
-                resumeData={resumeData}
-                selectedTemplate={selectedTemplate}
-                onTemplateSelect={setSelectedTemplate}
-                onNext={() => setCurrentStep(2)}
-                onBack={() => setCurrentStep(0)}
-              />
-            </div>
-          </>
-        );
-
-        return (
-          <PageLayout 
-            sidebarContent={templateSidebar}
-            mainContent={templateMain}
-          />
-        );
-      case 2:
-        return resumeData && (
-          <ResumeCustomizer
-            resumeData={resumeData}
-            selectedTemplate={selectedTemplate}
-            customizations={customizations}
-            onCustomizationsUpdate={setCustomizations}
-            onResumeDataUpdate={setResumeData}
-            onExport={handleExport}
-            onBack={() => setCurrentStep(1)}
-          />
-        );
       default:
         return null;
     }

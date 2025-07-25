@@ -353,6 +353,40 @@ const App: React.FC = () => {
     }
   };
   const renderMainContent = () => {
+  const handleSaveDraftPromptConfirm = async (draftName: string) => {
+    console.log('💾 App - handleSaveDraftPromptConfirm called with name:', draftName);
+    
+    if (!user || !resumeData) {
+      showToast('Unable to save draft', 'error');
+      setShowDraftSavePrompt(false);
+      return;
+    }
+
+    try {
+      const savedDraftId = await SupabaseDraftManager.saveDraft(
+        draftName,
+        resumeData,
+        selectedTemplate,
+        customizations,
+        currentStep,
+        currentDraftId || undefined,
+        user
+      );
+      
+      setCurrentDraftId(savedDraftId);
+      setShowDraftSavePrompt(false);
+      showToast('Draft saved successfully!', 'success');
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      showToast('Failed to save draft. Please try again.', 'error');
+    }
+  };
+
+  const handleSaveDraftPromptCancel = () => {
+    console.log('💾 App - handleSaveDraftPromptCancel called');
+    setShowDraftSavePrompt(false);
+  };
+
     if (isTransitioning) {
       return (
         <div className="min-h-screen flex items-center justify-center">

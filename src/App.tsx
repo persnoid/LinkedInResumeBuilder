@@ -14,6 +14,7 @@ import { ToastNotification, useToast } from './components/ToastNotification';
 import { ConfirmationDialog } from './components/ConfirmationDialog';
 import { useConfirmation } from './hooks/useConfirmation';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
+import { SupabaseDraftManager } from './utils/supabaseDraftManager';
 import { ResumeData, Customizations } from '../types/resume';
 import { useAuth } from './contexts/AuthContext';
 import { DraftSavePrompt } from './components/DraftSavePrompt';

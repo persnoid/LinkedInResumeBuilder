@@ -16,6 +16,7 @@ import { useConfirmation } from './hooks/useConfirmation';
 import { exportToPDF, exportToWord } from './utils/exportUtils';
 import { ResumeData, Customizations } from '../types/resume';
 import { useAuth } from './contexts/AuthContext';
+import { DraftSavePrompt } from './components/DraftSavePrompt';
 import { FileText, ArrowLeft, Brain, Palette, Upload, User } from 'lucide-react';
 
 const RESUME_CREATION_STEPS = ['Upload & Parse', 'Choose Template', 'Customize & Export'];
@@ -73,6 +74,9 @@ const App: React.FC = () => {
   const [showLandingPage, setShowLandingPage] = useState(true); // Always start with landing page
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
+  const [showDraftSavePrompt, setShowDraftSavePrompt] = useState(false);
+  const [draftSavePromptDefaultName, setDraftSavePromptDefaultName] = useState('');
 
   const { toast, showToast, hideToast } = useToast();
   const { confirmation, showConfirmation } = useConfirmation();
@@ -291,6 +295,13 @@ const App: React.FC = () => {
     setCurrentStep(1); // Go to template selector
   };
 
+  const handleEditResumeWithId = (resumeData: ResumeData, template: string, customizations: any, draftId: string) => {
+    setResumeData(resumeData);
+    setSelectedTemplate(template);
+    setCustomizations(customizations);
+    setCurrentDraftId(draftId);
+    setCurrentStep(1); // Go to template selector
+  };
   const handleCreateNewResume = () => {
     setResumeData(null);
     setSelectedTemplate('azurill');
@@ -300,9 +311,47 @@ const App: React.FC = () => {
       spacing: {},
       sections: {}
     });
+    setCurrentDraftId(null);
     setCurrentStep(0.5); // Go directly to LinkedIn Input
   };
 
+  const handleSaveDraft = async () => {
+    console.log('💾 App - handleSaveDraft called');
+    
+    if (!user) {
+      showToast('You must be signed in to save drafts', 'error');
+      return;
+    }
+
+    if (!resumeData) {
+      showToast('No resume data to save', 'error');
+      return;
+    }
+
+    // If we have an existing draft ID, update it directly
+    if (currentDraftId) {
+      try {
+        await SupabaseDraftManager.saveDraft(
+          'Updated Draft', // We'll use a generic name for updates
+          resumeData,
+          selectedTemplate,
+          customizations,
+          currentStep,
+          currentDraftId,
+          user
+        );
+        showToast('Draft updated successfully!', 'success');
+      } catch (error) {
+        console.error('Error updating draft:', error);
+        showToast('Failed to update draft. Please try again.', 'error');
+      }
+    } else {
+      // For new drafts, show the save prompt
+      const defaultName = `${resumeData.personalInfo.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'} Resume`;
+      setDraftSavePromptDefaultName(defaultName);
+      setShowDraftSavePrompt(true);
+    }
+  };
   const renderMainContent = () => {
     if (isTransitioning) {
       return (
@@ -460,7 +509,8 @@ const App: React.FC = () => {
                 onTemplateSelect={setSelectedTemplate}
                 onNext={() => setCurrentStep(2)}
                 onBack={() => setCurrentStep(0)}
-                onSaveDraft={() => {}}
+                onSaveDraft={handleSaveDraft}
+                currentDraftId={currentDraftId}
               />
             )}
             {currentStep === 2 && resumeData && (
@@ -472,7 +522,8 @@ const App: React.FC = () => {
                 onResumeDataUpdate={setResumeData}
                 onExport={handleExport}
                 onBack={() => setCurrentStep(1)}
-                onSaveDraft={() => {}}
+                onSaveDraft={handleSaveDraft}
+                currentDraftId={currentDraftId}
               />
             )}
           </div>
@@ -493,11 +544,13 @@ const App: React.FC = () => {
           <Dashboard 
             onCreateNew={() => {
               setResumeData(null);
+              setCurrentDraftId(null);
               setCurrentStep(0.5); // Go directly to LinkedInInput
             }}
-            onEditResume={handleEditResume}
+            onEditResume={handleEditResumeWithId}
             onStartLinkedInInput={() => {
               setResumeData(null);
+              setCurrentDraftId(null);
               setCurrentStep(0.5); // Use 0.5 as a special step for LinkedInInput
             }}
             onOpenProfile={() => setShowUserProfile(true)}
@@ -506,8 +559,40 @@ const App: React.FC = () => {
           />
         );
 
+  const handleSaveDraftPromptConfirm = async (draftName: string) => {
+    console.log('💾 App - handleSaveDraftPromptConfirm called with name:', draftName);
+    
+    if (!user || !resumeData) {
+      showToast('Unable to save draft', 'error');
+      setShowDraftSavePrompt(false);
+      return;
+    }
 
+    try {
+      const savedDraftId = await SupabaseDraftManager.saveDraft(
+        draftName,
+        resumeData,
+        selectedTemplate,
+        customizations,
+        currentStep,
+        currentDraftId || undefined,
+        user
+      );
+      
+      setCurrentDraftId(savedDraftId);
+      setShowDraftSavePrompt(false);
+      showToast('Draft saved successfully!', 'success');
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      showToast('Failed to save draft. Please try again.', 'error');
+    }
+  };
 
+      setCurrentDraftId(null);
+  const handleSaveDraftPromptCancel = () => {
+    console.log('💾 App - handleSaveDraftPromptCancel called');
+    setShowDraftSavePrompt(false);
+  };
       default:
         return null;
     }
@@ -535,6 +620,14 @@ const App: React.FC = () => {
           cancelText={confirmation.cancelText}
           onConfirm={confirmation.onConfirm}
           onCancel={confirmation.onCancel}
+        />
+
+        <DraftSavePrompt
+          isOpen={showDraftSavePrompt}
+          onSave={handleSaveDraftPromptConfirm}
+          onSkip={handleSaveDraftPromptCancel}
+          onCancel={handleSaveDraftPromptCancel}
+          defaultName={draftSavePromptDefaultName}
         />
       </ProtectedRoute>
     </ErrorBoundary>

@@ -6,7 +6,7 @@ import { ResumeData } from '../types/resume';
 
 interface DashboardProps {
   onCreateNew: () => void;
-  onEditResume: (resumeData: ResumeData, template: string, customizations: any) => void;
+  onEditResume: (resumeData: ResumeData, template: string, customizations: any, draftId: string) => void;
   onStartLinkedInInput: () => void;
   onOpenProfile: () => void;
   onGoToHome: () => void;
@@ -133,7 +133,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const handleEditResume = (resume: ResumeItem) => {
-    onEditResume(resume.resumeData, resume.template, resume.customizations);
+    onEditResume(resume.resumeData, resume.template, resume.customizations, resume.id);
   };
 
   const handleDeleteResume = async (resumeId: string) => {

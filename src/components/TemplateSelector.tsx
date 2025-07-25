@@ -11,7 +11,7 @@ interface TemplateSelectorProps {
   onNext: () => void;
   onBack: () => void;
   onSaveDraft: () => void;
-  currentDraftId?: string | undefined;
+  currentDraftId?: string | null;
 }
 
 export const TemplateSelector: React.FC<TemplateSelectorProps> = ({

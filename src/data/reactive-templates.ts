@@ -197,12 +197,12 @@ export const reactiveTemplates: TemplateConfig[] = [
           overlay: 'rgba(0, 0, 0, 0.5)'
         },
         spacing: {
-          section: '18px',
-          item: '10px',
-          compact: '6px',
-          contentPadding: '16px',
-          sidebarColumnPadding: '16px',
-          mainColumnPadding: '20px',
+          section: '16px',
+          item: '8px',
+          compact: '4px',
+          contentPadding: '12px',
+          sidebarColumnPadding: '12px',
+          mainColumnPadding: '16px',
           xs: '4px',
           sm: '8px',
           md: '16px',

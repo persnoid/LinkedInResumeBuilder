@@ -592,11 +592,47 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
       {/* Preview Area */}
       <div className="flex-1 p-8 overflow-auto">
         <div className="max-w-4xl mx-auto">
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Live Preview</h3>
-            <p className="text-gray-600">
-              {isEditMode ? 'Click on any text to edit it directly' : 'Enable edit mode to modify content'}
-            </p>
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Live Preview</h3>
+              <p className="text-gray-600">
+                {isEditMode ? 'Click on any text to edit it directly' : 'Enable edit mode to modify content'}
+              </p>
+            </div>
+            
+            {/* Export and Navigation Buttons */}
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => handleExport('pdf')}
+                disabled={isExporting}
+                className="bg-red-500 hover:bg-red-600 disabled:bg-gray-300 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center"
+              >
+                {isExporting ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                ) : (
+                  <FileType className="w-4 h-4 mr-2" />
+                )}
+                Export as PDF
+              </button>
+              <button
+                onClick={() => handleExport('docx')}
+                disabled={isExporting}
+                className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center"
+              >
+                {isExporting ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                ) : (
+                  <FileText className="w-4 h-4 mr-2" />
+                )}
+                Export as Word
+              </button>
+              <button
+                onClick={onBack}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Back to Templates
+              </button>
+            </div>
           </div>
           
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">

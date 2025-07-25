@@ -69,7 +69,7 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
 
   // Get dynamic icon size from customizations
   const getIconSize = () => {
-    const iconSize = customizations?.typography?.iconSize || 'sm';
+    const iconSize = styles?.typography?.iconSize || 'sm';
     const sizeMap = {
       'xs': 8,
       'sm': 12, 

@@ -71,6 +71,21 @@ export const CertificationsSection: React.FC<CertificationsSectionProps> = ({
     url: ''
   });
 
+  // Get dynamic icon size from customizations
+  const getIconSize = () => {
+    const iconSize = customizations?.typography?.iconSize || 'sm';
+    const sizeMap = {
+      'xs': 8,
+      'sm': 12, 
+      'md': 16,
+      'lg': 20,
+      'xl': 24
+    };
+    return sizeMap[iconSize] || sizeMap['sm'];
+  };
+  
+  const iconSizePx = getIconSize();
+
   // Initialize form for new entry
   const initializeNewForm = () => {
     setFormData({
@@ -336,6 +351,14 @@ export const CertificationsSection: React.FC<CertificationsSectionProps> = ({
           }}
         >
           <Award className="w-3 h-3 mr-2" />
+          <Award 
+            className="" 
+            style={{ 
+              width: `${iconSizePx}px`,
+              height: `${iconSizePx}px`,
+              marginRight: '8px'
+            }} 
+          />
           {config.name || 'Certifications'}
         </h3>
         {editMode && (
@@ -437,6 +460,8 @@ export const CertificationsSection: React.FC<CertificationsSectionProps> = ({
                       style={{ 
                         width: '12px', 
                         height: '12px',
+                        width: `${Math.max(8, iconSizePx * 0.75)}px`,
+                        height: `${Math.max(8, iconSizePx * 0.75)}px`,
                         fontSize: styles.typography.fontSize.small 
                       }} 
                     />

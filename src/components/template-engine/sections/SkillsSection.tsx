@@ -67,6 +67,21 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
     level: 'Intermediate'
   });
 
+  // Get dynamic icon size from customizations
+  const getIconSize = () => {
+    const iconSize = customizations?.typography?.iconSize || 'sm';
+    const sizeMap = {
+      'xs': 8,
+      'sm': 12, 
+      'md': 16,
+      'lg': 20,
+      'xl': 24
+    };
+    return sizeMap[iconSize] || sizeMap['sm'];
+  };
+  
+  const iconSizePx = getIconSize();
+
   // Skill levels
   const skillLevels = [
     'Beginner',
@@ -605,10 +620,10 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
 
   const getDisplayIcon = () => {
     switch (sectionStyles?.display) {
-      case 'tags': return <Tag className="w-3 h-3" />;
-      case 'grid': return <Grid className="w-3 h-3" />;
-      case 'cards': return <Grid className="w-3 h-3" />;
-      default: return <List className="w-3 h-3" />;
+      case 'tags': return <Tag style={{ width: `${iconSizePx}px`, height: `${iconSizePx}px` }} />;
+      case 'grid': return <Grid style={{ width: `${iconSizePx}px`, height: `${iconSizePx}px` }} />;
+      case 'cards': return <Grid style={{ width: `${iconSizePx}px`, height: `${iconSizePx}px` }} />;
+      default: return <List style={{ width: `${iconSizePx}px`, height: `${iconSizePx}px` }} />;
     }
   };
 

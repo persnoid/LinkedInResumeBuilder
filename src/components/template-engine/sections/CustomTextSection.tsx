@@ -40,6 +40,21 @@ export const CustomTextSection: React.FC<CustomTextSectionProps> = ({
     content: 'Add your custom content here...'
   };
 
+  // Get dynamic icon size from customizations
+  const getIconSize = () => {
+    const iconSize = customizations?.typography?.iconSize || 'sm';
+    const sizeMap = {
+      'xs': 8,
+      'sm': 12, 
+      'md': 16,
+      'lg': 20,
+      'xl': 24
+    };
+    return sizeMap[iconSize] || sizeMap['sm'];
+  };
+  
+  const iconSizePx = getIconSize();
+
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(sectionData.title);
   const [editContent, setEditContent] = useState(sectionData.content);
@@ -153,6 +168,14 @@ export const CustomTextSection: React.FC<CustomTextSectionProps> = ({
           }}
         >
           <FileText className="w-3 h-3 mr-2" />
+         <FileText 
+           className="" 
+           style={{ 
+             width: `${iconSizePx}px`,
+             height: `${iconSizePx}px`,
+             marginRight: '8px'
+           }} 
+         />
           <EditableText
             value={sectionData.title}
             onSave={(value) => {

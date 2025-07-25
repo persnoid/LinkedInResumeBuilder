@@ -554,39 +554,6 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
           )}
         </div>
 
-        {/* Export Buttons */}
-        <div className="border-t border-gray-200 p-6 space-y-3">
-          <button
-            onClick={() => handleExport('pdf')}
-            disabled={isExporting}
-            className="w-full bg-red-500 hover:bg-red-600 disabled:bg-gray-300 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
-          >
-            {isExporting ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-            ) : (
-              <FileType className="w-5 h-5 mr-2" />
-            )}
-            Export as PDF
-          </button>
-          <button
-            onClick={() => handleExport('docx')}
-            disabled={isExporting}
-            className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
-          >
-            {isExporting ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-            ) : (
-              <FileText className="w-5 h-5 mr-2" />
-            )}
-            Export as Word
-          </button>
-          <button
-            onClick={onBack}
-            className="w-full bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors"
-          >
-            Back to Templates
-          </button>
-        </div>
       </div>
 
       {/* Preview Area */}

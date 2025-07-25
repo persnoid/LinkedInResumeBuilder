@@ -76,21 +76,6 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
     description: ''
   });
 
-  // Get dynamic icon size from customizations
-  const getIconSize = () => {
-    const iconSize = customizations?.typography?.iconSize || 'sm';
-    const sizeMap = {
-      'xs': 8,
-      'sm': 12, 
-      'md': 16,
-      'lg': 20,
-      'xl': 24
-    };
-    return sizeMap[iconSize] || sizeMap['sm'];
-  };
-  
-  const iconSizePx = getIconSize();
-
   // Initialize form for new entry
   const initializeNewForm = () => {
     setFormData({
@@ -419,14 +404,6 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
           }}
         >
           <GraduationCap className="w-3 h-3 mr-2" />
-          <GraduationCap 
-            className="" 
-            style={{ 
-              width: `${iconSizePx}px`,
-              height: `${iconSizePx}px`,
-              marginRight: '8px'
-            }} 
-          />
           {config.name || 'Education'}
         </h3>
         {editMode && (

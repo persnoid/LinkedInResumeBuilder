@@ -52,21 +52,6 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   const photoSize = sectionStyles?.photoSize || '24'; // Default to 96px (24 * 4)
   const contactLayout = sectionStyles?.contactLayout || 'column'; // Default to column layout
 
-  // Get dynamic icon size from customizations
-  const getIconSize = () => {
-    const iconSize = customizations?.typography?.iconSize || 'sm';
-    const sizeMap = {
-      'xs': 8,
-      'sm': 12, 
-      'md': 16,
-      'lg': 20,
-      'xl': 24
-    };
-    return sizeMap[iconSize] || sizeMap['sm'];
-  };
-  
-  const iconSizePx = getIconSize();
-
   // Convert photoSize to pixels - Tailwind uses 4px per unit (w-24 = 96px)
   const photoSizePx = parseInt(photoSize) * 4;
 
@@ -402,11 +387,10 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         {contactItems.map((item, index) => (
           <div key={index} className="contact-item flex items-center gap-x-2">
             <item.icon 
-              className="flex-shrink-0" 
+              className="w-3 h-3 flex-shrink-0 print:w-2 print:h-2" 
               style={{ 
                 color: styles.colors.accent,
-                width: `${iconSizePx}px`,
-                height: `${iconSizePx}px`
+                fontSize: '8px' // Force small size for PDF
               }} 
             />
             <EditableText
@@ -462,11 +446,10 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
             {contactItems.map((item, index) => (
               <div key={index} className="contact-item flex items-center gap-x-2">
                 <item.icon 
-                  className="flex-shrink-0" 
+                  className="w-3 h-3 print:w-2 print:h-2" 
                   style={{ 
                     color: styles.colors.background,
-                    width: `${iconSizePx}px`,
-                    height: `${iconSizePx}px`
+                    fontSize: '8px' // Force small size for PDF
                   }} 
                 />
                 <EditableText

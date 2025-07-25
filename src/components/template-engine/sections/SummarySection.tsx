@@ -26,21 +26,6 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
   const displaySummary = summary || 
     'Experienced software engineer with 8+ years of expertise in full-stack development, cloud architecture, and team leadership. Proven track record of delivering scalable solutions and mentoring junior developers.';
 
-  // Get dynamic icon size from customizations
-  const getIconSize = () => {
-    const iconSize = customizations?.typography?.iconSize || 'sm';
-    const sizeMap = {
-      'xs': 8,
-      'sm': 12, 
-      'md': 16,
-      'lg': 20,
-      'xl': 24
-    };
-    return sizeMap[iconSize] || sizeMap['sm'];
-  };
-  
-  const iconSizePx = getIconSize();
-
   const handleSave = () => {
     if (onDataUpdate) {
       onDataUpdate('summary', editValue);
@@ -71,13 +56,11 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
         }}
       >
         <User 
-          className="" 
+          className="w-3 h-3" 
           style={{ 
             marginTop: '-1px',
             verticalAlign: 'middle',
-            display: 'inline-block',
-            width: `${iconSizePx}px`,
-            height: `${iconSizePx}px`
+            display: 'inline-block'
           }} 
         />
         <span>{config.name || 'Summary'}</span>

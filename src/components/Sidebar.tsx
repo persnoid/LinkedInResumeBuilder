@@ -62,7 +62,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-full">
-      <div className="p-6">
+      {/* Fixed Header */}
+      <div className="p-6 flex-shrink-0">
         {/* Logo */}
         <div className="flex items-center space-x-3 mb-8">
           <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
@@ -73,7 +74,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <p className="text-sm text-gray-500">LinkedIn Resume Generator</p>
           </div>
         </div>
+      </div>
 
+      {/* Scrollable Middle Section */}
+      <div className="flex-1 overflow-y-auto px-6 pb-6">
         {/* Navigation */}
         <div className="space-y-2 mb-8">
           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Navigation</h3>
@@ -151,8 +155,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* User Profile at Bottom */}
-      <div className="mt-auto p-6">
+      {/* Fixed Footer - User Profile */}
+      <div className="flex-shrink-0 p-6 border-t border-gray-100">
         <div className="relative">
           {/* Collapsible User Menu */}
           {showUserMenu && (

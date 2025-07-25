@@ -10,14 +10,14 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   mainContent 
 }) => {
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="h-screen flex overflow-hidden bg-gray-50">
       {/* Left Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col overflow-y-auto">
         {sidebarContent}
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-y-auto">
         {mainContent}
       </div>
     </div>

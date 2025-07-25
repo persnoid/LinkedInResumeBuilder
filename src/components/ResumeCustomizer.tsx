@@ -558,7 +558,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
 
       {/* Preview Area */}
       <div className="flex-1 p-8 overflow-auto">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-[794px] mx-auto">
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Live Preview</h3>

@@ -142,7 +142,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
       return;
     }
     
-    const confirmed = confirm('Are you sure you want to delete this resume?');
+    const confirmed = await showConfirmation({
+      title: 'Delete Resume',
+      message: 'Are you sure you want to delete this resume? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
+    
     if (confirmed) {
       try {
         await SupabaseDraftManager.deleteDraft(resumeId, user);

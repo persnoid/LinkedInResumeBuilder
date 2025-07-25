@@ -77,6 +77,7 @@ const App: React.FC = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
+  const [currentDraftName, setCurrentDraftName] = useState<string | null>(null);
   const [showDraftSavePrompt, setShowDraftSavePrompt] = useState(false);
   const [draftSavePromptDefaultName, setDraftSavePromptDefaultName] = useState('');
 
@@ -369,6 +370,7 @@ const App: React.FC = () => {
                 onBack={() => setCurrentStep(0)}
                 onSaveDraft={handleSaveDraft}
                 currentDraftId={currentDraftId}
+                currentDraftName={currentDraftName}
               />
             )}
             {currentStep === 2 && resumeData && (
@@ -382,6 +384,7 @@ const App: React.FC = () => {
                 onBack={() => setCurrentStep(1)}
                 onSaveDraft={handleSaveDraft}
                 currentDraftId={currentDraftId}
+                currentDraftName={currentDraftName}
               />
             )}
           </div>
@@ -443,6 +446,8 @@ const App: React.FC = () => {
     setSelectedTemplate(template);
     setCustomizations(customizations);
     setCurrentDraftId(draftId);
+    // Set the draft name from the resume data for updates
+    setCurrentDraftName(resumeData.personalInfo?.name ? `${resumeData.personalInfo.name} Resume` : 'My Resume');
     setCurrentStep(1); // Go to template selector
   };
   const handleCreateNewResume = () => {
@@ -455,6 +460,7 @@ const App: React.FC = () => {
       sections: {}
     });
     setCurrentDraftId(null);
+    setCurrentDraftName(null);
     setCurrentStep(0.5); // Go directly to LinkedIn Input
   };
 
@@ -474,8 +480,10 @@ const App: React.FC = () => {
     // If we have an existing draft ID, update it directly
     if (currentDraftId) {
       try {
+        // Use the current draft name or fallback to a default
+        const draftName = currentDraftName || `${resumeData.personalInfo?.name || 'My'} Resume`;
         await SupabaseDraftManager.saveDraft(
-          'Updated Draft', // We'll use a generic name for updates
+          draftName,
           resumeData,
           selectedTemplate,
           customizations,
@@ -517,6 +525,7 @@ const App: React.FC = () => {
       );
       
       setCurrentDraftId(savedDraftId);
+      setCurrentDraftName(draftName);
       setShowDraftSavePrompt(false);
       showToast('Draft saved successfully!', 'success');
     } catch (error) {

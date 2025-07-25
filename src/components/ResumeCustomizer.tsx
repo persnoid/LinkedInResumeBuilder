@@ -20,6 +20,7 @@ interface ResumeCustomizerProps {
   onBack: () => void;
   onSaveDraft: () => void;
   currentDraftId?: string | null;
+  currentDraftName?: string | null;
 }
 
 export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
@@ -31,7 +32,8 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   onExport,
   onBack,
   onSaveDraft,
-  currentDraftId
+  currentDraftId,
+  currentDraftName
 }) => {
   const [activeTab, setActiveTab] = useState<'colors' | 'fonts' | 'sections'>('colors');
   const [isExporting, setIsExporting] = useState(false);
@@ -316,7 +318,7 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
             className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center transition-colors"
           >
             <Save className="w-3 h-3 mr-1" />
-            {currentDraftId ? 'Update' : 'Save'}
+            {currentDraftId ? `Update ${currentDraftName || 'Draft'}` : 'Save'}
           </button>
         </div>
 

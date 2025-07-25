@@ -12,6 +12,7 @@ interface TemplateSelectorProps {
   onBack: () => void;
   onSaveDraft: () => void;
   currentDraftId?: string | null;
+  currentDraftName?: string | null;
 }
 
 export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
@@ -21,7 +22,8 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   onNext,
   onBack,
   onSaveDraft,
-  currentDraftId
+  currentDraftId,
+  currentDraftName
 }) => {
   const [filter, setFilter] = useState<'all' | 'modern' | 'classic' | 'creative' | 'minimal' | 'professional'>('all');
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
@@ -102,7 +104,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center transition-colors shadow-sm hover:shadow-md"
         >
           <Save className="w-5 h-5 mr-2" />
-          {currentDraftId ? 'Update Draft' : 'Save Draft'}
+          {currentDraftId ? `Update ${currentDraftName || 'Draft'}` : 'Save Draft'}
         </button>
       </div>
       

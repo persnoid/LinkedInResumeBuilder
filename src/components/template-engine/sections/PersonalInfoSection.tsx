@@ -54,7 +54,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
 
   // Get dynamic icon size from customizations
   const getIconSize = () => {
-    const iconSize = styles?.typography?.iconSize || 'sm';
+    const iconSize = customizations?.typography?.iconSize || 'sm';
     const sizeMap = {
       'xs': 8,
       'sm': 12, 

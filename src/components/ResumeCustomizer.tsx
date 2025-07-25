@@ -9,6 +9,7 @@ import { TemplateRenderer } from './template-engine/TemplateRenderer';
 import { ResumePreview } from './ResumePreview';
 import { ConfirmationDialog } from './ConfirmationDialog';
 import { useConfirmation } from '../hooks/useConfirmation';
+import { exportToPDF } from '../utils/exportUtils';
 
 interface ResumeCustomizerProps {
   resumeData: ResumeData;

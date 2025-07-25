@@ -92,6 +92,7 @@ export interface Customizations {
       semibold?: string;
       bold?: string;
     };
+    iconSize?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   };
   spacing?: {
     section?: string;

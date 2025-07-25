@@ -98,7 +98,12 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
   const handleExport = async (format: 'pdf' | 'docx') => {
     setIsExporting(true);
     try {
-      await onExport(format);
+      if (format === 'pdf') {
+        // Pass customizations to PDF export for dynamic icon sizing
+        await exportToPDF('resume-preview', `${editableResumeData.personalInfo.name}_Resume.pdf`, customizations);
+      } else {
+        await onExport(format);
+      }
     } finally {
       setIsExporting(false);
     }
@@ -504,6 +509,32 @@ export const ResumeCustomizer: React.FC<ResumeCustomizerProps> = ({
                     />
                   </div>
                 ))}
+                
+                {/* Icon Size Control */}
+                <div className="space-y-2 pt-4 border-t border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-900">Icon Size</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-700">PDF Export Icons</span>
+                      <span className="text-xs text-gray-500">
+                        {customizations.typography?.iconSize || 'sm'}
+                      </span>
+                    </div>
+                    <select
+                      value={customizations.typography?.iconSize || 'sm'}
+                      onChange={(e) => {
+                        handleCustomizationChange('typography.iconSize', e.target.value);
+                      }}
+                      className="w-full px-3 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    >
+                      <option value="xs">Extra Small (6px)</option>
+                      <option value="sm">Small (10px)</option>
+                      <option value="md">Medium (14px)</option>
+                      <option value="lg">Large (18px)</option>
+                      <option value="xl">Extra Large (22px)</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
           )}

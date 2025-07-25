@@ -4,13 +4,39 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } fro
 import { saveAs } from 'file-saver';
 import { ResumeData } from '../types/resume';
 
-export const exportToPDF = async (elementId: string, filename: string = 'resume.pdf') => {
+export const exportToPDF = async (
+  elementId: string, 
+  filename: string = 'resume.pdf',
+  customizations?: any
+) => {
   const element = document.getElementById(elementId);
   if (!element) {
     throw new Error('Resume element not found');
   }
 
   try {
+    // Determine icon size from customizations
+    const getIconSize = () => {
+      // Check for global icon size in customizations
+      const globalIconSize = customizations?.typography?.iconSize || 
+                            customizations?.iconSize || 
+                            'sm';
+      
+      // Convert size names to pixel values
+      const sizeMap = {
+        'xs': '6px',
+        'sm': '10px', 
+        'md': '14px',
+        'lg': '18px',
+        'xl': '22px'
+      };
+      
+      return sizeMap[globalIconSize] || sizeMap['sm'];
+    };
+    
+    const iconSize = getIconSize();
+    console.log('PDF Export - Using icon size:', iconSize);
+
     // A4 dimensions in mm and pixels
     const A4_WIDTH_MM = 210;
     const A4_HEIGHT_MM = 297;
@@ -87,14 +113,14 @@ export const exportToPDF = async (elementId: string, filename: string = 'resume.
           // Fix icon sizes in cloned document - Force smaller icons for PDF
           const icons = clonedElement.querySelectorAll('svg');
           icons.forEach((icon: any) => {
-            // Force consistent small icon size for PDF export
-            icon.style.width = '8px';
-            icon.style.height = '8px';
+            // Use dynamic icon size based on customizations
+            icon.style.width = iconSize;
+            icon.style.height = iconSize;
             icon.style.flexShrink = '0';
-            icon.style.minWidth = '8px';
-            icon.style.minHeight = '8px';
-            icon.style.maxWidth = '8px';
-            icon.style.maxHeight = '8px';
+            icon.style.minWidth = iconSize;
+            icon.style.minHeight = iconSize;
+            icon.style.maxWidth = iconSize;
+            icon.style.maxHeight = iconSize;
           });
 
           // Fix image sizes and aspect ratio

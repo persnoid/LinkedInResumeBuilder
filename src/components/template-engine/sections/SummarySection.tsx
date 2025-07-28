@@ -57,14 +57,7 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
           fontWeight: sectionStyles?.fontWeight ? styles.typography.fontWeight?.[sectionStyles.fontWeight] || 'bold' : 'bold'
         }}
       >
-        <User 
-          className={iconSizeClass}
-          style={{ 
-            marginTop: '-1px',
-            verticalAlign: 'middle',
-            display: 'inline-block'
-          }} 
-        />
+        
         <span>{config.name || 'Summary'}</span>
       </h3>
       

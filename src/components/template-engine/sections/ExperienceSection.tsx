@@ -447,6 +447,7 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
             className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors flex items-center"
           >
             <Save className="w-4 h-4 mr-2" />
+            <Save className={`${iconSizeClass} mr-2`} />
             {editingId ? 'Update' : 'Add'} Experience
           </button>
         </div>
@@ -677,7 +678,6 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
           }}
         >
           <Briefcase className="w-3 h-3 mr-2" />
-          <Briefcase className={`${iconSizeClass} mr-2`} />
           {config.name || 'Experience'}
         </h3>
         {editMode && (

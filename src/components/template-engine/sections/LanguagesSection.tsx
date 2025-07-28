@@ -320,6 +320,7 @@ export const LanguagesSection: React.FC<LanguagesSectionProps> = ({
             className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors flex items-center"
           >
             <Save className="w-4 h-4 mr-2" />
+            <Save className={`${iconSizeClass} mr-2`} />
             {editingId ? 'Update' : 'Add'} Language
           </button>
         </div>

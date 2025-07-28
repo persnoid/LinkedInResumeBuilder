@@ -8,6 +8,7 @@ interface SummarySectionProps {
   config: any;
   editMode?: boolean;
   onDataUpdate?: (field: string, value: any) => void;
+  iconSizeClass?: string;
 }
 
 export const SummarySection: React.FC<SummarySectionProps> = ({

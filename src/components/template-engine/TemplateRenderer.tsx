@@ -25,6 +25,18 @@ const sectionComponents = {
   CustomText: CustomTextSection,
 };
 
+// Helper function to map iconSize to Tailwind classes
+const getTailwindIconSizeClass = (iconSize?: string): string => {
+  switch (iconSize) {
+    case 'xs': return 'w-2 h-2';
+    case 'sm': return 'w-3 h-3';
+    case 'md': return 'w-4 h-4';
+    case 'lg': return 'w-5 h-5';
+    case 'xl': return 'w-6 h-6';
+    default: return 'w-3 h-3'; // Default to small
+  }
+};
+
 export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
   context,
   className = ''
@@ -59,6 +71,8 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
   console.log('TemplateRenderer - Has showConfirmation:', !!showConfirmation);
   console.log('TemplateRenderer - showConfirmation type:', typeof showConfirmation);
 
+  // Get icon size class based on customizations
+  const iconSizeClass = getTailwindIconSizeClass(styles.typography.iconSize);
   // Handle data updates from sections
   const handleSectionDataUpdate = (field: string, value: any) => {
     console.log('TemplateRenderer - Section data update:', field, value);
@@ -166,6 +180,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
           editMode={editMode}
           onDataUpdate={handleSectionDataUpdate}
           showConfirmation={showConfirmation}
+          iconSizeClass={iconSizeClass}
         />
         {sectionStyles?.divider && (
           <div

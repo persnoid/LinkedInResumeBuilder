@@ -8,6 +8,7 @@ interface PersonalInfoSectionProps {
   config: any;
   editMode?: boolean;
   onDataUpdate?: (field: string, value: any) => void;
+  iconSizeClass?: string;
 }
 
 export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
@@ -16,7 +17,8 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   sectionStyles,
   config,
   editMode = false,
-  onDataUpdate
+  onDataUpdate,
+  iconSizeClass = 'w-3 h-3'
 }) => {
   const { personalInfo } = data;
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -387,7 +389,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         {contactItems.map((item, index) => (
           <div key={index} className="contact-item flex items-center gap-x-2">
             <item.icon 
-              className="w-3 h-3 flex-shrink-0 print:w-2 print:h-2" 
+              className={`${iconSizeClass} flex-shrink-0 print:w-2 print:h-2`}
               style={{ 
                 color: styles.colors.accent,
                 fontSize: '8px' // Force small size for PDF
@@ -446,7 +448,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
             {contactItems.map((item, index) => (
               <div key={index} className="contact-item flex items-center gap-x-2">
                 <item.icon 
-                  className="w-3 h-3 print:w-2 print:h-2" 
+                  className={`${iconSizeClass} print:w-2 print:h-2`}
                   style={{ 
                     color: styles.colors.background,
                     fontSize: '8px' // Force small size for PDF

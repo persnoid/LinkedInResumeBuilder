@@ -56,7 +56,7 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
         }}
       >
         <User 
-          className="w-3 h-3" 
+          className={iconSizeClass}
           style={{ 
             marginTop: '-1px',
             verticalAlign: 'middle',

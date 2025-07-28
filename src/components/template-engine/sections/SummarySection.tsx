@@ -17,7 +17,8 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
   sectionStyles,
   config,
   editMode = false,
-  onDataUpdate
+  onDataUpdate,
+  iconSizeClass = 'w-3 h-3'
 }) => {
   const { summary } = data;
   const [isEditing, setIsEditing] = useState(false);

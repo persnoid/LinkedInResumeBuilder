@@ -53,7 +53,7 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
           padding: sectionStyles?.headerStyle === 'background' ? '8px 12px' : '0 0 4px 0',
           borderRadius: sectionStyles?.headerStyle === 'background' ? '6px' : '0',
           textTransform: sectionStyles?.textTransform || 'uppercase',
-          fontWeight: sectionStyles?.fontWeight ? styles.typography.fontWeight[sectionStyles.fontWeight] : styles.typography.fontWeight.bold
+          fontWeight: sectionStyles?.fontWeight ? styles.typography.fontWeight?.[sectionStyles.fontWeight] || 'bold' : 'bold'
         }}
       >
         <User 

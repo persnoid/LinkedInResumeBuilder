@@ -677,7 +677,7 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
             fontWeight: sectionStyles?.fontWeight ? styles.typography.fontWeight[sectionStyles.fontWeight] : styles.typography.fontWeight.bold
           }}
         >
-          
+         
           {config.name || 'Experience'}
         </h3>
         {editMode && (

@@ -604,14 +604,7 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
     </div>
   );
 
-  const getDisplayIcon = () => {
-    switch (sectionStyles?.display) {
-      case 'tags': return <Tag className="w-3 h-3" />;
-      case 'grid': return <Grid className="w-3 h-3" />;
-      case 'cards': return <Grid className="w-3 h-3" />;
-      default: return <List className="w-3 h-3" />;
-    }
-  };
+ 
 
   console.log('SkillsSection - Rendering with editMode:', editMode);
 
@@ -631,7 +624,6 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({
             fontWeight: sectionStyles?.fontWeight ? styles.typography.fontWeight[sectionStyles.fontWeight] : styles.typography.fontWeight.bold
           }}
         >
-          {getDisplayIcon()}
           <span className="ml-2">{config.name || 'Skills'}</span>
         </h3>
         {editMode && (

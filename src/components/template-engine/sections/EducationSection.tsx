@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, GraduationCap, Edit3, Save, X } from 'lucide-react';
+import { Plus, Trash2, Edit3, Save, X } from 'lucide-react';
 
 interface EducationSectionProps {
   data: any;
@@ -404,7 +404,7 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
             fontWeight: sectionStyles?.fontWeight ? styles.typography.fontWeight[sectionStyles.fontWeight] : styles.typography.fontWeight.bold
           }}
         >
-          <GraduationCap className="w-3 h-3 mr-2" />
+         
           {config.name || 'Education'}
         </h3>
         {editMode && (

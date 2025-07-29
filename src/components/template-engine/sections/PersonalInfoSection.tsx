@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Mail, Phone, MapPin, Globe, Linkedin, User, Camera, Upload, AlertCircle, CheckCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, Linkedin,  Camera, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface PersonalInfoSectionProps {
   data: any;

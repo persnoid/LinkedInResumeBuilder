@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Briefcase, Edit3, Save, X } from 'lucide-react';
+import { Plus, Trash2, Edit3, Save, X } from 'lucide-react';
 
 interface ExperienceSectionProps {
   data: any;
@@ -677,7 +677,7 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
             fontWeight: sectionStyles?.fontWeight ? styles.typography.fontWeight[sectionStyles.fontWeight] : styles.typography.fontWeight.bold
           }}
         >
-          <Briefcase className="w-3 h-3 mr-2" />
+          
           {config.name || 'Experience'}
         </h3>
         {editMode && (

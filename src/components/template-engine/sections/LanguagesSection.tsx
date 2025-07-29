@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Globe, Edit3, Save, X } from 'lucide-react';
+import { Plus, Trash2, Edit3, Save, X } from 'lucide-react';
 
 interface LanguagesSectionProps {
   data: any;
@@ -344,7 +344,7 @@ export const LanguagesSection: React.FC<LanguagesSectionProps> = ({
             fontWeight: sectionStyles?.fontWeight ? styles.typography.fontWeight[sectionStyles.fontWeight] : styles.typography.fontWeight.bold
           }}
         >
-          <Globe className="w-3 h-3 mr-2" />
+          
           {config.name || 'Languages'}
         </h3>
         {editMode && (

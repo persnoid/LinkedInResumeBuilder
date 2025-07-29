@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, ExternalLink, Plus, Trash2, Award, Edit3, Save, X } from 'lucide-react';
+import { Calendar, ExternalLink, Plus, Trash2, Edit3, Save, X } from 'lucide-react';
 
 interface CertificationsSectionProps {
   data: any;
@@ -336,7 +336,7 @@ export const CertificationsSection: React.FC<CertificationsSectionProps> = ({
             fontWeight: sectionStyles?.fontWeight ? styles.typography.fontWeight[sectionStyles.fontWeight] : styles.typography.fontWeight.bold
           }}
         >
-          <Award className="w-3 h-3 mr-2" />
+          
           {config.name || 'Certifications'}
         </h3>
         {editMode && (

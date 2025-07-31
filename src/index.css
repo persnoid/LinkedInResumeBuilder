@@ -16,20 +16,20 @@
   
   /* Force small icon sizes in print */
   svg, .lucide {
-    width: 8px !important;
-    height: 8px !important;
-    min-width: 8px !important;
-    min-height: 8px !important;
-    max-width: 8px !important;
-    max-height: 8px !important;
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    min-height: 8px;
+    max-width: 8px;
+    max-height: 8px;
   }
   
   /* Fix profile photo aspect ratio in print */
   img.rounded-full,
   img[style*="border-radius: 50%"] {
-    object-fit: cover !important;
-    object-position: center !important;
-    aspect-ratio: 1 !important;
+    object-fit: cover;
+    object-position: center;
+    aspect-ratio: 1;
   }
   
   /* Hide interactive elements in print */

@@ -835,24 +835,12 @@ const SortableSection: React.FC<SortableSectionProps> = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onToggle(!section.visible);
-            }}
-            className={`p-1 rounded transition-colors ${
-              section.visible ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100'
-            }`}
-            title={section.visible ? 'Hide section' : 'Show section'}
-          >
-            {section.visible ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
+             onToggle(!section.visible);
             }}
             className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors"
-            title={isDefaultSection ? 'Hide section' : 'Delete section'}
+           title={section.visible ? 'Hide section' : 'Show section'}
           >
-            {isDefaultSection ? <EyeOff className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
+           {section.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
           </button>
         </div>
       </div>

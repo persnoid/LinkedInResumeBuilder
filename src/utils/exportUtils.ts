@@ -128,13 +128,25 @@ export const exportToPDF = async (
           images.forEach((img: any) => {
             // Check if this is a profile photo (circular)
             if (img.classList.contains('rounded-full') || img.style.borderRadius === '50%') {
-              // Force square aspect ratio for profile photos
-              const size = Math.min(parseInt(img.style.width) || 96, parseInt(img.style.height) || 96);
+              // Determine current rendered size from layout (fallback to natural size or default)
+              // Get actual layout size; fallback to natural size or a default.
+              const rect = img.getBoundingClientRect();
+              let width = rect.width || img.naturalWidth || 96;
+              let height = rect.height || img.naturalHeight || 96;
+
+              // Force square using the smaller dimension to avoid upscaling
+              const size = Math.floor(Math.min(width, height));
+
+              // Apply explicit square styling
               img.style.width = `${size}px`;
               img.style.height = `${size}px`;
+
+              // Ensure proper cropping without distortion
               img.style.objectFit = 'cover';
               img.style.objectPosition = 'center';
-              img.style.aspectRatio = '1';
+
+              // Remove aspect-ratio to prevent layout conflicts during rendering
+              img.style.removeProperty('aspect-ratio');
             } else {
               // For other images, maintain aspect ratio
               const rect = img.getBoundingClientRect();

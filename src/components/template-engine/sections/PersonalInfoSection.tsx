@@ -416,7 +416,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   // For header layout (columns: 0) - COMPACT HORIZONTAL LAYOUT
   if (config.columns === 0) {
     return (
-      <div className="personal-info-header flex items-center justify-between py-6 px-8">
+      <div className="personal-info-header flex items-center justify-between py-1 px-2">
         <div className="info-content flex-1">
           <EditableText
             value={displayName}
